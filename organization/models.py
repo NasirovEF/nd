@@ -1,6 +1,6 @@
 from django.db import models
 
-from permit.services import NULLABLE
+from organization.services import NULLABLE
 
 
 class Organization(models.Model):
@@ -159,3 +159,10 @@ class Worker(models.Model):
         verbose_name="Совмещаемая должность/профессия",
         related_name="combined_worker"
     )
+
+    class Meta:
+        verbose_name = "Работник"
+        verbose_name_plural = "Работники"
+
+    def __str__(self):
+        return self.name

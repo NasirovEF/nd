@@ -3,8 +3,8 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView, View)
 
-from permit.forms.organization import OrganizationForm
-from permit.models import Organization
+from organization.forms import OrganizationForm
+from organization.models import Organization
 
 
 class OrganizationListView(ListView):
@@ -23,7 +23,7 @@ class OrganizationCreateView(CreateView):
     form_class = OrganizationForm
 
     def get_success_url(self):
-        return reverse("permit:organization_detail", args=[self.object.pk])
+        return reverse("organization:organization_detail", args=[self.object.pk])
 
 
 class OrganizationUpdateView(UpdateView):
@@ -32,12 +32,12 @@ class OrganizationUpdateView(UpdateView):
     form_class = OrganizationForm
 
     def get_success_url(self):
-        return reverse("permit:organization_detail", args=[self.object.pk])
+        return reverse("organization:organization_detail", args=[self.object.pk])
 
 
 class OrganizationDeleteView(DeleteView):
     model = Organization
-    success_url = reverse_lazy("permit:organization_list")
+    success_url = reverse_lazy("organization:organization_list")
 
 
 
