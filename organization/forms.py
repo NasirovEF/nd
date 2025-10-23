@@ -1,5 +1,13 @@
 from django import forms
-from organization.models import Organization, Branch, Group, District, Division
+from organization.models import (
+    Organization,
+    Branch,
+    Group,
+    District,
+    Division,
+    Position,
+    Worker,
+)
 
 
 class OrganizationForm(forms.ModelForm):
@@ -29,4 +37,16 @@ class DistrictForm(forms.ModelForm):
 class DivisionForm(forms.ModelForm):
     class Meta:
         model = Division
+        fields = "__all__"
+
+
+class PositionForm(forms.ModelForm):
+    class Meta:
+        model = Position
+        fields = "__all__"
+
+
+class WorkerForm(forms.ModelForm):
+    class Meta:
+        model = Worker
         fields = "__all__"

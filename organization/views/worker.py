@@ -9,44 +9,44 @@ from django.views.generic import (
     View,
 )
 
-from organization.forms import DivisionForm
-from organization.models import Division
+from organization.forms import WorkerForm
+from organization.models import Worker
 
 
-class DivisionListView(ListView):
+class WorkerListView(ListView):
     """Просмотр списка структурных подразделений"""
 
-    model = Division
+    model = Worker
 
 
-class DivisionDetailView(DetailView):
+class WorkerDetailView(DetailView):
     """Просмотр одной из структурных подразделений"""
 
-    model = Division
+    model = Worker
 
 
-class DivisionCreateView(CreateView):
+class WorkerCreateView(CreateView):
     """Создание структурных подразделений"""
 
-    model = Division
-    form_class = DivisionForm
+    model = Worker
+    form_class = WorkerForm
 
     def get_success_url(self):
-        return reverse("division:division_detail", args=[self.object.pk])
+        return reverse("worker:worker_detail", args=[self.object.pk])
 
 
-class DivisionUpdateView(UpdateView):
+class WorkerUpdateView(UpdateView):
     """Редактирование структурных подразделений"""
 
-    model = Division
-    form_class = DivisionForm
+    model = Worker
+    form_class = WorkerForm
 
     def get_success_url(self):
-        return reverse("division:division_detail", args=[self.object.pk])
+        return reverse("worker:worker_detail", args=[self.object.pk])
 
 
-class DivisionDeleteView(DeleteView):
+class WorkerDeleteView(DeleteView):
     """Удаление структурных подразделений"""
 
-    model = Division
-    success_url = reverse_lazy("division:division_list")
+    model = Worker
+    success_url = reverse_lazy("worker:worker_list")
