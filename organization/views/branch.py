@@ -18,6 +18,11 @@ class BranchListView(ListView):
 
     model = Branch
 
+    # def get_queryset(self, *args, **kwargs):
+    #     queriset = super().get_queryset(*args, **kwargs)
+    #     queriset = queriset.filter(name_ost=self.pk)
+    #     return queriset
+
 
 class BranchDetailView(DetailView):
     """Просмотр одного из филиалов"""
@@ -32,7 +37,7 @@ class BranchCreateView(CreateView):
     form_class = BranchForm
 
     def get_success_url(self):
-        return reverse("branch:branch_detail", args=[self.object.pk])
+        return reverse("organization:organization_list")
 
 
 class BranchUpdateView(UpdateView):
@@ -42,11 +47,11 @@ class BranchUpdateView(UpdateView):
     form_class = BranchForm
 
     def get_success_url(self):
-        return reverse("branch:branch_detail", args=[self.object.pk])
+        return reverse("organization:branch_detail", args=[self.object.pk])
 
 
 class BranchDeleteView(DeleteView):
     """Удаление филиала"""
 
     model = Branch
-    success_url = reverse_lazy("branch:branch_list")
+    success_url = reverse_lazy("organization:organization_list")

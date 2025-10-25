@@ -10,13 +10,19 @@ from django.views.generic import (
 )
 
 from organization.forms import OrganizationForm
-from organization.models import Organization
+from organization.models import Organization, Branch
 
 
 class OrganizationListView(ListView):
     """Просмотр списка ОСТов"""
 
     model = Organization
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     branches = Branch.objects.get(name_ost=)
+    #     context["branches"] = branches
+    #     return context
 
 
 class OrganizationDetailView(DetailView):

@@ -32,7 +32,7 @@ class DivisionCreateView(CreateView):
     form_class = DivisionForm
 
     def get_success_url(self):
-        return reverse("division:division_detail", args=[self.object.pk])
+        return reverse("organization:organization_list")
 
 
 class DivisionUpdateView(UpdateView):
@@ -42,11 +42,11 @@ class DivisionUpdateView(UpdateView):
     form_class = DivisionForm
 
     def get_success_url(self):
-        return reverse("division:division_detail", args=[self.object.pk])
+        return reverse("organization:organization_list", args=[self.object.pk])
 
 
 class DivisionDeleteView(DeleteView):
     """Удаление структурных подразделений"""
 
     model = Division
-    success_url = reverse_lazy("division:division_list")
+    success_url = reverse_lazy("organization:organization_list")

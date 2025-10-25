@@ -1,0 +1,101 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<button class="btn btn-primary m-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop"
+        aria-controls="staticBackdrop">
+    Боковое меню
+</button>
+<div class="btn-group">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        Действия
+    </button>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{% url 'organization:organization_create' %}">Добавить ОСТ</a></li>
+        <li><a class="dropdown-item" href="{% url 'organization:branch_create' %}">Добавить филиал ОСТ</a></li>
+        <li><a class="dropdown-item" href="{% url 'organization:division_create' %}">Добавить структурное
+            подразделение</a></li>
+    </ul>
+</div>
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <div class="accordion" id="Organization">
+            {% for organization in object_list %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#1-{{ organization.pk }}" aria-expanded="false"
+                            aria-controls="1-{{ organization.pk }}">
+                        {{ organization.name }}
+                    </button>
+                </h2>
+                <div id="1-{{ organization.pk }}" class="accordion-collapse collapse">
+                    <div class="accordion-body position-relative">
+                        <div class="btn-group dropend">
+                            <button type="button" class="btn btn-link-secondary dropdown-toggle"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                Редактировать
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item"
+                                       href="{% url 'organization:organization_update' organization.pk %}">Изменить
+                                    ОСТ</a></li>
+                                <li><a class="dropdown-item"
+                                       href="{% url 'organization:organization_delete' organization.pk %}">Удалить
+                                    ОСТ</a></li>
+                            </ul>
+                        </div>
+                        {% for branch in organization.branch.all %}
+                        <div class="accordion m-2" id="Branch">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#2-{{ branch.pk }}" aria-expanded="false"
+                                            aria-controls="2-{{ branch.pk }}">
+                                        {{ branch.name }}
+                                    </button>
+                                </h2>
+                                <div id="2-{{ branch.pk }}" class="accordion-collapse collapse">
+                                       <div class="btn-group dropend">
+                                        <button type="button" class="btn btn-link-secondary dropdown-toggle"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            Редактировать
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item"
+                                                   href="{% url 'organization:branch_update' branch.pk %}">Изменить
+                                               филиал ОСТ</a></li>
+                                            <li><a class="dropdown-item"
+                                                   href="{% url 'organization:branch_delete' branch.pk %}">Удалить
+                                                филиал ОСТ</a></li>
+                                        </ul>
+                                    </div>
+                                    {% for division in branch.division.all %}
+                                    <div class="accordion m-2" id="Division">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button collapsed" type="button"
+                                                        data-bs-toggle="collapse" data-bs-target="#3-{{ division.pk }}"
+                                                        aria-expanded="false" aria-controls="3-{{ division.pk }}">
+                                                    {{ division.name }}
+                                                </button>
+                                            </h2>
+                                            <div id="3-{{ division.pk }}" class="accordion-collapse collapse">
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-1"></div>
+    </div>
+
+    {% endblock %}

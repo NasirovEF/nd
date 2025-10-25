@@ -19,13 +19,13 @@ class Organization(models.Model):
 class Branch(models.Model):
     """Класс филиала ОСТ"""
 
-    name = models.CharField(max_length=150, verbose_name="Наименование филиала")
     name_ost = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
         verbose_name="ОСТ",
         related_name="branch",
     )
+    name = models.CharField(max_length=150, verbose_name="Наименование филиала")
 
     class Meta:
         verbose_name = "Филиал"
@@ -38,6 +38,7 @@ class Branch(models.Model):
 class Group(models.Model):
     """Класс группы участка"""
 
+    district = models.ForeignKey("District", on_delete=models.CASCADE, verbose_name="Участок", related_name="group")
     name = models.CharField(max_length=150, verbose_name="Наименование группы")
 
     class Meta:
@@ -49,8 +50,11 @@ class District(models.Model):
     """Класс участка"""
 
     name = models.CharField(max_length=150, verbose_name="Наименование участка")
-    group = models.ManyToManyField(
-        Group, verbose_name="группа участка", related_name="district"
+    division = models.ForeignKey(
+        "Division",
+        on_delete=models.CASCADE,
+        verbose_name="Наименование структурного подразделения",
+        related_name="district",
     )
 
     class Meta:
@@ -67,14 +71,12 @@ class Division(models.Model):
     name = models.CharField(
         max_length=150, verbose_name="Наименование структурного подразделения"
     )
-    district = models.ManyToManyField(
-        District, verbose_name="Участок", related_name="division"
-    )
+
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
         verbose_name="ОСТ",
-        related_name="devision",
+        related_name="division",
     )
     branch = models.ForeignKey(
         Branch, on_delete=models.CASCADE, verbose_name="филиал", related_name="division"
