@@ -15,6 +15,7 @@ psycopg2 = "^2.9.10"
 black = "^25.9.0"
 isort = "^6.1.0"
 openpyxl = "^3.1.5"
+setuptools = "^80.9.0"
 
 
 [build-system]

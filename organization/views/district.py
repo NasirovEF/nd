@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 
 from organization.forms import DistrictForm
-from organization.models import District
+from organization.models import District, Division
 
 
 class DistrictListView(ListView):
@@ -32,7 +32,15 @@ class DistrictCreateView(CreateView):
     form_class = DistrictForm
 
     def get_success_url(self):
-        return reverse("district:district_detail", args=[self.object.pk])
+        return reverse("organization:organization_list")
+
+    def form_valid(self, form):
+        district = form.save()
+        division = self.request.GET["division"]
+        district.division = Division.objects.get(pk=division)
+        form.save()
+
+        return super().form_valid(form)
 
 
 class DistrictUpdateView(UpdateView):
@@ -42,11 +50,11 @@ class DistrictUpdateView(UpdateView):
     form_class = DistrictForm
 
     def get_success_url(self):
-        return reverse("district:district_detail", args=[self.object.pk])
+        return reverse("organization:organization_list")
 
 
 class DistrictDeleteView(DeleteView):
     """Удаление участков"""
 
     model = District
-    success_url = reverse_lazy("district:district_list")
+    success_url = reverse_lazy("organization:organization_list")

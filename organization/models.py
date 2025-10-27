@@ -24,6 +24,7 @@ class Branch(models.Model):
         on_delete=models.CASCADE,
         verbose_name="ОСТ",
         related_name="branch",
+        **NULLABLE
     )
     name = models.CharField(max_length=150, verbose_name="Наименование филиала")
 

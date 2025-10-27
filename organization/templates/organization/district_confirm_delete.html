@@ -11,7 +11,7 @@
                 </div>
                 <div class="card-body">
                     {% csrf_token %}
-                    Вы действительно хотите удалить филиал <br>{{ object.name_ost }}:<br> <strong>{{ object.name }}</strong> ?
+                    Вы действительно хотите удалить <br> <strong>{{ object.name }}</strong> ?
                 </div>
                 <div class="card-footer">
                     <a href="{% url 'organization:organization_list' %}" class="btn btn-outline-primary">

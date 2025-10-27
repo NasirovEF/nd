@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 
 from organization.forms import BranchForm
-from organization.models import Branch
+from organization.models import Branch, Organization
 
 
 class BranchListView(ListView):
@@ -35,6 +35,16 @@ class BranchCreateView(CreateView):
 
     model = Branch
     form_class = BranchForm
+
+    def form_valid(self, form):
+        branch = form.save()
+        name_ost = self.request.GET["name_ost"]
+        branch.name_ost = Organization.objects.get(pk=name_ost)
+        form.save()
+
+        return super().form_valid(form)
+
+
 
     def get_success_url(self):
         return reverse("organization:organization_list")

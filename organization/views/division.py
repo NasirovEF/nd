@@ -10,13 +10,15 @@ from django.views.generic import (
 )
 
 from organization.forms import DivisionForm
-from organization.models import Division
+from organization.models import Division, Organization, Branch
 
 
 class DivisionListView(ListView):
     """Просмотр списка структурных подразделений"""
 
     model = Division
+
+
 
 
 class DivisionDetailView(DetailView):
@@ -33,6 +35,17 @@ class DivisionCreateView(CreateView):
 
     def get_success_url(self):
         return reverse("organization:organization_list")
+
+
+    def form_valid(self, form):
+        division = form.save()
+        organization = self.request.GET["organization"]
+        branch = self.request.GET["branch"]
+        division.organization = Organization.objects.get(pk=organization)
+        division.branch = Branch.objects.get(pk=branch)
+        form.save()
+
+        return super().form_valid(form)
 
 
 class DivisionUpdateView(UpdateView):

@@ -18,12 +18,6 @@ class OrganizationListView(ListView):
 
     model = Organization
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     branches = Branch.objects.get(name_ost=)
-    #     context["branches"] = branches
-    #     return context
-
 
 class OrganizationDetailView(DetailView):
     """Просмотр одного из ОСТов"""
@@ -38,7 +32,7 @@ class OrganizationCreateView(CreateView):
     form_class = OrganizationForm
 
     def get_success_url(self):
-        return reverse("organization:organization_detail", args=[self.object.pk])
+        return reverse("organization:organization_list")
 
 
 class OrganizationUpdateView(UpdateView):
@@ -48,7 +42,7 @@ class OrganizationUpdateView(UpdateView):
     form_class = OrganizationForm
 
     def get_success_url(self):
-        return reverse("organization:organization_detail", args=[self.object.pk])
+        return reverse("organization:organization_list")
 
 
 class OrganizationDeleteView(DeleteView):

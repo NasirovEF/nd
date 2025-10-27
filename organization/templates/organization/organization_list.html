@@ -10,9 +10,6 @@
     </button>
     <ul class="dropdown-menu">
         <li><a class="dropdown-item" href="{% url 'organization:organization_create' %}">Добавить ОСТ</a></li>
-        <li><a class="dropdown-item" href="{% url 'organization:branch_create' %}">Добавить филиал ОСТ</a></li>
-        <li><a class="dropdown-item" href="{% url 'organization:division_create' %}">Добавить структурное
-            подразделение</a></li>
     </ul>
 </div>
 <div class="row">
@@ -29,13 +26,17 @@
                     </button>
                 </h2>
                 <div id="1-{{ organization.pk }}" class="accordion-collapse collapse">
-                    <div class="accordion-body position-relative">
+                    <div class="accordion-body">
                         <div class="btn-group dropend">
                             <button type="button" class="btn btn-link-secondary dropdown-toggle"
                                     data-bs-toggle="dropdown" aria-expanded="false">
                                 Редактировать
                             </button>
                             <ul class="dropdown-menu">
+                                <li><a class="dropdown-item"
+                                       href="{% url 'organization:branch_create' %}?name_ost={{organization.pk}}">Добавить
+                                    филиал ОСТ</a></li>
+                                <hr>
                                 <li><a class="dropdown-item"
                                        href="{% url 'organization:organization_update' organization.pk %}">Изменить
                                     ОСТ</a></li>
@@ -44,8 +45,8 @@
                                     ОСТ</a></li>
                             </ul>
                         </div>
-                        {% for branch in organization.branch.all %}
-                        <div class="accordion m-2" id="Branch">
+                        <div class="accordion" id="Branch">
+                            {% for branch in organization.branch.all %}
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -55,40 +56,91 @@
                                     </button>
                                 </h2>
                                 <div id="2-{{ branch.pk }}" class="accordion-collapse collapse">
-                                       <div class="btn-group dropend">
-                                        <button type="button" class="btn btn-link-secondary dropdown-toggle"
-                                                data-bs-toggle="dropdown" aria-expanded="false">
-                                            Редактировать
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item"
-                                                   href="{% url 'organization:branch_update' branch.pk %}">Изменить
-                                               филиал ОСТ</a></li>
-                                            <li><a class="dropdown-item"
-                                                   href="{% url 'organization:branch_delete' branch.pk %}">Удалить
-                                                филиал ОСТ</a></li>
-                                        </ul>
-                                    </div>
-                                    {% for division in branch.division.all %}
-                                    <div class="accordion m-2" id="Division">
-                                        <div class="accordion-item">
-                                            <h2 class="accordion-header">
-                                                <button class="accordion-button collapsed" type="button"
-                                                        data-bs-toggle="collapse" data-bs-target="#3-{{ division.pk }}"
-                                                        aria-expanded="false" aria-controls="3-{{ division.pk }}">
-                                                    {{ division.name }}
-                                                </button>
-                                            </h2>
-                                            <div id="3-{{ division.pk }}" class="accordion-collapse collapse">
-
+                                    <div class="accordion-body">
+                                        <div class="btn-group dropend">
+                                            <button type="button" class="btn btn-link-secondary dropdown-toggle"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                Редактировать
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item"
+                                                       href="{% url 'organization:division_create'%}?organization={{organization.pk}}&branch={{branch.pk}}">Добавить
+                                                    структурное подразделение</a></li>
+                                                <hr>
+                                                <li><a class="dropdown-item"
+                                                       href="{% url 'organization:branch_update' branch.pk %}">Изменить
+                                                    филиал ОСТ</a></li>
+                                                <li><a class="dropdown-item"
+                                                       href="{% url 'organization:branch_delete' branch.pk %}">Удалить
+                                                    филиал ОСТ</a></li>
+                                            </ul>
+                                        </div>
+                                        {% for division in branch.division.all %}
+                                        <div class="accordion" id="Division">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <button class="accordion-button collapsed" type="button"
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#3-{{ division.pk }}"
+                                                            aria-expanded="false" aria-controls="3-{{ division.pk }}">
+                                                        {{ division.name }}
+                                                    </button>
+                                                </h2>
+                                                <div id="3-{{ division.pk }}" class="accordion-collapse collapse">
+                                                    <div class="btn-group dropend">
+                                                        <button type="button"
+                                                                class="btn btn-link-secondary dropdown-toggle"
+                                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                            Редактировать
+                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item"
+                                                                   href="{% url 'organization:district_create'%}?division={{division.pk}}">Добавить
+                                                                участок</a></li>
+                                                            <hr>
+                                                            <li><a class="dropdown-item"
+                                                                   href="{% url 'organization:division_update' division.pk %}">Изменить
+                                                                структурное подразделение</a></li>
+                                                            <li><a class="dropdown-item"
+                                                                   href="{% url 'organization:division_delete' division.pk %}">Удалить
+                                                                структурное подразделение</a></li>
+                                                        </ul>
+                                                    </div>
+                                                    <table class="table">
+                                                        <tbody>
+                                                        {% for district in division.district.all %}
+                                                        <tr>
+                                                            <td>
+                                                                <a type="button" class="btn btn-link"
+                                                                   href="{% url 'organization:district_detail' district.pk %}">
+                                                                    {{district.name}}
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <a type="button" class="btn btn-link"
+                                                                   href="{% url 'organization:district_update' district.pk %}">
+                                                                    Изменить
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <a type="button" class="btn btn-link"
+                                                                   href="{% url 'organization:district_delete' district.pk %}">
+                                                                    Удалить
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         </div>
+                                        {% endfor %}
                                     </div>
-                                    {% endfor %}
                                 </div>
                             </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
