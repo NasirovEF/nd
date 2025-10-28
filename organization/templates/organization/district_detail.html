@@ -1,0 +1,124 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="card px-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ object.name }}</h5>
+            <h6 class="card-subtitle mb-2 text-body-secondary">{{ object.division }}</h6>
+            <div class="btn-group dropend">
+                <button type="button" class="btn btn-link btn-sm dropdown-toggle"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    Редактировать
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item"
+                           href="{% url 'organization:worker_create' %}?ost={{ object.division.organization.pk }}&branch={{ object.division.branch.pk }}&division={{ object.division.pk }}&district={{ object.pk }}">Добавить
+                        работника
+                    </a></li>
+                    <li><a class="dropdown-item"
+                           href="{% url 'organization:group_create' %}?district={{ object.pk }}">Добавить группу участка
+                    </a></li>
+                </ul>
+            </div>
+            <p>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">№ п/п</th>
+                    <th scope="col">ФИО</th>
+                    <th scope="col">Должность</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for worker in object.worker.all %}
+                {% if not worker.group %}
+                <tr>
+                    <th scope="row">1</th>
+                    <td>{{ worker.surname }}</td>
+                    <td>{{ worker.main_position }}</td>
+                    <td>
+                        <div class="btn-group dropend">
+                            <button type="button" class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                Редактировать
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item"
+                                       href="{% url 'organization:worker_update' worker.pk %}">Изменить
+                                </a></li>
+                                <hr>
+                                <li><a class="dropdown-item"
+                                       href="{% url 'organization:worker_delete' worker.pk %}">Удалить
+                                </a></li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                </tbody>
+            </table>
+            </p>
+            <div class="accordion" id="accordionPanelsStayOpenExample">
+                {% for group in object.group.all %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#Group-{{ group.pk }}" aria-expanded="false"
+                                aria-controls="Group-{{ group.pk }}">
+                            {{ group.name }}
+                        </button>
+                    </h2>
+                    <div id="Group-{{ group.pk }}" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <a type="button" class="btn btn-link btn-sm"
+                                    href="{% url 'organization:worker_create' %}?ost={{ object.division.organization.pk }}&branch={{ object.division.branch.pk }}&division={{ object.division.pk }}&district={{ object.pk }}&group={{ group.pk }}">Добавить
+                        работника
+                            </a>
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">№ п/п</th>
+                                    <th scope="col">ФИО</th>
+                                    <th scope="col">Должность</th>
+                                    <th scope="col"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for worker in group.worker.all %}
+                                <tr>
+                                    <th scope="row">1</th>
+                                    <td>{{ worker.surname }}</td>
+                                    <td>{{ worker.main_position }}</td>
+                                    <td>
+                                        <div class="btn-group dropend">
+                                            <button type="button" class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                Редактировать
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item"
+                                                       href="{% url 'organization:worker_update' worker.pk %}">Изменить
+                                                </a></li>
+                                                <hr>
+                                                <li><a class="dropdown-item"
+                                                       href="{% url 'organization:worker_delete' worker.pk %}">Удалить
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="#" class="card-link">Card link</a>
+            <a href="#" class="card-link">Another link</a>
+        </div>
+    </div>
+    {% endblock %}

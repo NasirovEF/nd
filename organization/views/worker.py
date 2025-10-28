@@ -8,9 +8,9 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-
+from django.utils.datastructures import MultiValueDictKeyError
 from organization.forms import WorkerForm
-from organization.models import Worker
+from organization.models import Worker, District, Group, Organization, Branch, Division
 
 
 class WorkerListView(ListView):
@@ -32,7 +32,26 @@ class WorkerCreateView(CreateView):
     form_class = WorkerForm
 
     def get_success_url(self):
-        return reverse("worker:worker_detail", args=[self.object.pk])
+        return reverse("organization:district_detail", args=[self.object.district.pk])
+    
+    def form_valid(self, form):
+        worker = form.save()
+        ost = self.request.GET["ost"]
+        branch = self.request.GET["branch"]
+        division = self.request.GET["division"]
+        district = self.request.GET["district"]
+        worker.organization = Organization.objects.get(pk=ost)
+        worker.branch = Branch.objects.get(pk=branch)
+        worker.division = Division.objects.get(pk=division)
+        worker.district = District.objects.get(pk=district)
+        try:
+            group = self.request.GET["group"]
+            worker.group = Group.objects.get(pk=group)
+        except MultiValueDictKeyError:
+            worker.group = None
+        form.save()
+        
+        return super().form_valid(form)
 
 
 class WorkerUpdateView(UpdateView):
@@ -42,11 +61,11 @@ class WorkerUpdateView(UpdateView):
     form_class = WorkerForm
 
     def get_success_url(self):
-        return reverse("worker:worker_detail", args=[self.object.pk])
+        return reverse("organization:district_detail", args=[self.object.district.pk])
 
 
 class WorkerDeleteView(DeleteView):
     """Удаление структурных подразделений"""
 
     model = Worker
-    success_url = reverse_lazy("worker:worker_list")
+    success_url = reverse_lazy("organization:organization_list")

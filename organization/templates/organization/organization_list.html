@@ -10,6 +10,9 @@
     </button>
     <ul class="dropdown-menu">
         <li><a class="dropdown-item" href="{% url 'organization:organization_create' %}">Добавить ОСТ</a></li>
+        <li><a class="dropdown-item"
+                                       href="{% url 'organization:position_create' %}">Добавить
+                                    профессию</a></li>
     </ul>
 </div>
 <div class="row">
@@ -146,8 +149,8 @@
             </div>
             {% endfor %}
         </div>
-
-        <div class="col-1"></div>
     </div>
+    <div class="col-1"></div>
+
 
     {% endblock %}

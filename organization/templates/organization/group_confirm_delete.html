@@ -1,0 +1,30 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<form method="post">
+    <div class="row">
+        <div class="col-4">
+        </div>
+        <div class="col-4">
+            <div class="card text-center m-4">
+                <div class="card-header">
+                    Подтверждение удаления
+                </div>
+                <div class="card-body">
+                    {% csrf_token %}
+                    Вы действительно хотите удалить <br> <strong>{{ object.name }}</strong> ?
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'organization:organization_list' %}" class="btn btn-outline-primary">
+                        Отмена
+                    </a>
+                    <button type="submit" class="btn btn-outline-danger">
+                        Подтвердить
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-4">
+        </div>
+    </div>
+</form>
+{% endblock %}

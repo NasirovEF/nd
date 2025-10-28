@@ -32,7 +32,7 @@ class PositionCreateView(CreateView):
     form_class = PositionForm
 
     def get_success_url(self):
-        return reverse("position:position_detail", args=[self.object.pk])
+        return reverse("organization:organization_list")
 
 
 class PositionUpdateView(UpdateView):

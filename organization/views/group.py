@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 
 from organization.forms import GroupForm
-from organization.models import Group
+from organization.models import Group, District
 
 
 class GroupListView(ListView):
@@ -32,7 +32,15 @@ class GroupCreateView(CreateView):
     form_class = GroupForm
 
     def get_success_url(self):
-        return reverse("group:group_detail", args=[self.object.pk])
+        return reverse("organization:district_detail", args=[self.object.district.pk])
+
+    def form_valid(self, form):
+        group = form.save()
+        district = self.request.GET["district"]
+        group.district = District.objects.get(pk=district)
+        form.save()
+
+        return super().form_valid(form)
 
 
 class GroupUpdateView(UpdateView):
@@ -42,11 +50,11 @@ class GroupUpdateView(UpdateView):
     form_class = GroupForm
 
     def get_success_url(self):
-        return reverse("group:group_detail", args=[self.object.pk])
+        return reverse("organization:district_detail", args=[self.object.district.pk])
 
 
 class GroupDeleteView(DeleteView):
     """Удаление групп"""
 
     model = Group
-    success_url = reverse_lazy("group:group_list")
+    success_url = reverse_lazy("organization:organization_list")
