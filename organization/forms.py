@@ -23,6 +23,7 @@ class StileFormMixin:
             else:
                 field.widget.attrs["class"] = "form-control"
 
+
 class OrganizationForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Organization
