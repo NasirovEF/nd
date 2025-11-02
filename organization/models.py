@@ -46,6 +46,9 @@ class Group(models.Model):
         verbose_name = "Группа"
         verbose_name_plural = "Группа"
 
+    def __str__(self):
+        return self.name
+
 
 class District(models.Model):
     """Класс участка"""
@@ -168,4 +171,4 @@ class Worker(models.Model):
         verbose_name_plural = "Работники"
 
     def __str__(self):
-        return self.name
+        return f'{self.main_position} {self.name[:1]}.{self.patronymic[:1]}. {self.surname}'

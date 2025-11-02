@@ -11,10 +11,10 @@
                 </div>
                 <div class="card-body">
                     {% csrf_token %}
-                    Вы действительно хотите удалить <br> <strong>{{ object.name }}</strong> ?
+                    Вы действительно хотите удалить протокол проверки знаний от {{object.date}} ?
                 </div>
                 <div class="card-footer">
-                    <a href="{% url 'organization:district_detail' object.district.pk  %}" class="btn btn-outline-primary">
+                    <a href="{% url 'organization:organization_list' %}" class="btn btn-outline-primary">
                         Отмена
                     </a>
                     <button type="submit" class="btn btn-outline-danger">

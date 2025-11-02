@@ -8,25 +8,25 @@ from django.views.generic import (
     UpdateView,
     View,
 )
+from learning.models import Learner
 from django.utils.datastructures import MultiValueDictKeyError
 from organization.forms import WorkerForm
 from organization.models import Worker, District, Group, Organization, Branch, Division
 
 
 class WorkerListView(ListView):
-    """Просмотр списка структурных подразделений"""
-
+    """Просмотр списка работников"""
     model = Worker
 
 
 class WorkerDetailView(DetailView):
-    """Просмотр одной из структурных подразделений"""
+    """Просмотр одной из работников"""
 
     model = Worker
 
 
 class WorkerCreateView(CreateView):
-    """Создание структурных подразделений"""
+    """Создание работника"""
 
     model = Worker
     form_class = WorkerForm
@@ -50,12 +50,14 @@ class WorkerCreateView(CreateView):
         except MultiValueDictKeyError:
             worker.group = None
         form.save()
-        
+        learner = Learner.objects.create(worker=worker)
+        learner.save()
+
         return super().form_valid(form)
 
 
 class WorkerUpdateView(UpdateView):
-    """Редактирование структурных подразделений"""
+    """Редактирование работника"""
 
     model = Worker
     form_class = WorkerForm
@@ -65,7 +67,10 @@ class WorkerUpdateView(UpdateView):
 
 
 class WorkerDeleteView(DeleteView):
-    """Удаление структурных подразделений"""
+    """Удаление работника"""
 
     model = Worker
-    success_url = reverse_lazy("organization:organization_list")
+
+    def get_success_url(self):
+        district_pk = self.request.GET["district"]
+        return reverse("organization:district_detail", args=[district_pk])

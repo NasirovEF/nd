@@ -57,4 +57,7 @@ class GroupDeleteView(DeleteView):
     """Удаление групп"""
 
     model = Group
-    success_url = reverse_lazy("organization:organization_list")
+
+    def get_success_url(self):
+        district_pk = self.request.GET["district"]
+        return reverse("organization:district_detail", args=[district_pk])

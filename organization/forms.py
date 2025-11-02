@@ -33,25 +33,25 @@ class OrganizationForm(StileFormMixin, forms.ModelForm):
 class BranchForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Branch
-        fields = "__all__"
+        fields = ["name"]
 
 
 class GroupForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Group
-        fields = "__all__"
+        fields = ["name"]
 
 
 class DistrictForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = District
-        fields = "__all__"
+        fields = ["name"]
 
 
 class DivisionForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Division
-        fields = "__all__"
+        fields = ["name"]
 
 
 class PositionForm(StileFormMixin, forms.ModelForm):
@@ -63,4 +63,4 @@ class PositionForm(StileFormMixin, forms.ModelForm):
 class WorkerForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
-        fields = "__all__"
+        fields = ["name", "surname", "patronymic", "main_position", "combined_position"]
