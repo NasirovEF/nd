@@ -32,7 +32,7 @@ class ProgramCreateView(CreateView):
     form_class = ProgramForm
 
     def get_success_url(self):
-        return reverse("organization:organization_list")
+        return reverse("organization:district_detail", args=[self.object.district.pk])
 
 
 class ProgramUpdateView(UpdateView):
@@ -42,11 +42,13 @@ class ProgramUpdateView(UpdateView):
     form_class = ProgramForm
 
     def get_success_url(self):
-        return reverse("organization:organization_list")
+        return reverse("organization:district_detail", args=[self.object.district.pk])
 
 
 class ProgramDeleteView(DeleteView):
     """Удаление филиала"""
 
     model = Program
-    success_url = reverse_lazy("organization:organization_list")
+
+    def get_success_url(self):
+        return reverse("organization:district_detail", args=[self.request.GET["district"]])

@@ -54,7 +54,7 @@ app_name = OrganizationConfig.name
 
 urlpatterns = [
     path(
-        "organization_list/", OrganizationListView.as_view(), name="organization_list"
+        "", OrganizationListView.as_view(), name="organization_list"
     ),
     path(
         "organization_create/",

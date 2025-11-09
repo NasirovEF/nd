@@ -19,8 +19,6 @@ class DivisionListView(ListView):
     model = Division
 
 
-
-
 class DivisionDetailView(DetailView):
     """Просмотр одной из структурных подразделений"""
 
@@ -36,12 +34,9 @@ class DivisionCreateView(CreateView):
     def get_success_url(self):
         return reverse("organization:organization_list")
 
-
     def form_valid(self, form):
         division = form.save()
-        organization = self.request.GET["organization"]
         branch = self.request.GET["branch"]
-        division.organization = Organization.objects.get(pk=organization)
         division.branch = Branch.objects.get(pk=branch)
         form.save()
 

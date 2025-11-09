@@ -40,7 +40,7 @@
                             </button>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item"
-                                       href="{% url 'organization:branch_create' %}?name_ost={{organization.pk}}">Добавить
+                                       href="{% url 'organization:branch_create' %}?organization={{organization.pk}}">Добавить
                                     филиал ОСТ</a></li>
                                 <hr>
                                 <li><a class="dropdown-item"
@@ -70,7 +70,7 @@
                                             </button>
                                             <ul class="dropdown-menu">
                                                 <li><a class="dropdown-item"
-                                                       href="{% url 'organization:division_create'%}?organization={{organization.pk}}&branch={{branch.pk}}">Добавить
+                                                       href="{% url 'organization:division_create'%}?branch={{branch.pk}}">Добавить
                                                     структурное подразделение</a></li>
                                                 <hr>
                                                 <li><a class="dropdown-item"

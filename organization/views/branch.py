@@ -38,8 +38,8 @@ class BranchCreateView(CreateView):
 
     def form_valid(self, form):
         branch = form.save()
-        name_ost = self.request.GET["name_ost"]
-        branch.name_ost = Organization.objects.get(pk=name_ost)
+        organization = self.request.GET["organization"]
+        branch.organization = Organization.objects.get(pk=organization)
         form.save()
 
         return super().form_valid(form)

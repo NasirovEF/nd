@@ -4,7 +4,8 @@ from learning.apps import LearningConfig
 from learning.views.direction import DirectionCreateView, DirectionUpdateView, DirectionDeleteView
 from learning.views.learner import LearnerCreateView, LearnerUpdateView, LearnerDeleteView
 from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView
-from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, ProtocolDeleteView
+from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, ProtocolDeleteView, ProtocolListView, \
+    ProtocolDetailView
 
 app_name = LearningConfig.name
 
@@ -21,7 +22,9 @@ urlpatterns = [
     path("program_update/<int:pk>", ProgramUpdateView.as_view(), name="program_update"),
     path("program_delete/<int:pk>", ProgramDeleteView.as_view(), name="program_delete"),
 
+    path("protocol_list/", ProtocolListView.as_view(), name="protocol_list"),
     path("protocol_create/", ProtocolCreateView.as_view(), name="protocol_create"),
+    path("protocol_detail/<int:pk>", ProtocolDetailView.as_view(), name="protocol_detail"),
     path("protocol_update/<int:pk>", ProtocolUpdateView.as_view(), name="protocol_update"),
     path("protocol_delete/<int:pk>", ProtocolDeleteView.as_view(), name="protocol_delete"),
 ]

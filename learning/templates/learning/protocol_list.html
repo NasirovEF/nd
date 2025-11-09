@@ -1,0 +1,136 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+<button class="btn btn-outline-primary m-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop"
+        aria-controls="staticBackdrop">
+    Параметры поиска
+</button>
+<a class="btn btn-outline-primary m-4" href="{% url 'learning:protocol_create' %}">Создать протокол проверки
+    знаний</a>
+
+<div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
+     aria-labelledby="staticBackdropLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="staticBackdropLabel">Параметры поиска</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    {% comment %}<p class="mx-3">Показано {{ object_list.count }} из {{ page_obj.paginator.count}} НС</p>
+    <div class="offcanvas-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-body">
+                    <input name="order" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите № или дату приказа"
+                           aria-label="Search">
+                    <p>Дата c <input name="date_from" class="form-control text-center" type="date" placeholder="Дата с"
+                                     aria-label="Search" value="0001-01-01"></p>
+                    <p>Дата по <input name="date_to" class="form-control text-center" type="date" placeholder="Дата по"
+                                      aria-label="Search" value="{{ date_now }}"></p>
+                    <input name="OST" class="form-control my-2 text-center" list="OSTOptions" id="OSTDataList"
+                           placeholder="Введите название ОСТ...">
+                    <datalist id="OSTOptions">
+                        {% for organization in organizations %}
+                        <option value="{{ organization }}">
+                            {% endfor %}
+                    </datalist>
+                    <input name="category" class="form-control my-2 text-center" list="categoryOptions"
+                           id="categoryDataList"
+                           placeholder="Выберите категорию НС">
+                    <datalist id="categoryOptions">
+                        {% for category in categories %}
+                        <option value="{{ category }}">
+                            {% endfor %}
+                    </datalist>
+                    <input name="description" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите описание НС"
+                           aria-label="Search">
+                </div>
+            </div>
+            <div class="d-grid gap-2 my-2">
+                <button type="submit" class="btn btn-outline-primary">
+                    Поиск
+                </button>
+                <a class="btn btn-outline-secondary" href="{% url 'accident:search' page=1 %}">
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+    {% endcomment %}
+</div>
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+
+        <table class="table table-hover text-center m-4">
+            <thead>
+            <tr>
+                <th class="col-3" scope="col"></th>
+                <th class="col-3" scope="col">Направление обучения</th>
+                <th class="col-3" scope="col">Дата проверки знаний</th>
+                <th class="col-3" scope="col">Протокол проверки знаний</th>
+                <th class="col-3" scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for protocol in object_list %}
+            <tr>
+                <th></th>
+                <td>{{protocol.direction.all|get_direction_name}}</td>
+                <td>{{ protocol.date }}</td>
+                <td>{% if protocol.doc_scan %}
+                    <a class="btn btn-link-secondary btn-sm" href="{{protocol.doc_scan.url}}">Скан-файл</a>
+                    {% else %}
+                    <div class="text-danger">отсутствует</div>
+                    {% endif %}
+                </td>
+                <td>
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'learning:protocol_detail' protocol.pk %}">Подробнее</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-1"></div>
+</div>
+{% comment %}
+<div class="position-relative m-4">
+    <div class="position-absolute top-50 start-50 translate-middle">
+        <nav aria-label="...">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="{{ page_obj.previous_page_number }}">Предыдущая</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Предыдущая</span>
+                </li>
+                {% endif %}
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="{{ page_obj.previous_page_number }}">{{
+                    page_obj.previous_page_number }}</a></li>
+                {% endif %}
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">{{ page_obj.number }}</span>
+                </li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="{{ page_obj.next_page_number }}">{{
+                    page_obj.next_page_number }}</a></li>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ page_obj.next_page_number }}">Следующая</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Следующая</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endcomment %}
+{% endblock %}

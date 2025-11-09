@@ -32,7 +32,7 @@ class ProtocolCreateView(CreateView):
     form_class = ProtocolForm
 
     def get_success_url(self):
-        return reverse("organization:organization_list")
+        return reverse("learning:protocol_list")
 
 
 class ProtocolUpdateView(UpdateView):
@@ -42,11 +42,11 @@ class ProtocolUpdateView(UpdateView):
     form_class = ProtocolForm
 
     def get_success_url(self):
-        return reverse("organization:organization_list")
+        return reverse("learning:protocol_list")
 
 
 class ProtocolDeleteView(DeleteView):
     """Удаление филиала"""
 
     model = Protocol
-    success_url = reverse_lazy("organization:organization_list")
+    success_url = reverse_lazy("learning:protocol_list")

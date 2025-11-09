@@ -3,9 +3,27 @@
 
 <div class="card mx-2">
     <div class="card-body">
-        <h5 class="card-title">{{ object.name }}</h5>
         <h6 class="card-subtitle mb-2 text-body-secondary">{{ object.division }}</h6>
-
+        <h5 class="card-title">{{ object.name }}</h5>
+        <div class="btn-group dropend">
+            <button type="button my-4" class="btn btn-link btn-sm dropdown-toggle"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Редактировать
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item"
+                       href="{% url 'organization:worker_create' %}?organization={{object.division.branch.organization.pk}}&branch={{object.division.branch.pk}}&division={{object.division.pk}}&district={{object.pk}}">Добавить
+                    работника
+                </a></li>
+                <li><a class="dropdown-item"
+                       href="{% url 'organization:group_create' %}?district={{object.pk}}">Добавить группу
+                    участка
+                </a></li>
+                <li><a class="dropdown-item"
+                       href="{% url 'learning:program_create' %}?district={{object.pk}}">Добавить программу обучения
+                </a></li>
+            </ul>
+        </div>
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="worker-tab" data-bs-toggle="tab" data-bs-target="#worker-tab-pane"
@@ -13,42 +31,20 @@
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
-                        type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Profile
+                <button class="nav-link" id="briefing-tab" data-bs-toggle="tab" data-bs-target="#briefing-tab-pane"
+                        type="button" role="tab" aria-controls="briefing-tab-pane" aria-selected="false">Инструктаж
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane"
-                        type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Contact
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="disabled-tab" data-bs-toggle="tab" data-bs-target="#disabled-tab-pane"
-                        type="button" role="tab" aria-controls="disabled-tab-pane" aria-selected="false" disabled>
-                    Disabled
+                <button class="nav-link" id="learning-tab" data-bs-toggle="tab" data-bs-target="#learning-tab-pane"
+                        type="button" role="tab" aria-controls="learning-tab-pane" aria-selected="false">Обучение
                 </button>
             </li>
         </ul>
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="worker-tab-pane" role="tabpanel" aria-labelledby="worker-tab"
                  tabindex="0">
-                <div class="btn-group dropend">
-                    <button type="button my-4" class="btn btn-link btn-sm dropdown-toggle"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                        Редактировать
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item"
-                               href="{% url 'organization:worker_create' %}?ost={{ object.division.organization.pk }}&branch={{ object.division.branch.pk }}&division={{ object.division.pk }}&district={{ object.pk }}">Добавить
-                            работника
-                        </a></li>
-                        <li><a class="dropdown-item"
-                               href="{% url 'organization:group_create' %}?district={{ object.pk }}">Добавить группу
-                            участка
-                        </a></li>
-                    </ul>
-                </div>
-                <table class="table">
+                <table class="table table-hover text-center">
                     <thead>
                     <tr>
                         <th scope="col">№ п/п</th>
@@ -93,41 +89,159 @@
                     {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            <div class="tab-pane fade" id="briefing-tab-pane" role="tabpanel" aria-labelledby="briefing-tab"
+                 tabindex="0">
+                <table class="table table-hover text-center">
+                    <thead>
+                    <tr>
+                        <th scope="col">№ п/п</th>
+                        <th scope="col">Наименование программы</th>
+                        <th scope="col">Дата утверждения</th>
+                        <th scope="col">Скан-копия программы</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <div class="btn-group dropend">
+                                <button type="button" class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    Редактировать
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="#">Изменить
+                                    </a></li>
+                                    <hr>
+                                    <li><a class="dropdown-item"
+                                           href="#">Удалить
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="learning-tab-pane" role="tabpanel" aria-labelledby="learning-tab"
+                 tabindex="0">
+                <table class="table table-hover text-center">
+                    <thead>
+                    <tr>
+                        <th scope="col">№ п/п</th>
+                        <th scope="col">Наименование программы</th>
+                        <th scope="col">Дата утверждения</th>
+                        <th scope="col">Скан-копия программы</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for program in object.program.all %}
+                    {% if not program.group %}
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>{{program.name}}</td>
+                        <td>{{program.approval_date}}</td>
+                        <td>{% if program.doc_scan %}
+                            <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
+                            {% else %}
+                            <div class="text-danger">отсутствует</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group dropend">
+                                <button type="button"
+                                        class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                    Редактировать
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'learning:program_update' program.pk %}">Изменить
+                                    </a></li>
+                                    <hr>
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <div class="accordion" id="accordionPanelsStayOpenExample">
-                    {% for group in object.group.all %}
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#Group-{{ group.pk }}" aria-expanded="false"
-                                    aria-controls="Group-{{ group.pk }}">
-                                {{ group.name }}
+        <div class="accordion" id="accordionPanelsStayOpenExample">
+            {% for group in object.group.all %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#Group-{{ group.pk }}" aria-expanded="false"
+                            aria-controls="Group-{{ group.pk }}">
+                        {{ group.name }}
+                    </button>
+                </h2>
+                <div id="Group-{{ group.pk }}" class="accordion-collapse collapse">
+                    <div class="accordion-body">
+                        <div class="btn-group dropend">
+                            <button type="button my-4" class="btn btn-link btn-sm dropdown-toggle"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                Редактировать
                             </button>
-                        </h2>
-                        <div id="Group-{{ group.pk }}" class="accordion-collapse collapse">
-                            <div class="accordion-body">
-                                <div class="btn-group dropend">
-                                    <button type="button my-4" class="btn btn-link btn-sm dropdown-toggle"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                        Редактировать
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item"
-                                               href="{% url 'organization:worker_create' %}?ost={{ object.division.organization.pk }}&branch={{ object.division.branch.pk }}&division={{ object.division.pk }}&district={{ object.pk }}&group={{ group.pk }}">Добавить
-                                            работника
-                                        </a></li>
-                                        <li><a class="dropdown-item"
-                                               href="{% url 'organization:group_update' group.pk %}">Изменить
-                                            группу участка
-                                        </a></li>
-                                        <hr>
-                                        <li><a class="dropdown-item"
-                                               href="{% url 'organization:group_delete' group.pk %}?district={{object.pk}}">Удалить
-                                            группу участка
-                                        </a></li>
-                                    </ul>
-                                </div>
-                                <table class="table">
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item"
+                                       href="{% url 'organization:worker_create' %}?ost={{ object.division.organization.pk }}&branch={{ object.division.branch.pk }}&division={{ object.division.pk }}&district={{ object.pk }}&group={{ group.pk }}">Добавить
+                                    работника
+                                </a></li>
+                                <li><a class="dropdown-item"
+                                       href="{% url 'organization:group_update' group.pk %}">Изменить
+                                    группу участка
+                                </a></li>
+                                <hr>
+                                <li><a class="dropdown-item"
+                                       href="{% url 'organization:group_delete' group.pk %}?district={{object.pk}}">Удалить
+                                    группу участка
+                                </a></li>
+                            </ul>
+                        </div>
+                        <ul class="nav nav-tabs" id="myTab-forGroup" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="worker-tab-forGroup" data-bs-toggle="tab"
+                                        data-bs-target="#worker-tab-pane-forGroup"
+                                        type="button" role="tab" aria-controls="worker-tab-pane-forGroup"
+                                        aria-selected="true">
+                                    Работники
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="briefing-tab-forGroup" data-bs-toggle="tab"
+                                        data-bs-target="#briefing-tab-pane-forGroup"
+                                        type="button" role="tab" aria-controls="briefing-tab-pane-forGroup"
+                                        aria-selected="false">Инструктаж
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="learning-tab-forGroup" data-bs-toggle="tab"
+                                        data-bs-target="#learning-tab-pane-forGroup"
+                                        type="button" role="tab" aria-controls="learning-tab-pane-forGroup"
+                                        aria-selected="false">Обучение
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent-forGroup">
+                            <div class="tab-pane fade show active" id="worker-tab-pane-forGroup" role="tabpanel"
+                                 aria-labelledby="worker-tab-forGroup"
+                                 tabindex="0">
+                                <table class="table table-hover text-center">
                                     <thead>
                                     <tr>
                                         <th scope="col">№ п/п</th>
@@ -170,21 +284,104 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="tab-pane fade" id="briefing-tab-pane-forGroup" role="tabpanel"
+                                 aria-labelledby="briefing-tab-forGroup"
+                                 tabindex="0">
+                                <table class="table table-hover text-center">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">№ п/п</th>
+                                        <th scope="col">Наименование программы</th>
+                                        <th scope="col">Дата утверждения</th>
+                                        <th scope="col">Скан-копия программы</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td>
+                                            <div class="btn-group dropend">
+                                                <button type="button"
+                                                        class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Редактировать
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item"
+                                                           href="#">Изменить
+                                                    </a></li>
+                                                    <hr>
+                                                    <li><a class="dropdown-item"
+                                                           href="#">Удалить
+                                                    </a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="tab-pane fade" id="learning-tab-pane-forGroup" role="tabpanel"
+                                 aria-labelledby="learning-tab-forGroup"
+                                 tabindex="0">
+                                <table class="table table-hover text-center">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">№ п/п</th>
+                                        <th scope="col">Наименование программы</th>
+                                        <th scope="col">Дата утверждения</th>
+                                        <th scope="col">Скан-копия программы</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for program in group.program.all %}
+                                    <tr>
+                                        <th scope="row">1</th>
+                                        <td>{{program.name}}</td>
+                                        <td>{{program.approval_date}}</td>
+                                        <td>{% if program.doc_scan %}
+                                            <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
+                                            {% else %}
+                                            <div class="text-danger">отсутствует</div>
+                                            {% endif %}
+                                        </td>
+
+
+                                        <td>
+                                            <div class="btn-group dropend">
+                                                <button type="button"
+                                                        class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                    Редактировать
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item"
+                                                           href="{% url 'learning:program_update' program.pk %}">Изменить
+                                                    </a></li>
+                                                    <hr>
+                                                    <li><a class="dropdown-item"
+                                                           href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
+                                                    </a></li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
             </div>
-            <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
-                ...
-            </div>
-            <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
-                ...
-            </div>
-            <div class="tab-pane fade" id="disabled-tab-pane" role="tabpanel" aria-labelledby="disabled-tab"
-                 tabindex="0">...
-            </div>
+            {% endfor %}
         </div>
+
 
         <a href="#" class="card-link">Card link</a>
         <a href="#" class="card-link">Another link</a>

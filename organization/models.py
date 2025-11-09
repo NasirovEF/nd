@@ -19,7 +19,7 @@ class Organization(models.Model):
 class Branch(models.Model):
     """Класс филиала ОСТ"""
 
-    name_ost = models.ForeignKey(
+    organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
         verbose_name="ОСТ",
@@ -39,7 +39,7 @@ class Branch(models.Model):
 class Group(models.Model):
     """Класс группы участка"""
 
-    district = models.ForeignKey("District", on_delete=models.CASCADE, verbose_name="Участок", related_name="group")
+    district = models.ForeignKey("District", on_delete=models.CASCADE, verbose_name="Участок", related_name="group", **NULLABLE)
     name = models.CharField(max_length=150, verbose_name="Наименование группы")
 
     class Meta:
@@ -59,6 +59,7 @@ class District(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Наименование структурного подразделения",
         related_name="district",
+        **NULLABLE
     )
 
     class Meta:
@@ -76,14 +77,8 @@ class Division(models.Model):
         max_length=150, verbose_name="Наименование структурного подразделения"
     )
 
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        verbose_name="ОСТ",
-        related_name="division",
-    )
     branch = models.ForeignKey(
-        Branch, on_delete=models.CASCADE, verbose_name="филиал", related_name="division"
+        Branch, on_delete=models.CASCADE, verbose_name="филиал", related_name="division", **NULLABLE
     )
 
     class Meta:
@@ -115,6 +110,7 @@ class Worker(models.Model):
     surname = models.CharField(max_length=50, verbose_name="Фамилия")
     name = models.CharField(max_length=50, verbose_name="Имя")
     patronymic = models.CharField(max_length=50, verbose_name="Отчество", **NULLABLE)
+    image = models.ImageField(upload_to="organization/worker/", verbose_name="Фотография работника",  **NULLABLE)
 
     organization = models.ForeignKey(
         Organization,

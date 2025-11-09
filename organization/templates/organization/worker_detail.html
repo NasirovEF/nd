@@ -1,4 +1,5 @@
 {% extends 'organization/base.html' %}
+{% load my_tags %}
 {% block content %}
 <div class="card">
     <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -28,7 +29,8 @@
              tabindex="0">
             <div class="row g-0">
                 <div class="col-md-2">
-                    <img src="..." class="img-fluid rounded-start" width="300" height="500" alt="...">
+                    <img src="{{object.image|media_filter}}" class="img-fluid rounded-start" width="300" height="500"
+                         alt="...">
                 </div>
                 <div class="col-md-10">
                     <div class="card-body">
@@ -63,7 +65,28 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    {{object.learner.knowledge_date}}
+                    <table class="table table-hover text-center">
+                        <thead>
+                        <tr>
+                            <th scope="col">Направление обучения</th>
+                            <th scope="col">Дата проверки знаний</th>
+                            <th scope="col">Протокол проверки знаний</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for direction in object.learner.direction.all %}
+                        <tr>
+                            <td>{{direction.name}}</td>
+                            <td>{% if direction.protocol %}
+                                {{direction|get_protocol:object.learner}}
+                                {% else %}
+                                <div class="text-danger">Не проводилась</div>{% endif %}
+                            </td>
+                            <td>{{direction.program.protocol.all}}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

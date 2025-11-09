@@ -24,6 +24,10 @@ class WorkerDetailView(DetailView):
 
     model = Worker
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
 
 class WorkerCreateView(CreateView):
     """Создание работника"""
@@ -36,11 +40,11 @@ class WorkerCreateView(CreateView):
     
     def form_valid(self, form):
         worker = form.save()
-        ost = self.request.GET["ost"]
+        organization = self.request.GET["organization"]
         branch = self.request.GET["branch"]
         division = self.request.GET["division"]
         district = self.request.GET["district"]
-        worker.organization = Organization.objects.get(pk=ost)
+        worker.organization = Organization.objects.get(pk=organization)
         worker.branch = Branch.objects.get(pk=branch)
         worker.division = Division.objects.get(pk=division)
         worker.district = District.objects.get(pk=district)
