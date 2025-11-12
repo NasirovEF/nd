@@ -20,7 +20,15 @@
                             </button>
                         </div>
                         <a class="nav-link active m-2" aria-current="page" href="#">Список НС</a>
-                        <a class="nav-link active m-2" aria-current="page" href="{% url 'learning:protocol_list' %}">Проверка знаний по ОТ</a>
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            Обучение по ОТ
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'learning:protocol_list' %}">Протоколы проверок знаний по ОТ</a></li>
+                            <li><a class="dropdown-item"
+                                   href="#">График проверки знаний</a></li>
+                        </ul>
                     </li>
                 </ul>
             </div>

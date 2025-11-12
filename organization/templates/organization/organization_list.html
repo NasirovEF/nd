@@ -1,11 +1,11 @@
 {% extends 'organization/base.html' %}
 {% block content %}
-<button class="btn btn-primary m-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop"
+<button class="btn btn-outline-primary m-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop"
         aria-controls="staticBackdrop">
-    Боковое меню
+    Параметры поиска
 </button>
 <div class="btn-group">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         Действия
     </button>
     <ul class="dropdown-menu">
@@ -17,6 +17,57 @@
                href="{% url 'learning:direction_create' %}">Добавить
             направление по обучению</a></li>
     </ul>
+</div>
+<div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
+     aria-labelledby="staticBackdropLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="staticBackdropLabel">Параметры поиска</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    {% comment %}<p class="mx-3">Показано {{ object_list.count }} из {{ page_obj.paginator.count}} НС</p>
+    <div class="offcanvas-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-body">
+                    <input name="order" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите № или дату приказа"
+                           aria-label="Search">
+                    <p>Дата c <input name="date_from" class="form-control text-center" type="date" placeholder="Дата с"
+                                     aria-label="Search" value="0001-01-01"></p>
+                    <p>Дата по <input name="date_to" class="form-control text-center" type="date" placeholder="Дата по"
+                                      aria-label="Search" value="{{ date_now }}"></p>
+                    <input name="OST" class="form-control my-2 text-center" list="OSTOptions" id="OSTDataList"
+                           placeholder="Введите название ОСТ...">
+                    <datalist id="OSTOptions">
+                        {% for organization in organizations %}
+                        <option value="{{ organization }}">
+                            {% endfor %}
+                    </datalist>
+                    <input name="category" class="form-control my-2 text-center" list="categoryOptions"
+                           id="categoryDataList"
+                           placeholder="Выберите категорию НС">
+                    <datalist id="categoryOptions">
+                        {% for category in categories %}
+                        <option value="{{ category }}">
+                            {% endfor %}
+                    </datalist>
+                    <input name="description" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите описание НС"
+                           aria-label="Search">
+                </div>
+            </div>
+            <div class="d-grid gap-2 my-2">
+                <button type="submit" class="btn btn-outline-primary">
+                    Поиск
+                </button>
+                <a class="btn btn-outline-secondary" href="{% url 'accident:search' page=1 %}">
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+    {% endcomment %}
 </div>
 <div class="row">
     <div class="col-1"></div>

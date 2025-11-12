@@ -32,7 +32,7 @@ class LearnerCreateView(CreateView):
     form_class = LearnerForm
 
     def get_success_url(self):
-        return reverse("organization:organization_list")
+        return reverse("organization:worker_detail", args=[self.object.worker.pk])
 
 
 class LearnerUpdateView(UpdateView):
@@ -42,7 +42,7 @@ class LearnerUpdateView(UpdateView):
     form_class = LearnerForm
 
     def get_success_url(self):
-        return reverse("organization:organization_list")
+        return reverse("organization:worker_detail", args=[self.object.worker.pk])
 
 
 class LearnerDeleteView(DeleteView):

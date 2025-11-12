@@ -1,5 +1,5 @@
 from django.db import models
-from datetime import date
+from datetime import date, timedelta
 from learning.services import add_doc_url
 from organization.models import Position, Worker, Organization, Branch, Division, District, Group
 from organization.services import NULLABLE
@@ -71,3 +71,25 @@ class Protocol(models.Model):
 
     def __str__(self):
         return f"Протокол проверки знаний от {self.date.strftime("%d.%m.%Y")}"
+
+
+class KnowledgeDate(models.Model):
+    """Класс даты проверки знаний"""
+    date = models.DateField(verbose_name="Дата проверки знаний", default=date.today)
+    protocol = models.ForeignKey(Protocol, verbose_name="", related_name="knowledge_date", on_delete=models.CASCADE, **NULLABLE)
+    direction = models.ForeignKey(Direction, verbose_name="", related_name="knowledge_date", on_delete=models.CASCADE, **NULLABLE)
+    learner = models.ForeignKey(Learner, verbose_name="", related_name="knowledge_date", on_delete=models.CASCADE,
+                                  **NULLABLE)
+
+    def next_date(self):
+        """Создание даты следующей проверки"""
+        next_date = self.date + timedelta(days=self.direction.periodicity)
+        return next_date.strftime("%d.%m.%Y")
+
+    class Meta:
+        verbose_name = "Дата проверки знаний"
+        verbose_name_plural = "Даты проверки знаний"
+        ordering = ["-date"]
+
+    def __str__(self):
+        return self.date.strftime("%d.%m.%Y")

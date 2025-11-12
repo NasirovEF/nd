@@ -1,7 +1,7 @@
 from django import template
-
-from learning.models import Protocol
-
+from django.utils.safestring import mark_safe
+from learning.models import Protocol, KnowledgeDate
+from datetime import date
 register = template.Library()
 
 
@@ -13,17 +13,21 @@ def media_filter(path):
 
 
 @register.filter()
-def slice_description(text):
-    if len(text) >= 70:
-        return f"{text[0:70]}..."
-    else:
-        return text
+def get_protocol(direction, learner):
+    try:
+        protocol = Protocol.objects.filter(direction=direction, learner=learner).latest("date")
+        return protocol
+    except Protocol.DoesNotExist:
+        return mark_safe('<div class="text-danger">Не проводилась</div>')
 
 
 @register.filter()
-def get_protocol(direction, learner):
-    protocol = Protocol.objects.filter(direction=direction, learner=learner).latest("date")
-    return protocol
+def get_knowledge_date(direction, learner):
+    try:
+        knowledge_date = KnowledgeDate.objects.filter(learner=learner, direction=direction).latest("date").next_date()
+        return knowledge_date
+    except KnowledgeDate.DoesNotExist:
+        return mark_safe(f'<div class="text-danger">{date.today().strftime("%d.%m.%Y")}</div>')
 
 
 @register.filter()

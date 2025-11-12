@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 
 from learning.forms import ProtocolForm
-from learning.models import Protocol
+from learning.models import Protocol, KnowledgeDate
 
 
 class ProtocolListView(ListView):
@@ -33,6 +33,15 @@ class ProtocolCreateView(CreateView):
 
     def get_success_url(self):
         return reverse("learning:protocol_list")
+
+    def form_valid(self, form):
+        protocol = form.save()
+        for direction in protocol.direction.all():
+            for learner in protocol.learner.all():
+                knowledge_date = KnowledgeDate.objects.create(date=protocol.date, protocol=protocol, direction=direction, learner=learner)
+                knowledge_date.save()
+
+        return super().form_valid(form)
 
 
 class ProtocolUpdateView(UpdateView):

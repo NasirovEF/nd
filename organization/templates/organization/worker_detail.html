@@ -1,6 +1,10 @@
 {% extends 'organization/base.html' %}
 {% load my_tags %}
 {% block content %}
+<a class="btn btn-outline-primary btn-sm m-2" type="button"
+   href="{% url 'organization:district_detail' object.district.pk %}">
+    Назад
+</a>
 <div class="card">
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -70,19 +74,15 @@
                         <tr>
                             <th scope="col">Направление обучения</th>
                             <th scope="col">Дата проверки знаний</th>
-                            <th scope="col">Протокол проверки знаний</th>
+                            <th scope="col">Дата следующей проверки знаний</th>
                         </tr>
                         </thead>
                         <tbody>
                         {% for direction in object.learner.direction.all %}
                         <tr>
                             <td>{{direction.name}}</td>
-                            <td>{% if direction.protocol %}
-                                {{direction|get_protocol:object.learner}}
-                                {% else %}
-                                <div class="text-danger">Не проводилась</div>{% endif %}
-                            </td>
-                            <td>{{direction.program.protocol.all}}</td>
+                            <td>{{ direction|get_protocol:object.learner }}</td>
+                            <td>{{direction|get_knowledge_date:object.learner}}</td>
                         </tr>
                         {% endfor %}
                         </tbody>
