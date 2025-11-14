@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 from learning.models import Learner
 from django.utils.datastructures import MultiValueDictKeyError
-from organization.forms import WorkerForm
+from organization.forms import WorkerCreateForm, WorkerUpdateForm
 from organization.models import Worker, District, Group, Organization, Branch, Division
 
 
@@ -33,7 +33,7 @@ class WorkerCreateView(CreateView):
     """Создание работника"""
 
     model = Worker
-    form_class = WorkerForm
+    form_class = WorkerCreateForm
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.object.district.pk])
@@ -64,7 +64,7 @@ class WorkerUpdateView(UpdateView):
     """Редактирование работника"""
 
     model = Worker
-    form_class = WorkerForm
+    form_class = WorkerUpdateForm
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.object.district.pk])

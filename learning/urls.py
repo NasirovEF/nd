@@ -2,7 +2,7 @@ from django.urls import path
 
 from learning.apps import LearningConfig
 from learning.views.direction import DirectionCreateView, DirectionUpdateView, DirectionDeleteView
-from learning.views.learner import LearnerCreateView, LearnerUpdateView, LearnerDeleteView
+from learning.views.learner import LearnerCreateView, LearnerUpdateView, LearnerDeleteView, LearnerListView
 from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView
 from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, ProtocolDeleteView, ProtocolListView, \
     ProtocolDetailView
@@ -14,6 +14,7 @@ urlpatterns = [
     path("direction_update/<int:pk>", DirectionUpdateView.as_view(), name="direction_update"),
     path("direction_delete/<int:pk>", DirectionDeleteView.as_view(), name="direction_delete"),
 
+    path("learner_list/", LearnerListView.as_view(), name="learner_list"),
     path("learner_create/", LearnerCreateView.as_view(), name="learner_create"),
     path("learner_update/<int:pk>", LearnerUpdateView.as_view(), name="learner_update"),
     path("learner_delete/<int:pk>", LearnerDeleteView.as_view(), name="learner_delete"),

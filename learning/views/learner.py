@@ -10,13 +10,19 @@ from django.views.generic import (
 )
 
 from learning.forms import LearnerForm
-from learning.models import Learner
+from learning.models import Learner, Direction
 
 
 class LearnerListView(ListView):
     """Просмотр списка филиалов"""
 
     model = Learner
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        directions = Direction.objects.all()
+        context["directions"] = directions
+        return context
 
 
 class LearnerDetailView(DetailView):

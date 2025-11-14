@@ -60,7 +60,13 @@ class PositionForm(StileFormMixin, forms.ModelForm):
         fields = "__all__"
 
 
-class WorkerForm(StileFormMixin, forms.ModelForm):
+class WorkerCreateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
         fields = ["name", "surname", "patronymic", "main_position", "combined_position"]
+
+
+class WorkerUpdateForm(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = Worker
+        fields = ["name", "surname", "patronymic", "main_position", "combined_position", "dismissed"]

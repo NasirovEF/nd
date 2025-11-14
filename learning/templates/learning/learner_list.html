@@ -5,8 +5,7 @@
         aria-controls="staticBackdrop">
     Параметры поиска
 </button>
-<a class="btn btn-outline-primary my-4" href="{% url 'learning:protocol_create' %}">Создать протокол проверки
-    знаний</a>
+<a class="btn btn-outline-primary my-4" href="#">Кнопка</a>
 
 <div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
      aria-labelledby="staticBackdropLabel">
@@ -59,36 +58,47 @@
     </div>
     {% endcomment %}
 </div>
+<div class="text-center my-2"><h2>График проверки знаний по охране труда</h2></div>
 <div class="container-lg">
-    <table class="table table-sm table-hover text-center fixed-columns table align-middle">
-            <thead>
-            <tr>
-                <th class="col-3" scope="col"></th>
-                <th class="col-3" scope="col">Направление обучения</th>
-                <th class="col-3" scope="col">Дата проверки знаний</th>
-                <th class="col-3" scope="col">Протокол проверки знаний</th>
-                <th class="col-3" scope="col"></th>
-            </tr>
-            </thead>
-            <tbody class="table-group-divider">
-            {% for protocol in object_list %}
-            <tr>
-                <th></th>
-                <td>{{protocol.direction.all|get_direction_name}}</td>
-                <td>{{ protocol.date }}</td>
-                <td>{% if protocol.doc_scan %}
-                    <a class="btn btn-link-secondary btn-sm" href="{{protocol.doc_scan.url}}">Скан-файл</a>
-                    {% else %}
-                    <div class="text-danger">отсутствует</div>
-                    {% endif %}
-                </td>
-                <td>
-                    <a class="btn btn-outline-primary btn-sm" href="{% url 'learning:protocol_detail' protocol.pk %}">Подробнее</a>
-                </td>
-            </tr>
+    <table class="table table-sm table-hover table-bordered text-center fixed-columns table align-middle">
+        <thead>
+        <tr>
+            <th class="col" scope="col" rowspan="2" style="text-align: center; vertical-align: middle;">
+                Структурное
+                подразделение
+            </th>
+            <th class="col" scope="col" rowspan="2" style="text-align: center; vertical-align: middle;">Участок
+            </th>
+            <th class="col" scope="col" rowspan="2" style="text-align: center; vertical-align: middle;">Должность,
+                И.О. Фамилия
+            </th>
+            {% for direction in directions %}
+            <th class="col" scope="col" colspan="2" style="text-align: center; vertical-align: middle;">Дата
+                проверки знаний по {{direction}}
+            </th>
             {% endfor %}
-            </tbody>
-        </table>
+        </tr>
+        <tr>
+            {% for direction in directions %}
+            <th class="col-6" scope="col" style="text-align: center; vertical-align: middle;">предыдущей</th>
+            <th class="col-6" scope="col" style="text-align: center; vertical-align: middle;">по плану</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody class="table-group-divider">
+        {% for learner in object_list %}
+        <tr>
+            <td>{{learner.worker.division}}</td>
+            <td>{{learner.worker.district}}</td>
+            <td>{{learner}}</td>
+            {% for direction in directions %}
+            <td>{{direction|get_learner_direction:learner}}</td>
+            <td>{{direction|get_knowledge_date:learner}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% comment %}
 <div class="position-relative m-4">

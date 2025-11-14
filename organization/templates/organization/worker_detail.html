@@ -81,7 +81,7 @@
                         {% for direction in object.learner.direction.all %}
                         <tr>
                             <td>{{direction.name}}</td>
-                            <td>{{ direction|get_protocol:object.learner }}</td>
+                            <td>{{ direction|get_protocol_date:object.learner }}</td>
                             <td>{{direction|get_knowledge_date:object.learner}}</td>
                         </tr>
                         {% endfor %}

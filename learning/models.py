@@ -44,7 +44,7 @@ class Program(models.Model):
 
 class Learner(models.Model):
     """Модель обучаемого"""
-    worker = models.OneToOneField(Worker, on_delete=models.SET_NULL, verbose_name="Работник", related_name="learner", **NULLABLE)
+    worker = models.OneToOneField(Worker, on_delete=models.CASCADE, verbose_name="Работник", related_name="learner", **NULLABLE)
     direction = models.ManyToManyField(Direction, verbose_name="Направления обучения", related_name="learner")
 
     class Meta:

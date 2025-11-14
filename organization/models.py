@@ -111,6 +111,7 @@ class Worker(models.Model):
     name = models.CharField(max_length=50, verbose_name="Имя")
     patronymic = models.CharField(max_length=50, verbose_name="Отчество", **NULLABLE)
     image = models.ImageField(upload_to="organization/worker/", verbose_name="Фотография работника",  **NULLABLE)
+    dismissed = models.BooleanField(verbose_name="Уволен", default=False)
 
     organization = models.ForeignKey(
         Organization,
