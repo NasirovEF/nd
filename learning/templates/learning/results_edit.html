@@ -1,0 +1,33 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-8 offset-2">
+        <h6>Редактировать результаты: {{ object }}</h6>
+        <form method="post">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            <table class="table table-sm table-hover text-center fixed-columns table align-middle">
+                <thead>
+                <tr>
+                    <th>Работник</th>
+                    <th>Сдал?</th>
+                    <th>Комментарий</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for form in formset %}
+                <tr>
+                    <td>{{ form.instance.learner }}</td>
+                    {{ form.id }}
+                    <td>{{ form.passed }}</td>
+                    <td>{{ form.comment }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-outline-primary">Сохранить</button>
+            <a href="{% url 'learning:protocol_detail' object.pk %}" class="btn btn-secondary">Назад</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+<a class="btn btn-outline-primary btn-sm m-2" type="button"
+   href="{% url 'learning:protocol_list' %}">
+    Назад
+</a>
+<div class="card">
+    <div class="card-header text-center">
+        {{object}}
+    </div>
+    <div class="card-body">
+        <div class="mb-1">
+            <p class="mb-1"><em>Комиссией в составе:</em></p>
+            <p class="mb-1">Председателя: <strong>{{object.chairman}}</strong></p>
+            <p class="mb-1">Членов комиссии:</p>
+            {% for member in object.members.all %}
+            <p class="mb-1"><strong>{{member}}</strong></p>
+            {% endfor %}
+            <p class="mb-1"><em>Проведена проверка знаний по программе</em> {%for program in object.program.all%}<strong>{{program}}</strong>{%endfor%}</p>
+            <p class="mb-1"><em>по направлениям обучения</em> {%for direction in object.direction.all%}<strong>{{direction}}</strong>{%endfor%}
+            </p>
+        </div>
+        <h5>Результаты проверки знаний:</h5>
+        <table class="table table-sm table-hover text-center fixed-columns table align-middle">
+            <thead>
+            <tr>
+                <th class="col-1">№ п/п</th>
+                <th class="col-3">Должность, И.О. Фамилия работника</th>
+                <th class="col-3">Структурное подразделение</th>
+                <th class="col-2">Результат проверки</th>
+                <th class="col">Комментарий</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in results %}
+            <tr>
+                <th>{{forloop.counter}}</th>
+                <td>{{ result.learner }}</td>
+                <td>{{ result.learner.worker.district }} {{ result.learner.worker.division }}</td>
+                <td>
+                    {% if result.passed %}
+                    <span class="text-success">удовлетворительно</span>
+                    {% else %}
+                    <span class="text-danger">неудовлетворительно</span>
+                    {% endif %}
+                </td>
+                <td>{{ result.comment|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">Нет данных о результатах</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="btn-group dropend" role="group">
+            <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                Редактировать
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'learning:protocol_results_edit' object.pk %}">
+                    Результаты проверки знаний
+                </a></li>
+                <li><a class="dropdown-item" href="{% url 'learning:protocol_update' object.pk %}">
+                    Протокол проверки знаний
+                </a></li>
+                <li><a class="dropdown-item" href="{% url 'learning:protocol_delete' object.pk %}">
+                    Удалить протокол
+                </a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

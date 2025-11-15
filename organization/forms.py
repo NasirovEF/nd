@@ -8,20 +8,31 @@ from organization.models import (
     Position,
     Worker,
 )
-from django.forms import BooleanField, DateField
+from django.forms import BooleanField, DateField, SelectMultiple
 
 
 class StileFormMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
+            # Получаем текущие классы виджета (если есть)
+            current_classes = field.widget.attrs.get('class', '')
+
             if isinstance(field, BooleanField):
-                field.widget.attrs["class"] = "form-check-input"
+                # Для чекбоксов
+                field.widget.attrs['class'] = 'form-check-input'
             elif isinstance(field, DateField):
-                field.widget.attrs["class"] = "form-control"
-                field.widget.attrs["type"] = "date"
+                # Для дат
+                field.widget.attrs['class'] = f'{current_classes} form-control'.strip()
+                field.widget.attrs['type'] = 'date'
+            elif isinstance(field, SelectMultiple):
+                # Для множественного выбора — добавляем классы к существующим
+                new_classes = f'{current_classes} form-control form-select selectpicker'.strip()
+                field.widget.attrs['class'] = new_classes
             else:
-                field.widget.attrs["class"] = "form-control"
+                # Для остальных полей
+                new_classes = f'{current_classes} form-control'.strip()
+                field.widget.attrs['class'] = new_classes
 
 
 class OrganizationForm(StileFormMixin, forms.ModelForm):

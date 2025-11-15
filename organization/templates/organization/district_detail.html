@@ -1,4 +1,5 @@
 {% extends 'organization/base.html' %}
+{% load my_tags %}
 {% block content %}
 
 <div class="card mx-2">
@@ -58,7 +59,7 @@
                     {% for worker in object.worker.all %}
                     {% if not worker.group %}
                     <tr>
-                        <th scope="row">1</th>
+                        <th scope="row">{{forloop.counter}}</th>
                         <td>{{ worker.surname }}</td>
                         <td>{{ worker.main_position }}</td>
                         <td>
@@ -104,7 +105,7 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <th scope="row">1</th>
+                        <th scope="row">{{forloop.counter}}</th>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -145,7 +146,7 @@
                     {% for program in object.program.all %}
                     {% if not program.group %}
                     <tr>
-                        <th scope="row">1</th>
+                        <th scope="row">{{forloop.counter}}</th>
                         <td>{{program.name}}</td>
                         <td>{{program.approval_date}}</td>
                         <td>{% if program.doc_scan %}
@@ -254,7 +255,7 @@
                                     <tbody>
                                     {% for worker in group.worker.all %}
                                     <tr>
-                                        <th scope="row">1</th>
+                                        <th scope="row">{{forloop.counter}}</th>
                                         <td>{{ worker.surname }}</td>
                                         <td>{{ worker.main_position }}</td>
                                         <td><a class="btn btn-primary btn-sm" type="button"
@@ -299,7 +300,7 @@
                                     </thead>
                                     <tbody>
                                     <tr>
-                                        <th scope="row">1</th>
+                                        <th scope="row">{{forloop.counter}}</th>
                                         <td></td>
                                         <td></td>
                                         <td></td>
@@ -341,7 +342,7 @@
                                     <tbody>
                                     {% for program in group.program.all %}
                                     <tr>
-                                        <th scope="row">1</th>
+                                        <th scope="row">{{forloop.counter}}</th>
                                         <td>{{program.name}}</td>
                                         <td>{{program.approval_date}}</td>
                                         <td>{% if program.doc_scan %}

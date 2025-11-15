@@ -13,10 +13,19 @@ def media_filter(path):
 
 
 @register.filter()
+def get_protocol_url(direction, learner):
+    try:
+        protocol = Protocol.objects.filter(direction=direction, learner=learner).latest("prot_date")
+        return protocol.doc_scan.url
+    except Protocol.DoesNotExist:
+        return mark_safe('<div class="text-danger">Отсутствует</div>')
+
+
+@register.filter()
 def get_protocol_date(direction, learner):
     try:
-        protocol = Protocol.objects.filter(direction=direction, learner=learner).latest("date")
-        return protocol.date.strftime("%d.%m.%Y")
+        protocol = Protocol.objects.filter(direction=direction, learner=learner).latest("prot_date")
+        return protocol.prot_date.strftime("%d.%m.%Y")
     except Protocol.DoesNotExist:
         return mark_safe('<div class="text-danger">Не проводилась</div>')
 
@@ -26,7 +35,7 @@ def get_knowledge_date(direction, learner):
     try:
         learner_direction = Learner.objects.get(pk=learner.pk).direction.all()
         if direction in learner_direction:
-            knowledge_date = KnowledgeDate.objects.filter(learner=learner, direction=direction).latest("date").next_date()
+            knowledge_date = KnowledgeDate.objects.filter(learner=learner, direction=direction).latest("kn_date").next_date.strftime("%d.%m.%Y")
             return knowledge_date
         else:
             return mark_safe('<div class="text-muted">Не требуется</div>')

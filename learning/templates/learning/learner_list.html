@@ -63,25 +63,25 @@
     <table class="table table-sm table-hover table-bordered text-center fixed-columns table align-middle">
         <thead>
         <tr>
-            <th class="col" scope="col" rowspan="2" style="text-align: center; vertical-align: middle;">
+            <th class="col-3" scope="col" rowspan="2" style="text-align: center; vertical-align: middle;">
                 Структурное
                 подразделение
             </th>
-            <th class="col" scope="col" rowspan="2" style="text-align: center; vertical-align: middle;">Участок
+            <th class="col-2" scope="col" rowspan="2" style="text-align: center; vertical-align: middle;">Участок
             </th>
-            <th class="col" scope="col" rowspan="2" style="text-align: center; vertical-align: middle;">Должность,
+            <th class="col-5" scope="col" rowspan="2" style="text-align: center; vertical-align: middle;">Должность,
                 И.О. Фамилия
             </th>
             {% for direction in directions %}
-            <th class="col" scope="col" colspan="2" style="text-align: center; vertical-align: middle;">Дата
+            <th class="col-2" scope="col" colspan="2" style="text-align: center; vertical-align: middle;">Дата
                 проверки знаний по {{direction}}
             </th>
             {% endfor %}
         </tr>
         <tr>
             {% for direction in directions %}
-            <th class="col-6" scope="col" style="text-align: center; vertical-align: middle;">предыдущей</th>
-            <th class="col-6" scope="col" style="text-align: center; vertical-align: middle;">по плану</th>
+            <th class="col-3" scope="col" style="text-align: center; vertical-align: middle;">предыдущей</th>
+            <th class="col-3" scope="col" style="text-align: center; vertical-align: middle;">по плану</th>
             {% endfor %}
         </tr>
         </thead>

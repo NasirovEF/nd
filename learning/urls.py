@@ -6,6 +6,7 @@ from learning.views.learner import LearnerCreateView, LearnerUpdateView, Learner
 from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView
 from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, ProtocolDeleteView, ProtocolListView, \
     ProtocolDetailView
+from learning.views.protocol_result import ProtocolResultsUpdateView
 
 app_name = LearningConfig.name
 
@@ -28,4 +29,6 @@ urlpatterns = [
     path("protocol_detail/<int:pk>", ProtocolDetailView.as_view(), name="protocol_detail"),
     path("protocol_update/<int:pk>", ProtocolUpdateView.as_view(), name="protocol_update"),
     path("protocol_delete/<int:pk>", ProtocolDeleteView.as_view(), name="protocol_delete"),
+
+    path("protocol_results_edit/<int:pk>", ProtocolResultsUpdateView.as_view(), name="protocol_results_edit")
 ]

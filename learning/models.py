@@ -57,7 +57,9 @@ class Learner(models.Model):
 
 class Protocol(models.Model):
     """Модель протокола проверки знаний"""
-    date = models.DateField(verbose_name="Дата протокола проверки знаний", default=date.today)
+    chairman = models.ForeignKey(Worker, on_delete=models.SET_NULL, verbose_name="Председатель комиссии", related_name="protocol_chairman", null=True,)
+    members = models.ManyToManyField(Worker, verbose_name="Члены комиссии", related_name="protocol_members")
+    prot_date = models.DateField(verbose_name="Дата протокола проверки знаний", default=date.today())
     program = models.ManyToManyField(Program, verbose_name="Программа обучения", related_name="protocol")
     learner = models.ManyToManyField(Learner, verbose_name="Работники проходящие проверку знаний",  related_name="protocol")
     direction = models.ManyToManyField(Direction, related_name="protocol", verbose_name="Направление обучения")
@@ -67,29 +69,42 @@ class Protocol(models.Model):
     class Meta:
         verbose_name = "Протокол проверки знаний"
         verbose_name_plural = "Протоколы проверки знаний"
-        ordering = ["-date"]
+        ordering = ["-prot_date"]
 
     def __str__(self):
-        return f"Протокол проверки знаний от {self.date.strftime("%d.%m.%Y")}"
+        return f"Протокол проверки знаний от {self.prot_date.strftime("%d.%m.%Y")}"
 
 
 class KnowledgeDate(models.Model):
     """Класс даты проверки знаний"""
-    date = models.DateField(verbose_name="Дата проверки знаний", default=date.today)
-    protocol = models.ForeignKey(Protocol, verbose_name="", related_name="knowledge_date", on_delete=models.CASCADE, **NULLABLE)
-    direction = models.ForeignKey(Direction, verbose_name="", related_name="knowledge_date", on_delete=models.CASCADE, **NULLABLE)
-    learner = models.ForeignKey(Learner, verbose_name="", related_name="knowledge_date", on_delete=models.CASCADE,
+    kn_date = models.DateField(verbose_name="Дата проверки знаний", default=date.today())
+    protocol = models.ForeignKey(Protocol, verbose_name="Протокол проверки", related_name="knowledge_date", on_delete=models.CASCADE, **NULLABLE)
+    direction = models.ForeignKey(Direction, verbose_name="Направление обучения", related_name="knowledge_date", on_delete=models.SET_NULL, **NULLABLE)
+    learner = models.ForeignKey(Learner, verbose_name="Работник", related_name="knowledge_date", on_delete=models.CASCADE,
                                   **NULLABLE)
+    next_date = models.DateField(verbose_name="Дата следующей проверки знаний", default=date.today())
 
-    def next_date(self):
-        """Создание даты следующей проверки"""
-        next_date = self.date + timedelta(days=self.direction.periodicity)
-        return next_date.strftime("%d.%m.%Y")
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.protocol.protocol_result.get(learner=self.learner):
+            self.next_date = self.kn_date + timedelta(days=self.direction.periodicity)
+        else:
+            self.next_date = self.kn_date + timedelta(days=30)
 
     class Meta:
         verbose_name = "Дата проверки знаний"
         verbose_name_plural = "Даты проверки знаний"
-        ordering = ["-date"]
+        ordering = ["-kn_date"]
 
     def __str__(self):
         return self.date.strftime("%d.%m.%Y")
+
+
+class ProtocolResult(models.Model):
+    protocol = models.ForeignKey(Protocol, on_delete=models.CASCADE, related_name="protocol_result")
+    learner = models.ForeignKey(Learner, on_delete=models.CASCADE, related_name="protocol_result")
+    passed = models.BooleanField(verbose_name='Сдал', default=True)
+    comment = models.TextField(verbose_name='Комментарий', **NULLABLE)
+
+    class Meta:
+        unique_together = ('protocol', 'learner')

@@ -1,10 +1,9 @@
 {% extends 'organization/base.html' %}
 {% block content %}
-<form method="post" enctype="multipart/form-data">
-    <div class="row">
-        <div class="col-2">
-        </div>
-        <div class="col-8">
+<div class="row">
+    <div class="col-8 offset-2">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
             <div class="card m-4">
                 <div class="card-header text-center">
                     {% if object %}
@@ -14,8 +13,95 @@
                     {% endif %}
                 </div>
                 <div class="card-body">
-                    {% csrf_token %}
-                    {{ form.as_p }}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    <!-- Поле "prot_date" -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.prot_date.label }}</label>
+                        {{ form.prot_date }}
+                        {% if form.prot_date.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.prot_date.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Поле "chairman" -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.chairman.label }}</label>
+                        {{ form.chairman }}
+                        {% if form.chairman.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.chairman.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Поле "members" -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.members.label }}</label>
+                        {{ form.members }}
+                        {% if form.members.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.members.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Поле "program" -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.program.label }}</label>
+                        {{ form.program }}
+                        {% if form.program.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.program.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Поле "learner" -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.learner.label }}</label>
+                        {{ form.learner }}
+                        {% if form.learner.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.learner.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Поле "direction" -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.direction.label }}</label>
+                        {{ form.direction }}
+                        {% if form.direction.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.direction.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Поле "doc_scan" -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.doc_scan.label }}</label>
+                        {{ form.doc_scan }}
+                        {% if form.doc_scan.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.doc_scan.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="card-footer">
                     <div class="text-center">
@@ -29,9 +115,18 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-2">
-        </div>
-        </div>
-    </form>
+        </form>
+        <script>
+            $(function() {
+                $.fn.selectpicker.Constructor.DEFAULTS.noneSelectedText = 'Ничего не выбрано';
+                $.fn.selectpicker.Constructor.DEFAULTS.countSelectedText = '{0} выбрано';
+
+                $('.selectpicker').selectpicker({
+                    liveSearch: true,
+                    actionsBox: true
+                });
+            });
+        </script>
+    </div>
+</div>
 {% endblock %}
