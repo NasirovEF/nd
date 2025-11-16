@@ -25,8 +25,10 @@
                 {% endfor %}
                 </tbody>
             </table>
-            <button type="submit" class="btn btn-outline-primary">Сохранить</button>
-            <a href="{% url 'learning:protocol_detail' object.pk %}" class="btn btn-secondary">Назад</a>
+            <div class="text-center">
+            <button type="submit" class="btn btn-outline-primary btn-sm">Сохранить</button>
+            <a href="{% url 'learning:protocol_detail' object.pk %}" class="btn btn-outline-secondary btn-sm">Назад</a>
+                </div>
         </form>
     </div>
 </div>

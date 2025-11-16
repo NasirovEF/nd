@@ -84,10 +84,14 @@
                         <tr>
                             <td>{{direction.name}}</td>
                             <td>{{ direction|get_protocol_date:object.learner }}</td>
-                            <td>{{ direction|get_protocol_date:object.learner }}</td>
-                            <td>{% if not direction|get_protocol_url:object.learner %}
-                                <a class="btn btn-link-secondary btn-sm"
-                                   href="{{direction|get_protocol_url:object.learner}}">Скан-файл</a>
+                            <td>{% if direction|get_protocol_result:object.learner %}
+                                <span class="text-success">удовлетворительно</span>
+                                {% else %}
+                                <span class="text-danger">неудовлетворительно</span>
+                                {% endif %}</td>
+                            <td>
+                                {% if direction|get_protocol_url:object.learner %}
+                                <a class="btn btn-link-secondary btn-sm" href="{{direction|get_protocol_url:object.learner}}">Скан-файл</a>
                                 {% else %}
                                 <div class="text-danger">отсутствует</div>
                                 {% endif %}

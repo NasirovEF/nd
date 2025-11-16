@@ -63,7 +63,7 @@
     <table class="table table-sm table-hover text-center fixed-columns table align-middle">
             <thead>
             <tr>
-                <th class="col-3" scope="col"></th>
+                <th class="col-3" scope="col">Структурное подразделение выдавшее протокол</th>
                 <th class="col-3" scope="col">Направление обучения</th>
                 <th class="col-3" scope="col">Дата проверки знаний</th>
                 <th class="col-3" scope="col">Протокол проверки знаний</th>
@@ -73,11 +73,11 @@
             <tbody class="table-group-divider">
             {% for protocol in object_list %}
             <tr>
-                <th></th>
+                <td>{{protocol.division}}<br>{{protocol.division.branch}} </td>
                 <td>{{protocol.direction.all|get_direction_name}}</td>
                 <td>{{ protocol.prot_date }}</td>
                 <td>{% if protocol.doc_scan %}
-                    <a class="btn btn-link-secondary btn-sm" href="{{protocol.doc_scan.url}}">Скан-файл</a>
+                    <a class="btn btn-link btn-sm" href="{{protocol.doc_scan.url}}">Скан-файл</a>
                     {% else %}
                     <div class="text-danger">отсутствует</div>
                     {% endif %}

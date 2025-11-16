@@ -14,13 +14,13 @@ from learning.models import Protocol, KnowledgeDate, ProtocolResult
 
 
 class ProtocolListView(ListView):
-    """Просмотр списка филиалов"""
+    """Просмотр списка протоколов"""
 
     model = Protocol
 
 
 class ProtocolDetailView(DetailView):
-    """Просмотр одного из филиалов"""
+    """Просмотр одного из протокола"""
 
     model = Protocol
 
@@ -33,7 +33,7 @@ class ProtocolDetailView(DetailView):
 
 
 class ProtocolCreateView(CreateView):
-    """Создание филиалов"""
+    """Создание протокола"""
 
     model = Protocol
     form_class = ProtocolCreateForm
@@ -43,22 +43,27 @@ class ProtocolCreateView(CreateView):
 
     def form_valid(self, form):
         protocol = form.save()
-        for direction in protocol.direction.all():
-            for learner in protocol.learner.all():
-                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol, direction=direction, learner=learner)
-                knowledge_date.save()
+        directions = protocol.direction.all()
+        learners = protocol.learner.all()
 
-        for learner in protocol.learner.all():
+        for learner in learners:
             ProtocolResult.objects.create(
                 protocol=protocol,
                 learner=learner,
                 passed=True
             )
+
+        for direction in directions:
+            for learner in learners:
+                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol, direction=direction, learner=learner)
+                knowledge_date.calculate_next_date()
+                knowledge_date.save()
+
         return super().form_valid(form)
 
 
 class ProtocolUpdateView(UpdateView):
-    """Редактирование филиалов"""
+    """Редактирование протокола"""
 
     model = Protocol
     form_class = ProtocolUpdateForm
@@ -70,12 +75,6 @@ class ProtocolUpdateView(UpdateView):
         protocol = form.save()
         self.object.protocol_result.all().delete()
         self.object.knowledge_date.all().delete()
-        for direction in protocol.direction.all():
-            for learner in protocol.learner.all():
-                knowledge_date = KnowledgeDate.objects.create(date=protocol.date, protocol=protocol,
-                                                              direction=direction, learner=learner)
-                knowledge_date.create_next_date
-                knowledge_date.save()
 
         for learner in protocol.learner.all():
             result = ProtocolResult.objects.create(
@@ -84,6 +83,14 @@ class ProtocolUpdateView(UpdateView):
                 passed=True
             )
             result.save()
+
+        for direction in protocol.direction.all():
+            for learner in protocol.learner.all():
+                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol,
+                                                              direction=direction, learner=learner)
+                knowledge_date.calculate_next_date()
+                knowledge_date.save()
+
         return super().form_valid(form)
 
 

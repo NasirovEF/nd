@@ -15,6 +15,9 @@ class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
         model = Protocol
         fields = "__all__"
         widgets = {
+            'division': forms.Select(
+                attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
+                       'title': 'Выберите структурное подразделение...'}),
             'chairman': forms.Select(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true', 'title': 'Выберите председателя комиссии...'}),
             'members': forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true', 'title': 'Выберите членов комиссии...'}),
             'prot_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
