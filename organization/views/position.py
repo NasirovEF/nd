@@ -14,19 +14,19 @@ from organization.models import Position
 
 
 class PositionListView(ListView):
-    """Просмотр списка ОСТов"""
+    """Просмотр списка профессий/должностей"""
 
     model = Position
 
 
 class PositionDetailView(DetailView):
-    """Просмотр одного из ОСТов"""
+    """Просмотр одной профессии/должности"""
 
     model = Position
 
 
 class PositionCreateView(CreateView):
-    """Создание ОСТа"""
+    """Создание профессии/должности"""
 
     model = Position
     form_class = PositionForm
@@ -36,15 +36,16 @@ class PositionCreateView(CreateView):
 
 
 class PositionUpdateView(UpdateView):
-    """Редактирование ОСТа"""
+    """Редактирование профессии/должности"""
 
     model = Position
     form_class = PositionForm
 
     def get_success_url(self):
-        return reverse("position:position_detail", args=[self.object.pk])
+        return reverse("organization:organization_list")
 
 
 class PositionDeleteView(DeleteView):
+    """Удаление профессии/должности"""
     model = Position
-    success_url = reverse_lazy("position:position_list")
+    success_url = reverse_lazy("organization:organization_list")

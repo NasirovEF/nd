@@ -61,7 +61,7 @@
                     <tr>
                         <th scope="row">{{forloop.counter}}</th>
                         <td>{{ worker.surname }}</td>
-                        <td>{{ worker.main_position }}</td>
+                        <td>{{ worker }}</td>
                         <td>
                             <a class="btn btn-primary btn-sm" type="button"
                                href="{% url 'organization:worker_detail' worker.pk %}">
@@ -257,7 +257,7 @@
                                     <tr>
                                         <th scope="row">{{forloop.counter}}</th>
                                         <td>{{ worker.surname }}</td>
-                                        <td>{{ worker.main_position }}</td>
+                                        <td>{{ worker }}</td>
                                         <td><a class="btn btn-primary btn-sm" type="button"
                                                href="{% url 'organization:worker_detail' worker.pk %}">
                                             Подробнее

@@ -68,16 +68,16 @@ class DivisionForm(StileFormMixin, forms.ModelForm):
 class PositionForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Position
-        fields = "__all__"
+        fields = ["name", "is_main"]
 
 
 class WorkerCreateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
-        fields = ["name", "surname", "patronymic", "main_position", "combined_position"]
+        fields = ["name", "surname", "patronymic"]
 
 
 class WorkerUpdateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
-        fields = ["name", "surname", "patronymic", "main_position", "combined_position", "dismissed"]
+        fields = ["name", "surname", "patronymic", "dismissed"]

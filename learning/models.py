@@ -113,3 +113,5 @@ class ProtocolResult(models.Model):
 
     class Meta:
         unique_together = ('protocol', 'learner')
+        verbose_name = "Результат проверки знаний"
+        verbose_name_plural = "Результаты проверки знаний"

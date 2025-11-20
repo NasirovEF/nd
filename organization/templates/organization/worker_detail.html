@@ -44,9 +44,9 @@
                             {% endif %} {{object.district}} {{object.division}}</small></p>
                         <h5 class="card-title"><strong>{{object.surname}} {{object.name}}
                             {{ object.patronymic}}</strong></h5>
-                        <p class="card-text my-2">Должность/профессия: <strong>{{ object.main_position }}</strong></p>
-                        {% if object.combined_position %}
-                        <p class="card-text">Совмещаемая должность/профессия: {{object.combined_position}}</p>
+                        <p class="card-text my-2">Должность/профессия: <strong>{{ object.position }}</strong></p>
+                        {% if object.position %}
+                        <p class="card-text">Совмещаемая должность/профессия: {{object.position}}</p>
                         {% endif %}
                     </div>
                 </div>
