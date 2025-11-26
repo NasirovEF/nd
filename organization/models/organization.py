@@ -13,7 +13,7 @@ class Organization(models.Model):
         verbose_name_plural = "ОСТы"
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class Branch(models.Model):
@@ -33,7 +33,7 @@ class Branch(models.Model):
         verbose_name_plural = "Филиалы"
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class Group(models.Model):
@@ -47,7 +47,7 @@ class Group(models.Model):
         verbose_name_plural = "Группа"
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class District(models.Model):
@@ -67,7 +67,7 @@ class District(models.Model):
         verbose_name_plural = "Участки"
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class Division(models.Model):
@@ -86,4 +86,4 @@ class Division(models.Model):
         verbose_name_plural = "Структурные подразделения"
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"

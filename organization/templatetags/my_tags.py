@@ -2,6 +2,9 @@ from django import template
 from django.utils.safestring import mark_safe
 from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult
 from datetime import date
+
+from organization.models import Position
+
 register = template.Library()
 
 
@@ -16,7 +19,10 @@ def media_filter(path):
 def get_protocol_url(direction, learner):
     try:
         protocol = Protocol.objects.filter(direction=direction, learner=learner).latest("prot_date")
-        return protocol.doc_scan.url
+        if protocol.doc_scan:
+            return protocol.doc_scan.url
+        else:
+            return False
     except Protocol.DoesNotExist:
         return False
 
@@ -25,7 +31,10 @@ def get_protocol_url(direction, learner):
 def get_protocol_date(direction, learner):
     try:
         protocol = Protocol.objects.filter(direction=direction, learner=learner).latest("prot_date")
-        return protocol.prot_date.strftime("%d.%m.%Y")
+        if protocol:
+            return protocol.prot_date.strftime("%d.%m.%Y")
+        else:
+            return mark_safe('<div class="text-danger">Не проводилась</div>')
     except Protocol.DoesNotExist:
         return mark_safe('<div class="text-danger">Не проводилась</div>')
 
@@ -71,3 +80,21 @@ def get_learner_direction(direction, learner):
             return mark_safe('<div class="text-muted">Не назначено</div>')
     except Direction.DoesNotExist:
         return mark_safe('<div class="text">Ошибка данные не найдены</div>')
+
+
+@register.filter()
+def get_main_position(worker):
+    main_position = Position.objects.get(worker=worker, is_main=True)
+    return main_position
+
+
+@register.filter()
+def get_extra_position(worker):
+    positions = []
+    worker_extra_position = Position.objects.filter(worker=worker, is_main=False)
+    for position in worker_extra_position:
+        positions.append(str(position))
+    if len(positions) > 0:
+        return ", ".join(positions)
+    else:
+        return "отсутствует"

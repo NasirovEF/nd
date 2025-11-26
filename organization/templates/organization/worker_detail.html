@@ -44,9 +44,9 @@
                             {% endif %} {{object.district}} {{object.division}}</small></p>
                         <h5 class="card-title"><strong>{{object.surname}} {{object.name}}
                             {{ object.patronymic}}</strong></h5>
-                        <p class="card-text my-2">Должность/профессия: <strong>{{ object.position }}</strong></p>
+                        <p class="card-text my-2">Должность/профессия: <strong>{{ object|get_main_position }}</strong></p>
                         {% if object.position %}
-                        <p class="card-text">Совмещаемая должность/профессия: {{object.position}}</p>
+                        <p class="card-text">Совмещаемая должность/профессия: {{object|get_extra_position}}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -63,7 +63,7 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item"
-                           href="{% url 'learning:learner_update' object.learner.pk %}">Редактировать профиль
+                           href="{% url 'learning:learner_update' object.pk %}">Редактировать профиль
                         обучаемого</a></li>
                 </ul>
             </div>
@@ -80,24 +80,29 @@
                         </tr>
                         </thead>
                         <tbody>
-                        {% for direction in object.learner.direction.all %}
+                        {% for learner in object.learner.all %}
+                        <tr>
+                            <td colspan="5">Обучение по профессии/должности: {{learner.position}}</td>
+                        </tr>
+                        {% for direction in learner.direction.all %}
                         <tr>
                             <td>{{direction.name}}</td>
-                            <td>{{ direction|get_protocol_date:object.learner }}</td>
-                            <td>{% if direction|get_protocol_result:object.learner %}
+                            <td>{{ direction|get_protocol_date:learner }}</td>
+                            <td>{% if direction|get_protocol_result:learner %}
                                 <span class="text-success">удовлетворительно</span>
                                 {% else %}
                                 <span class="text-danger">неудовлетворительно</span>
                                 {% endif %}</td>
                             <td>
-                                {% if direction|get_protocol_url:object.learner %}
+                                {% if direction|get_protocol_url:learner %}
                                 <a class="btn btn-link-secondary btn-sm" href="{{direction|get_protocol_url:object.learner}}">Скан-файл</a>
                                 {% else %}
                                 <div class="text-danger">отсутствует</div>
                                 {% endif %}
                             </td>
-                            <td>{{direction|get_knowledge_date:object.learner}}</td>
+                            <td>{{direction|get_knowledge_date:learner}}</td>
                         </tr>
+                        {% endfor %}
                         {% endfor %}
                         </tbody>
                     </table>

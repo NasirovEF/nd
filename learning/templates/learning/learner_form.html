@@ -7,15 +7,23 @@
         <div class="col-8">
             <div class="card m-4">
                 <div class="card-header text-center">
-                    {% if object %}
-                    Редактирование работника {{object.worker}}
-                    {% else %}
-                    Для добавления работника
-                    {% endif %}
+
                 </div>
                 <div class="card-body">
                     {% csrf_token %}
                     {{ form.as_p }}
+                    {{ formset.management_form }}
+
+                    {% for form in formset %}
+                    <strong>{{form.instance.position}}</strong>
+                    <div class="position-form">
+                        {{ form.as_p }}
+                        {% if formset.can_delete %}
+                        {{ form.DELETE }} <label for="{{ form.DELETE.id_for_label }}">Удалить</label>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
                 </div>
                 <div class="card-footer">
                     <div class="text-center">
@@ -32,6 +40,6 @@
         </div>
         <div class="col-2">
         </div>
-        </div>
-    </form>
+    </div>
+</form>
 {% endblock %}

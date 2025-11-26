@@ -15,7 +15,7 @@ class Direction(models.Model):
         verbose_name_plural = "Направления обучения"
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class Program(models.Model):
@@ -39,20 +39,22 @@ class Program(models.Model):
         verbose_name_plural = "Программы обучения"
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class Learner(models.Model):
     """Модель обучаемого"""
-    worker = models.OneToOneField(Worker, on_delete=models.CASCADE, verbose_name="Работник", related_name="learner", **NULLABLE)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE, verbose_name="Работник", related_name="learner", **NULLABLE)
+    position = models.OneToOneField(Position, on_delete=models.CASCADE, verbose_name="Должность/профессия", related_name="learner")
     direction = models.ManyToManyField(Direction, verbose_name="Направления обучения", related_name="learner")
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "Обучаемый"
         verbose_name_plural = "Обучаемые"
 
     def __str__(self):
-        return self.worker.__str__()
+        return f"{self.position}, {self.worker}"
 
 
 class Protocol(models.Model):
@@ -102,12 +104,12 @@ class KnowledgeDate(models.Model):
         ordering = ["-kn_date"]
 
     def __str__(self):
-        return self.kn_date.strftime("%d.%m.%Y")
+        return f"{self.kn_date.strftime("%d.%m.%Y")}"
 
 
 class ProtocolResult(models.Model):
-    protocol = models.ForeignKey(Protocol, on_delete=models.CASCADE, related_name="protocol_result")
-    learner = models.ForeignKey(Learner, on_delete=models.CASCADE, related_name="protocol_result")
+    protocol = models.ForeignKey(Protocol, on_delete=models.CASCADE, related_name="protocol_result", **NULLABLE)
+    learner = models.ForeignKey(Learner, on_delete=models.CASCADE, related_name="protocol_result", **NULLABLE)
     passed = models.BooleanField(verbose_name='Сдал', default=True)
     comment = models.TextField(verbose_name='Комментарий', **NULLABLE)
 

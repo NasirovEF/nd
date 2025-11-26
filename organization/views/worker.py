@@ -87,8 +87,6 @@ class WorkerCreateView(CreateView):
 
             worker.save()
 
-            learner = Learner.objects.create(worker=worker)
-
             PositionFormSet = inlineformset_factory(
                 Worker,
                 Position,
@@ -104,10 +102,13 @@ class WorkerCreateView(CreateView):
 
             if position_formset.is_valid():
                 position_formset.save()
+                for position in worker.position.all():
+                    learner = Learner.objects.create(worker=worker, position=position)
                 return super().form_valid(form)
             else:
                 transaction.set_rollback(True)
                 return self.form_invalid(form)
+
 
         except Exception as e:
             transaction.set_rollback(True)
@@ -154,10 +155,21 @@ class WorkerUpdateView(UpdateView):
 
         if position_formset.is_valid():
             position_formset.save()
+            self._sync_learners(self.object)  # Синхронизация Learner
             return super().form_valid(form)
         else:
             transaction.set_rollback(True)
             return self.form_invalid(form)
+
+    def _sync_learners(self, worker):
+        current_positions = set(worker.position.all())
+        existing_learners = Learner.objects.filter(worker=worker)
+        existing_positions = {learner.position for learner in existing_learners}
+
+        # Создаём Learner для новых позиций
+        for position in current_positions:
+            if position not in existing_positions:
+                Learner.objects.create(worker=worker, position=position)
 
 
 
