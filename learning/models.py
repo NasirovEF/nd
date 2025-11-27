@@ -72,7 +72,7 @@ class Protocol(models.Model):
     class Meta:
         verbose_name = "Протокол проверки знаний"
         verbose_name_plural = "Протоколы проверки знаний"
-        ordering = ["-prot_date"]
+        ordering = ["-prot_date", "-id"]
 
     def __str__(self):
         return f"Протокол проверки знаний от {self.prot_date.strftime("%d.%m.%Y")}"

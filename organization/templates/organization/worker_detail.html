@@ -95,7 +95,7 @@
                                 {% endif %}</td>
                             <td>
                                 {% if direction|get_protocol_url:learner %}
-                                <a class="btn btn-link-secondary btn-sm" href="{{direction|get_protocol_url:object.learner}}">Скан-файл</a>
+                                <a class="btn btn-link-secondary btn-sm" href="{{direction|get_protocol_url:learner}}">Скан-файл</a>
                                 {% else %}
                                 <div class="text-danger">отсутствует</div>
                                 {% endif %}

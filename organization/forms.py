@@ -8,6 +8,8 @@ from organization.models import (
     Position,
     Worker,
 )
+from django.core.exceptions import ValidationError
+from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.forms import BooleanField, DateField, SelectMultiple
 
 
@@ -81,3 +83,24 @@ class WorkerUpdateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
         fields = ["name", "surname", "patronymic", "dismissed"]
+
+
+class PositionFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+
+        if any(self.errors):
+            return
+
+        main_count = 0
+        for form in self.forms:
+            if self._should_delete_form(form):
+                continue
+
+            if form.cleaned_data.get("is_main"):
+                main_count += 1
+
+        if main_count == 0:
+            raise ValidationError("У работника должна быть основная профессия")
+        if main_count > 1:
+            raise ValidationError("У работника может быть только одна основная профессия")

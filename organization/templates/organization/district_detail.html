@@ -60,8 +60,8 @@
                     {% if not worker.group %}
                     <tr>
                         <th scope="row">{{forloop.counter}}</th>
-                        <td>{{ worker.surname }}</td>
                         <td>{{ worker }}</td>
+                        <td>{{ worker|get_main_position }}</td>
                         <td>
                             <a class="btn btn-primary btn-sm" type="button"
                                href="{% url 'organization:worker_detail' worker.pk %}">
@@ -200,7 +200,7 @@
                             </button>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item"
-                                       href="{% url 'organization:worker_create' %}?ost={{ object.division.organization.pk }}&branch={{ object.division.branch.pk }}&division={{ object.division.pk }}&district={{ object.pk }}&group={{ group.pk }}">Добавить
+                                       href="{% url 'organization:worker_create' %}?organization={{object.division.branch.organization.pk}}&branch={{ object.division.branch.pk }}&division={{ object.division.pk }}&district={{ object.pk }}&group={{ group.pk }}">Добавить
                                     работника
                                 </a></li>
                                 <li><a class="dropdown-item"
@@ -256,8 +256,8 @@
                                     {% for worker in group.worker.all %}
                                     <tr>
                                         <th scope="row">{{forloop.counter}}</th>
-                                        <td>{{ worker.surname }}</td>
                                         <td>{{ worker }}</td>
+                                        <td>{{ worker|get_main_position }}</td>
                                         <td><a class="btn btn-primary btn-sm" type="button"
                                                href="{% url 'organization:worker_detail' worker.pk %}">
                                             Подробнее

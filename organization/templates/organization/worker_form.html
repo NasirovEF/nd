@@ -16,9 +16,15 @@
                 <div class="card-body">
                     {% csrf_token %}
                     {{ form.as_p }}
-
+                    {% if position_formset.non_form_errors %}
+                    <div class="text-danger">{{ position_formset.non_form_errors }}</div>
+                    {% endif %}
                     {{ position_formset.management_form }}
+
                     {% for form in position_formset %}
+                    {% if form.non_field_errors %}
+                    <div class="text-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
                     {{ form.as_p }}
                     {% endfor %}
                 </div>

@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 from organization.models import Organization, Branch, Division, District, Group
 from organization.services import NULLABLE
 
@@ -41,11 +41,12 @@ class Position(models.Model):
     """Класс профессии/должности"""
     name = models.ForeignKey(StaffUnit, on_delete=models.CASCADE, verbose_name="Профессия/должность", related_name="position", null=True)
     worker = models.ForeignKey("Worker", on_delete=models.CASCADE, verbose_name="", related_name="position", null=True)
-    is_main = models.BooleanField(verbose_name="Основная профессия", default=True)
+    is_main = models.BooleanField(verbose_name="Основная профессия", default=False)
 
     class Meta:
         verbose_name = "Профессия/должность"
         verbose_name_plural = "Профессии/должности"
+        ordering = ["is_main"]
 
     def __str__(self):
         return f'{self.name}'

@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 from learning.models import Learner
 from django.utils.datastructures import MultiValueDictKeyError
-from organization.forms import WorkerCreateForm, WorkerUpdateForm, PositionForm
+from organization.forms import WorkerCreateForm, WorkerUpdateForm, PositionForm, PositionFormSet
 from organization.models import Worker, District, Group, Organization, Branch, Division, Position
 from django.forms import inlineformset_factory
 from django.db import transaction
@@ -40,74 +40,73 @@ class WorkerCreateView(CreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        PositionFormSet = inlineformset_factory(
-            Worker,  # Родительская модель (владелец)
-            Position,  # Дочерняя модель (позиции)
-            form=PositionForm,
-            fields=["name", "is_main"],
-            extra=1,
-        )
 
-        if self.request.POST:
-            # При POST: передаём instance (пока None) и пустой queryset
-            context['position_formset'] = PositionFormSet(
-                self.request.POST,
-                instance=None,  # Будет заполнен позже
-                queryset=Position.objects.none()
+        # Если формсет ещё не создан (GET-запрос или повторная отрисовка с ошибками)
+        if 'position_formset' not in context:
+            PositionFormSetClass = inlineformset_factory(
+                Worker,
+                Position,
+                form=PositionForm,
+                formset=PositionFormSet,
+                fields=["name", "is_main"],
+                extra=1,
+                can_delete=False,
             )
-        else:
-            # При GET: пустой FormSet
-            context['position_formset'] = PositionFormSet(
-                instance=None,
-                queryset=Position.objects.none()
-            )
+            # Для GET: instance=None; для POST с ошибкой: instance=worker (если есть)
+            instance = self.object if self.object else None
+            context['position_formset'] = PositionFormSetClass(instance=instance)
 
         return context
 
     @transaction.atomic
     def form_valid(self, form):
         try:
-            organization_pk = self.request.GET.get("organization")
-            branch_pk = self.request.GET.get("branch")
-            division_pk = self.request.GET.get("division")
-            district_pk = self.request.GET.get("district")
-            group_pk = self.request.GET.get("group")
-
+            # 1. Заполняем поля работника
             worker = form.save(commit=False)
+            worker.organization = Organization.objects.get(pk=self.request.GET.get("organization"))
+            worker.branch = Branch.objects.get(pk=self.request.GET.get("branch"))
+            worker.division = Division.objects.get(pk=self.request.GET.get("division"))
+            worker.district = District.objects.get(pk=self.request.GET.get("district"))
+            worker.group = Group.objects.get(pk=self.request.GET.get("group")) if self.request.GET.get(
+                "group") else None
 
-            worker.organization = Organization.objects.get(pk=organization_pk)
-            worker.branch = Branch.objects.get(pk=branch_pk)
-            worker.division = Division.objects.get(pk=division_pk)
-            worker.district = District.objects.get(pk=district_pk)
-
-            if group_pk:
-                worker.group = Group.objects.get(pk=group_pk)
-            else:
-                worker.group = None
-
+            # 2. Сохраняем работника (обязательно!)
             worker.save()
+            self.object = worker  # ← критически важно для контекста
 
-            PositionFormSet = inlineformset_factory(
+            # 3. Создаём формсет с POST-данными и привязанным instance
+            PositionFormSetClass = inlineformset_factory(
                 Worker,
                 Position,
                 form=PositionForm,
+                formset=PositionFormSet,
                 fields=["name", "is_main"],
                 extra=1,
+                can_delete=False,
             )
-            position_formset = PositionFormSet(
+            position_formset = PositionFormSetClass(
                 self.request.POST,
-                instance=worker,
-                queryset=Position.objects.filter(worker=worker)
+                instance=worker,  # ← instance=worker (уже сохранён)
             )
 
+            # 4. Валидируем и сохраняем формсет
             if position_formset.is_valid():
-                position_formset.save()
+                position_formset.save(commit=True)  # ← commit=True обязательно!
+
+                # 5. Создаём Learner для всех позиций
                 for position in worker.position.all():
-                    learner = Learner.objects.create(worker=worker, position=position)
+                    Learner.objects.get_or_create(
+                        worker=worker,
+                        position=position
+                    )
                 return super().form_valid(form)
             else:
+                # 6. Если формсет невалиден — показываем ошибки
+                context = self.get_context_data()
+                context['form'] = form
+                context['position_formset'] = position_formset
                 transaction.set_rollback(True)
-                return self.form_invalid(form)
+                return self.render_to_response(context)
 
 
         except Exception as e:
@@ -124,26 +123,24 @@ class WorkerUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        PositionFormSet = inlineformset_factory(
+
+        PositionFormSets = inlineformset_factory(
             Worker,
             Position,
             form=PositionForm,
+            formset=PositionFormSet,  # Ваш кастомный формсет с clean()
             fields=["name", "is_main"],
             extra=1,
-            can_delete=True
+            can_delete=True,  # Разрешаем удаление позиций
         )
 
         if self.request.POST:
-            context['position_formset'] = PositionFormSet(
+            context['position_formset'] = PositionFormSets(
                 self.request.POST,
                 instance=self.object,
-                queryset=Position.objects.filter(worker=self.object)
             )
         else:
-            context['position_formset'] = PositionFormSet(
-                instance=self.object,
-                queryset=Position.objects.filter(worker=self.object)
-            )
+            context['position_formset'] = PositionFormSets(instance=self.object)
 
         return context
 
@@ -155,22 +152,26 @@ class WorkerUpdateView(UpdateView):
 
         if position_formset.is_valid():
             position_formset.save()
-            self._sync_learners(self.object)  # Синхронизация Learner
+            self._sync_learners(self.object)  # Создаём новые Learner, старые оставляем
             return super().form_valid(form)
         else:
             transaction.set_rollback(True)
             return self.form_invalid(form)
 
     def _sync_learners(self, worker):
-        current_positions = set(worker.position.all())
-        existing_learners = Learner.objects.filter(worker=worker)
-        existing_positions = {learner.position for learner in existing_learners}
+        current_positions = worker.position.all()
+        existing_learner_positions = set(
+            Learner.objects.filter(worker=worker)
+            .values_list('position', flat=True)
+        )
 
-        # Создаём Learner для новых позиций
         for position in current_positions:
-            if position not in existing_positions:
-                Learner.objects.create(worker=worker, position=position)
-
+            if position.pk not in existing_learner_positions:
+                Learner.objects.create(
+                    worker=worker,
+                    position=position
+                    # Другие поля, если есть
+                )
 
 
 class WorkerDeleteView(DeleteView):
