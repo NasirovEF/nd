@@ -56,7 +56,6 @@ class ProtocolCreateView(CreateView):
         for direction in directions:
             for learner in learners:
                 knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol, direction=direction, learner=learner)
-                knowledge_date.calculate_next_date()
                 knowledge_date.save()
 
         return super().form_valid(form)
@@ -88,7 +87,6 @@ class ProtocolUpdateView(UpdateView):
             for learner in protocol.learner.all():
                 knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol,
                                                               direction=direction, learner=learner)
-                knowledge_date.calculate_next_date()
                 knowledge_date.save()
 
         return super().form_valid(form)

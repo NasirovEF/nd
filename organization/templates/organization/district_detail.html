@@ -23,6 +23,9 @@
                 <li><a class="dropdown-item"
                        href="{% url 'learning:program_create' %}?district={{object.pk}}">Добавить программу обучения
                 </a></li>
+                <li><a class="dropdown-item"
+                       href="{% url 'learning:test_create' %}">Создать тест
+                </a></li>
             </ul>
         </div>
         <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -202,6 +205,13 @@
                                 <li><a class="dropdown-item"
                                        href="{% url 'organization:worker_create' %}?organization={{object.division.branch.organization.pk}}&branch={{ object.division.branch.pk }}&division={{ object.division.pk }}&district={{ object.pk }}&group={{ group.pk }}">Добавить
                                     работника
+                                </a></li>
+                                <li><a class="dropdown-item"
+                                       href="{% url 'learning:program_create' %}?district={{object.pk}}">Добавить
+                                    программу обучения
+                                </a></li>
+                                <li><a class="dropdown-item"
+                                       href="{% url 'learning:test_create' %}">Создать тест
                                 </a></li>
                                 <li><a class="dropdown-item"
                                        href="{% url 'organization:group_update' group.pk %}">Изменить

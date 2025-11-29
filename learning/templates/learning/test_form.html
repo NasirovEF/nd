@@ -1,0 +1,106 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <div class="card m-4">
+            <div class="card-header text-center">
+                {% if object %}
+                Редактирование программы {{ object.name }}
+                {% else %}
+                Для добавления программы заполните поля
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <form method="post" id="test-form">
+                    {% csrf_token %}
+
+                    <fieldset>
+                        <legend>Основной тест</legend>
+                        {{ form.as_p }}
+                    </fieldset>
+
+                    <fieldset>
+                        {{ question_formset.management_form }}
+
+                        <div id="questions-container">
+                            {% for q_form in question_formset %}
+                            <div class="question-block mb-4">
+                                <h5>Вопрос №{{ forloop.counter }}:</h5>
+                                {{ q_form.id }}
+                                {{ q_form.text }}
+
+                                <!-- 3 фиксированных ответа для каждого вопроса -->
+                                <div class="answers mt-2">
+
+                                    <!-- Ответ 1 -->
+                                    <div class="answer-row mb-2 row gx-2 align-items-center">
+                                        <div class="col-auto">
+                                            <p class="mb-0">Вариант ответа №1:</p>
+                                        </div>
+                                        <div class="col">
+                                            {{ q_form.answer_formset.forms.0.id }}
+                                            {{ q_form.answer_formset.forms.0.text }}
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="form-check">
+                                                {{ q_form.answer_formset.forms.0.is_correct }}
+                                                <label class="form-check-label">
+                                                    {{ q_form.answer_formset.forms.0.is_correct.label }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Ответ 2 -->
+                                    <div class="answer-row mb-2 row gx-2 align-items-center">
+                                        <div class="col-auto">
+                                            <p class="mb-0">Вариант ответа №2:</p>
+                                        </div>
+                                        <div class="col">
+                                            {{ q_form.answer_formset.forms.1.id }}
+                                            {{ q_form.answer_formset.forms.1.text }}
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="form-check">
+                                                {{ q_form.answer_formset.forms.1.is_correct }}
+                                                <label class="form-check-label">
+                                                    {{ q_form.answer_formset.forms.1.is_correct.label }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Ответ 3 -->
+                                    <div class="answer-row mb-2 row gx-2 align-items-center">
+                                        <div class="col-auto">
+                                            <p class="mb-0">Вариант ответа №3:</p>
+                                        </div>
+                                        <div class="col">
+                                            {{ q_form.answer_formset.forms.2.id }}
+                                            {{ q_form.answer_formset.forms.2.text }}
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="form-check">
+                                                {{ q_form.answer_formset.forms.2.is_correct }}
+                                                <label class="form-check-label">
+                                                    {{ q_form.answer_formset.forms.2.is_correct.label }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div> <!-- /answers -->
+                            </div> <!-- /question-block -->
+                            {% endfor %}
+                        </div> <!-- /questions-container -->
+
+                    </fieldset>
+
+                    <button type="submit" class="btn btn-outline-primary btn-sm">Сохранить тест</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-1"></div>
+    </div>
+    {% endblock %}

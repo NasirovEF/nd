@@ -39,7 +39,6 @@ class ProtocolResultsUpdateView(UpdateView):
             for direction in directions:
                 for learner in learners:
                     knowledge_date = KnowledgeDate.objects.get(protocol=self.object, direction=direction, learner=learner)
-                    knowledge_date.calculate_next_date()
                     knowledge_date.save()
 
             return redirect('learning:protocol_detail', pk=self.object.pk)

@@ -3,7 +3,7 @@ from learning.models import (
     Protocol,
     Direction,
     Learner,
-    Program, ProtocolResult
+    Program, ProtocolResult, Question, Answer, Test
 )
 from django.forms import BooleanField, DateField
 from organization.forms import StileFormMixin
@@ -78,3 +78,39 @@ class ProtocolResultForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = ProtocolResult
         fields = ['id', 'passed', 'comment']
+
+
+class TestForm(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = Test
+        fields = ['program']
+
+
+class QuestionForm(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['text']
+
+
+class AnswerForm(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = Answer
+        fields = ['text', 'is_correct']
+
+
+# Формсеты
+QuestionFormSet = forms.inlineformset_factory(
+    Test,
+    Question,
+    form=QuestionForm,
+    extra=20,  # переопределяется в get_context_data
+    can_delete=True
+)
+
+AnswerFormSet = forms.inlineformset_factory(
+    Question,
+    Answer,
+    form=AnswerForm,
+    extra=3,  # переопределяется в get_context_data
+    can_delete=False
+)
