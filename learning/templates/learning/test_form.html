@@ -3,104 +3,103 @@
 <div class="row">
     <div class="col-1"></div>
     <div class="col-10">
-        <div class="card m-4">
-            <div class="card-header text-center">
-                {% if object %}
-                Редактирование программы {{ object.name }}
-                {% else %}
-                Для добавления программы заполните поля
-                {% endif %}
-            </div>
-            <div class="card-body">
-                <form method="post" id="test-form">
-                    {% csrf_token %}
 
-                    <fieldset>
-                        <legend>Основной тест</legend>
-                        {{ form.as_p }}
-                    </fieldset>
+        <form method="post" id="test-form">
+            {% csrf_token %}
 
-                    <fieldset>
-                        {{ question_formset.management_form }}
+            <fieldset class="mb-2">
+                <legend class="border-bottom pb-2 mb-3">Основной тест</legend>
+                {{ form.as_p }}
+            </fieldset>
 
-                        <div id="questions-container">
-                            {% for q_form in question_formset %}
-                            <div class="question-block mb-4">
-                                <h5>Вопрос №{{ forloop.counter }}:</h5>
-                                {{ q_form.id }}
-                                {{ q_form.text }}
+            <fieldset>
+                {{ question_formset.management_form }}
 
-                                <!-- 3 фиксированных ответа для каждого вопроса -->
-                                <div class="answers mt-2">
+                <div id="questions-container">
+                    {% for q_form in question_formset %}
+                    <div class="question-card card mb-2 p-3 shadow-sm">
+                        <h5 class="text-primary mb-3">Вопрос №{{ forloop.counter }}:</h5>
 
-                                    <!-- Ответ 1 -->
-                                    <div class="answer-row mb-2 row gx-2 align-items-center">
-                                        <div class="col-auto">
-                                            <p class="mb-0">Вариант ответа №1:</p>
-                                        </div>
-                                        <div class="col">
-                                            {{ q_form.answer_formset.forms.0.id }}
-                                            {{ q_form.answer_formset.forms.0.text }}
-                                        </div>
-                                        <div class="col-auto">
-                                            <div class="form-check">
-                                                {{ q_form.answer_formset.forms.0.is_correct }}
-                                                <label class="form-check-label">
-                                                    {{ q_form.answer_formset.forms.0.is_correct.label }}
-                                                </label>
-                                            </div>
-                                        </div>
+                        {{ q_form.id }}
+
+                        <!-- Поле вопроса -->
+                        <div class="mb-3">
+                            <label for="{{ q_form.text.id_for_label }}" class="form-label">
+                                Текст вопроса <span class="text-danger">*</span>
+                            </label>
+                            {{ q_form.text }}
+                            {% if q_form.text.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ q_form.text.errors|safe }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <h6 class="text-primary">Варианты ответа:</h6>
+
+                        <!-- Ответы -->
+                        <div class="answers mt-3">
+                            <!-- Отладка (убрать после тестирования) -->
+                            <div class="debug-info text-muted small mb-2">
+                                <p>Answer FormSet prefix: {{ q_form.answer_formset.prefix }}</p>
+                            </div>
+
+                            {{ q_form.answer_formset.management_form }}
+
+                            {% if q_form.answer_formset.non_form_errors %}
+                            <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                {{ q_form.answer_formset.non_form_errors|safe }}
+                            </div>
+                            {% endif %}
+
+                            {% for answer_form in q_form.answer_formset %}
+                            <div class="answer-row mb-2 d-flex align-items-center gap-2"
+                                 id="answer-{{ answer_form.auto_id|default:'new' }}-{{ forloop.counter }}">
+                                <span class="fw-bold text-secondary">{{ forloop.counter }}.</span>
+                                {{ answer_form.id }}
+                                <div class="flex-grow-1">
+                                    <label for="{{ answer_form.text.id_for_label }}"
+                                           class="form-label visually-hidden">
+                                        Ответ {{ forloop.counter }}
+                                    </label>
+                                    {{ answer_form.text }}
+                                    {% if answer_form.text.errors %}
+                                    <div class="invalid-feedback d-block text-danger">
+                                        {{ answer_form.text.errors|safe }}
                                     </div>
+                                    {% endif %}
+                                </div>
+                                <div class="form-check">
+                                    {{ answer_form.is_correct }}
+                                    <label class="form-check-label"
+                                           for="{{ answer_form.is_correct.id_for_label }}">
+                                        {{ answer_form.is_correct.label }}
+                                    </label>
+                                </div>
 
-                                    <!-- Ответ 2 -->
-                                    <div class="answer-row mb-2 row gx-2 align-items-center">
-                                        <div class="col-auto">
-                                            <p class="mb-0">Вариант ответа №2:</p>
-                                        </div>
-                                        <div class="col">
-                                            {{ q_form.answer_formset.forms.1.id }}
-                                            {{ q_form.answer_formset.forms.1.text }}
-                                        </div>
-                                        <div class="col-auto">
-                                            <div class="form-check">
-                                                {{ q_form.answer_formset.forms.1.is_correct }}
-                                                <label class="form-check-label">
-                                                    {{ q_form.answer_formset.forms.1.is_correct.label }}
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Ответ 3 -->
-                                    <div class="answer-row mb-2 row gx-2 align-items-center">
-                                        <div class="col-auto">
-                                            <p class="mb-0">Вариант ответа №3:</p>
-                                        </div>
-                                        <div class="col">
-                                            {{ q_form.answer_formset.forms.2.id }}
-                                            {{ q_form.answer_formset.forms.2.text }}
-                                        </div>
-                                        <div class="col-auto">
-                                            <div class="form-check">
-                                                {{ q_form.answer_formset.forms.2.is_correct }}
-                                                <label class="form-check-label">
-                                                    {{ q_form.answer_formset.forms.2.is_correct.label }}
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div> <!-- /answers -->
-                            </div> <!-- /question-block -->
+                                {% if answer_form.non_field_errors %}
+                                <div class="text-danger mt-1">
+                                    {{ answer_form.non_field_errors|safe }}
+                                </div>
+                                {% endif %}
+                            </div>
                             {% endfor %}
-                        </div> <!-- /questions-container -->
 
-                    </fieldset>
+                            {% if not q_form.answer_formset.forms %}
+                            <p class="text-muted">Нет вариантов ответа.</p>
+                            {% endif %}
+                        </div> <!-- /answers -->
 
-                    <button type="submit" class="btn btn-outline-primary btn-sm">Сохранить тест</button>
-                </form>
-            </div>
-        </div>
-        <div class="col-1"></div>
+
+                    </div> <!-- /question-card -->
+                    {% endfor %}
+                </div> <!-- /questions-container -->
+            </fieldset>
+
+            <button type="submit" class="btn btn-outline-primary btn-sm">Сохранить тест</button>
+        </form>
     </div>
-    {% endblock %}
+    <div class="col-1"></div>
+</div>
+{% endblock %}

@@ -5,9 +5,8 @@ from learning.models import (
     Learner,
     Program, ProtocolResult, Question, Answer, Test
 )
-from django.forms import BooleanField, DateField
+from django.forms import BaseInlineFormSet
 from organization.forms import StileFormMixin
-from organization.models import Worker
 
 
 class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
@@ -86,16 +85,62 @@ class TestForm(StileFormMixin, forms.ModelForm):
         fields = ['program']
 
 
-class QuestionForm(StileFormMixin, forms.ModelForm):
-    class Meta:
-        model = Question
-        fields = ['text']
+class AnswerForm(forms.ModelForm):
+    is_correct = forms.BooleanField(
+        required=False,
+        label="Правильный ответ"
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['text'].widget.attrs.update({'required': True})
 
 
-class AnswerForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Answer
         fields = ['text', 'is_correct']
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'class': 'form-control',
+                'style': 'height: 60px;',
+                'placeholder': 'Введите текст ответа'
+            })
+        }
+        field_options = {
+            'text': {'strip': True}
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        is_correct = cleaned_data.get('is_correct')
+        text = cleaned_data.get('text')
+
+
+        if is_correct and (not text or text.strip() == ''):
+            self.add_error('text', "Нельзя отметить ответ как правильный, если текст ответа пуст.")
+
+
+        return cleaned_data
+
+
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = ['text']
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'class': 'form-control',
+                'style': 'height: 80px;',
+                'placeholder': 'Введите текст вопроса'
+            })
+        }
+
+
+class AnswerFormSet(BaseInlineFormSet):
+    def add_fields(self, form, index):
+        super().add_fields(form, index)
+        form.auto_id = f'answer-{self.instance.id or "new"}-{index}'
 
 
 # Формсеты
@@ -103,14 +148,20 @@ QuestionFormSet = forms.inlineformset_factory(
     Test,
     Question,
     form=QuestionForm,
-    extra=20,  # переопределяется в get_context_data
-    can_delete=True
+    extra=3,
+    can_delete=True,
+    # Важно: не пропускать пустые формы при валидации
+    validate_max=False,
+    validate_min=False,
 )
 
-AnswerFormSet = forms.inlineformset_factory(
+AnswerFormSets = forms.inlineformset_factory(
     Question,
     Answer,
     form=AnswerForm,
-    extra=3,  # переопределяется в get_context_data
-    can_delete=False
+    formset=AnswerFormSet,
+    extra=3,
+    can_delete=False,
+    validate_max=False,
+    validate_min=False,
 )
