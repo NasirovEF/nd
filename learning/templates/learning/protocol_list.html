@@ -14,81 +14,102 @@
         <h5 class="offcanvas-title" id="staticBackdropLabel">Параметры поиска</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
-    {% comment %}<p class="mx-3">Показано {{ object_list.count }} из {{ page_obj.paginator.count}} НС</p>
+
+    <p class="mx-3">Показано # из # протоколов</p>
     <div class="offcanvas-body">
-        <form method="post">
-            {% csrf_token %}
+        <form method="get">
             <div class="card">
                 <div class="card-body">
-                    <input name="order" class="form-control my-2 text-center" type="search"
-                           placeholder="Введите № или дату приказа"
-                           aria-label="Search">
                     <p>Дата c <input name="date_from" class="form-control text-center" type="date" placeholder="Дата с"
-                                     aria-label="Search" value="0001-01-01"></p>
+                                     aria-label="Search" value="{{search_params.date_from}}"></p>
                     <p>Дата по <input name="date_to" class="form-control text-center" type="date" placeholder="Дата по"
-                                      aria-label="Search" value="{{ date_now }}"></p>
-                    <input name="OST" class="form-control my-2 text-center" list="OSTOptions" id="OSTDataList"
-                           placeholder="Введите название ОСТ...">
-                    <datalist id="OSTOptions">
-                        {% for organization in organizations %}
-                        <option value="{{ organization }}">
+                                      aria-label="Search" value="{{ search_params.date_to }}"></p>
+                    <input name="division" class="form-control my-2 text-center" list="divisionOptions"
+                           id="divisionDataList" value="{{search_params.division}}"
+                           placeholder="Введите название структурного подразделения выдавшего протокол...">
+                    <datalist id="divisionOptions">
+                        {% for division in divisions %}
+                        <option value="{{ division }}">
                             {% endfor %}
                     </datalist>
-                    <input name="category" class="form-control my-2 text-center" list="categoryOptions"
-                           id="categoryDataList"
-                           placeholder="Выберите категорию НС">
-                    <datalist id="categoryOptions">
-                        {% for category in categories %}
-                        <option value="{{ category }}">
+                    <input name="direction" class="form-control my-2 text-center" list="directionOptions"
+                           id="directionDataList" value="{{search_params.direction}}"
+                           placeholder="Выберите направление обучения">
+                    <datalist id="directionOptions">
+                        {% for direction in directions %}
+                        <option value="{{ direction }}">
                             {% endfor %}
                     </datalist>
-                    <input name="description" class="form-control my-2 text-center" type="search"
-                           placeholder="Введите описание НС"
-                           aria-label="Search">
+
+                    <div class="row align-items-center g-3 mb-3">
+                        <div class="col-auto">
+                            <label class="form-label mb-0">Наличие скан‑файла</label>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1" id="hasFile" name="has_file" {% if search_params.has_file == '1' %}checked{% endif %}>
+                                <label class="form-check-label" for="hasFile">Да</label>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="0" id="hasNotFile"
+                                       name="has_not_file" {% if search_params.has_not_file == '0' %}checked{% endif %}>
+                                <label class="form-check-label" for="hasNotFile">Нет</label>
+                            </div>
+                        </div>
+                    </div>
+                    <input name="surname" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите Фамилию работника"
+                           aria-label="Search" value="{{search_params.surname}}">
+                    <input name="name" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите Имя работника"
+                           aria-label="Search" value="{{search_params.name}}">
+                    <input name="patronymic" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите Отчество работника"
+                           aria-label="Search" value="{{search_params.patronymic}}">
                 </div>
             </div>
             <div class="d-grid gap-2 my-2">
                 <button type="submit" class="btn btn-outline-primary">
                     Поиск
                 </button>
-                <a class="btn btn-outline-secondary" href="{% url 'accident:search' page=1 %}">
-                    Сбросить
-                </a>
+                <a href="{% url 'learning:protocol_list' %}" class="btn btn-outline-secondary">Очистить</a>
             </div>
         </form>
     </div>
-    {% endcomment %}
+
 </div>
 <div class="container-lg">
     <table class="table table-sm table-hover text-center fixed-columns table align-middle">
-            <thead>
-            <tr>
-                <th class="col-3" scope="col">Структурное подразделение выдавшее протокол</th>
-                <th class="col-3" scope="col">Направление обучения</th>
-                <th class="col-3" scope="col">Дата проверки знаний</th>
-                <th class="col-3" scope="col">Протокол проверки знаний</th>
-                <th class="col-3" scope="col"></th>
-            </tr>
-            </thead>
-            <tbody class="table-group-divider">
-            {% for protocol in object_list %}
-            <tr>
-                <td>{{protocol.division}}<br>{{protocol.division.branch}} </td>
-                <td>{{protocol.direction.all|get_direction_name}}</td>
-                <td>{{ protocol.prot_date }}</td>
-                <td>{% if protocol.doc_scan %}
-                    <a class="btn btn-link btn-sm" href="{{protocol.doc_scan.url}}">Скан-файл</a>
-                    {% else %}
-                    <div class="text-danger">отсутствует</div>
-                    {% endif %}
-                </td>
-                <td>
-                    <a class="btn btn-outline-primary btn-sm" href="{% url 'learning:protocol_detail' protocol.pk %}">Подробнее</a>
-                </td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+        <thead>
+        <tr>
+            <th class="col-3" scope="col">Структурное подразделение выдавшее протокол</th>
+            <th class="col-3" scope="col">Направление обучения</th>
+            <th class="col-3" scope="col">Дата проверки знаний</th>
+            <th class="col-3" scope="col">Протокол проверки знаний</th>
+            <th class="col-3" scope="col"></th>
+        </tr>
+        </thead>
+        <tbody class="table-group-divider">
+        {% for protocol in object_list %}
+        <tr>
+            <td>{{protocol.division}}<br>{{protocol.division.branch}}</td>
+            <td>{{protocol.direction.all|get_direction_name}}</td>
+            <td>{{ protocol.prot_date }}</td>
+            <td>{% if protocol.doc_scan %}
+                <a class="btn btn-link btn-sm" href="{{protocol.doc_scan.url}}">Скан-файл</a>
+                {% else %}
+                <div class="text-danger">отсутствует</div>
+                {% endif %}
+            </td>
+            <td>
+                <a class="btn btn-outline-primary btn-sm" href="{% url 'learning:protocol_detail' protocol.pk %}">Подробнее</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% comment %}
 <div class="position-relative m-4">

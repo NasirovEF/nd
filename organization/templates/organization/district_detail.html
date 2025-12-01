@@ -135,52 +135,81 @@
             </div>
             <div class="tab-pane fade" id="learning-tab-pane" role="tabpanel" aria-labelledby="learning-tab"
                  tabindex="0">
-                <table class="table table-hover text-center">
-                    <thead>
-                    <tr>
-                        <th scope="col">№ п/п</th>
-                        <th scope="col">Наименование программы</th>
-                        <th scope="col">Дата утверждения</th>
-                        <th scope="col">Скан-копия программы</th>
-                        <th scope="col"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for program in object.program.all %}
-                    {% if not program.group %}
-                    <tr>
-                        <th scope="row">{{forloop.counter}}</th>
-                        <td>{{program.name}}</td>
-                        <td>{{program.approval_date}}</td>
-                        <td>{% if program.doc_scan %}
-                            <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
-                            {% else %}
-                            <div class="text-danger">отсутствует</div>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="btn-group dropend">
-                                <button type="button"
-                                        class="btn btn-link-secondary btn-sm dropdown-toggle"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                    Редактировать
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item"
-                                           href="{% url 'learning:program_update' program.pk %}">Изменить
-                                    </a></li>
-                                    <hr>
-                                    <li><a class="dropdown-item"
-                                           href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
-                                    </a></li>
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
-                    </tbody>
-                </table>
+
+                <div class="d-flex align-items-start m-2 w-100">
+                    <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist"
+                         aria-orientation="vertical">
+                        <button class="nav-link active" id="v-pills-program-tab" data-bs-toggle="pill"
+                                data-bs-target="#v-pills-program" type="button" role="tab"
+                                aria-controls="v-pills-program"
+                                aria-selected="true">Список программ
+                        </button>
+                        <button class="nav-link" id="v-pills-test-tab" data-bs-toggle="pill"
+                                data-bs-target="#v-pills-test" type="button" role="tab"
+                                aria-controls="v-pills-test" aria-selected="false">Список тестов
+                        </button>
+                        <button class="nav-link btn-secondary btn-sm" id="v-pills-archive-tab" data-bs-toggle="pill"
+                                data-bs-target="#v-pills-archive" type="button" role="tab"
+                                aria-controls="v-pills-archive" aria-selected="false">Архив программ
+                        </button>
+                    </div>
+                    <div class="tab-content flex-fill" id="v-pills-tabContent">
+                        <div class="tab-pane fade show active" id="v-pills-program" role="tabpanel"
+                             aria-labelledby="v-pills-program-tab" tabindex="0">
+                            <table class="table table-hover text-center">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Наименование программы</th>
+                                    <th scope="col">Дата утверждения</th>
+                                    <th scope="col">Скан-копия программы</th>
+                                    <th scope="col"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for program in object.program.all %}
+                                {% if not program.group %}
+                                <tr>
+                                    <td>{{program.name}}</td>
+                                    <td>{{program.approval_date}}</td>
+                                    <td>{% if program.doc_scan %}
+                                        <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
+                                        {% else %}
+                                        <div class="text-danger">отсутствует</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group dropend">
+                                            <button type="button"
+                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                Редактировать
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item"
+                                                       href="{% url 'learning:program_update' program.pk %}">Изменить
+                                                </a></li>
+                                                <hr>
+                                                <li><a class="dropdown-item"
+                                                       href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane fade" id="v-pills-test" role="tabpanel"
+                             aria-labelledby="v-pills-test-tab" tabindex="0">...
+                        </div>
+                        <div class="tab-pane fade" id="v-pills-archive" role="tabpanel"
+                             aria-labelledby="v-pills-archive-tab" tabindex="0">...
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -339,52 +368,84 @@
                             <div class="tab-pane fade" id="learning-tab-pane-forGroup" role="tabpanel"
                                  aria-labelledby="learning-tab-forGroup"
                                  tabindex="0">
-                                <table class="table table-hover text-center">
-                                    <thead>
-                                    <tr>
-                                        <th scope="col">№ п/п</th>
-                                        <th scope="col">Наименование программы</th>
-                                        <th scope="col">Дата утверждения</th>
-                                        <th scope="col">Скан-копия программы</th>
-                                        <th scope="col"></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    {% for program in group.program.all %}
-                                    <tr>
-                                        <th scope="row">{{forloop.counter}}</th>
-                                        <td>{{program.name}}</td>
-                                        <td>{{program.approval_date}}</td>
-                                        <td>{% if program.doc_scan %}
-                                            <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
-                                            {% else %}
-                                            <div class="text-danger">отсутствует</div>
-                                            {% endif %}
-                                        </td>
+                                <div class="d-flex align-items-start m-2 w-100">
+                                    <div class="nav flex-column nav-pills me-3" id="v-pills-tab-forGroup" role="tablist"
+                                         aria-orientation="vertical">
+                                        <button class="nav-link active" id="v-pills-program-tab-forGroup"
+                                                data-bs-toggle="pill"
+                                                data-bs-target="#v-pills-program-forGroup" type="button" role="tab"
+                                                aria-controls="v-pills-program-forGroup"
+                                                aria-selected="true">Список программ
+                                        </button>
+                                        <button class="nav-link" id="v-pills-test-tab-forGroup" data-bs-toggle="pill"
+                                                data-bs-target="#v-pills-test-forGroup" type="button" role="tab"
+                                                aria-controls="v-pills-testforGroup" aria-selected="false">Список тестов
+                                        </button>
+                                        <button class="nav-link btn-secondary btn-sm" id="v-pills-archive-tab-forGroup"
+                                                data-bs-toggle="pill"
+                                                data-bs-target="#v-pills-archive-forGroup" type="button" role="tab"
+                                                aria-controls="v-pills-archive-forGroup" aria-selected="false">Архив
+                                            программ
+                                        </button>
+                                    </div>
+                                    <div class="tab-content flex-fill" id="v-pills-tabContent-forGroup">
+                                        <div class="tab-pane fade show active" id="v-pills-program-forGroup"
+                                             role="tabpanel"
+                                             aria-labelledby="v-pills-program-tab-forGroup" tabindex="0">
+                                            <table class="table table-hover text-center">
+                                                <thead>
+                                                <tr>
+                                                    <th scope="col">Наименование программы</th>
+                                                    <th scope="col">Дата утверждения</th>
+                                                    <th scope="col">Скан-копия программы</th>
+                                                    <th scope="col"></th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for program in group.program.all %}
+                                                <tr>
+                                                    <td>{{program.name}}</td>
+                                                    <td>{{program.approval_date}}</td>
+                                                    <td>{% if program.doc_scan %}
+                                                        <a class="btn btn-link-secondary btn-sm"
+                                                           href="{{program.doc_scan.url}}">Скан-файл</a>
+                                                        {% else %}
+                                                        <div class="text-danger">отсутствует</div>
+                                                        {% endif %}
+                                                    </td>
 
 
-                                        <td>
-                                            <div class="btn-group dropend">
-                                                <button type="button"
-                                                        class="btn btn-link-secondary btn-sm dropdown-toggle"
-                                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                                    Редактировать
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item"
-                                                           href="{% url 'learning:program_update' program.pk %}">Изменить
-                                                    </a></li>
-                                                    <hr>
-                                                    <li><a class="dropdown-item"
-                                                           href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
-                                                    </a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                    </tbody>
-                                </table>
+                                                    <td>
+                                                        <div class="btn-group dropend">
+                                                            <button type="button"
+                                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                                Редактировать
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item"
+                                                                       href="{% url 'learning:program_update' program.pk %}">Изменить
+                                                                </a></li>
+                                                                <hr>
+                                                                <li><a class="dropdown-item"
+                                                                       href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
+                                                                </a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="tab-pane fade" id="v-pills-test" role="tabpanel"
+                                             aria-labelledby="v-pills-test-tab" tabindex="0">...
+                                        </div>
+                                        <div class="tab-pane fade" id="v-pills-archive" role="tabpanel"
+                                             aria-labelledby="v-pills-archive-tab" tabindex="0">...
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
