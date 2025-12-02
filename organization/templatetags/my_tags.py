@@ -34,9 +34,9 @@ def get_protocol_date(direction, learner):
         if protocol:
             return protocol.prot_date.strftime("%d.%m.%Y")
         else:
-            return mark_safe('<div class="text-danger">Не проводилась</div>')
+            return mark_safe('<span class="text-danger">Не проводилась</span>')
     except Protocol.DoesNotExist:
-        return mark_safe('<div class="text-danger">Не проводилась</div>')
+        return mark_safe('<span class="text-danger">Не проводилась</span>')
 
 
 @register.filter()
@@ -58,12 +58,12 @@ def get_knowledge_date(direction, learner):
         protocol = Protocol.objects.filter(direction=direction, learner=learner).order_by("-prot_date", "-id").first()
         learner_direction = Learner.objects.get(pk=learner.pk).direction.all()
         if direction in learner_direction:
-            knowledge_date = KnowledgeDate.objects.get(learner=learner, direction=direction, protocol=protocol).next_date.strftime("%d.%m.%Y")
-            return knowledge_date
+            knowledge_date = KnowledgeDate.objects.get(learner=learner, direction=direction, protocol=protocol, is_active=True).next_date.strftime("%d.%m.%Y")
+            return mark_safe(f'<strong>{knowledge_date}</strong>')
         else:
-            return mark_safe('<div class="text-muted">Не требуется</div>')
+            return mark_safe('<span class="text-muted">Не требуется</span>')
     except KnowledgeDate.DoesNotExist:
-        return mark_safe(f'<div class="text-danger">{date.today().strftime("%d.%m.%Y")}</div>')
+        return mark_safe(f'<span class="text-danger"><strong>{date.today().strftime("%d.%m.%Y")}</strong></span>')
 
 
 @register.filter()
@@ -81,9 +81,9 @@ def get_learner_direction(direction, learner):
         if direction in learner_direction:
             return get_protocol_date(direction, learner)
         else:
-            return mark_safe('<div class="text-muted">Не назначено</div>')
+            return mark_safe('<span class="text-muted">Не назначено</span>')
     except Direction.DoesNotExist:
-        return mark_safe('<div class="text">Ошибка данные не найдены</div>')
+        return mark_safe('<span class="text">Ошибка данные не найдены</span>')
 
 
 @register.filter()

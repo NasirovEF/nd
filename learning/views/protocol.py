@@ -23,10 +23,8 @@ class ProtocolListView(ListView):
         context = super().get_context_data(*args, **kwargs)
         divisions = Division.objects.all()
         directions = Direction.objects.all()
-        learners = Learner.objects.all()
         context["divisions"] = divisions
         context["directions"] = directions
-        context["learners"] = learners
         context['search_params'] = {
             'division': self.request.GET.get('division', ''),
             'direction': self.request.GET.get('direction', ''),
@@ -119,7 +117,7 @@ class ProtocolCreateView(CreateView):
 
         for direction in directions:
             for learner in learners:
-                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol, direction=direction, learner=learner)
+                knowledge_date = KnowledgeDate.objects.create_or_update_active(kn_date=protocol.prot_date, protocol=protocol, direction=direction, learner=learner)
                 knowledge_date.save()
 
         return super().form_valid(form)
@@ -149,7 +147,7 @@ class ProtocolUpdateView(UpdateView):
 
         for direction in protocol.direction.all():
             for learner in protocol.learner.all():
-                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol,
+                knowledge_date = KnowledgeDate.objects.create_or_update_active(kn_date=protocol.prot_date, protocol=protocol,
                                                               direction=direction, learner=learner)
                 knowledge_date.save()
 

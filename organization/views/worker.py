@@ -8,8 +8,10 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-from learning.models import Learner
+from learning.models import Learner, KnowledgeDate
 from django.utils.datastructures import MultiValueDictKeyError
+
+from learning.models.learner_direction import StaffDirection, Direction
 from organization.forms import WorkerCreateForm, WorkerUpdateForm, PositionForm, PositionFormSet
 from organization.models import Worker, District, Group, Organization, Branch, Division, Position
 from django.forms import inlineformset_factory
@@ -95,10 +97,19 @@ class WorkerCreateView(CreateView):
 
                 # 5. Создаём Learner для всех позиций
                 for position in worker.position.all():
-                    Learner.objects.get_or_create(
+                    try:
+                        staff_direction = StaffDirection.objects.get(position=position.name)
+                        directions = staff_direction.direction.all()
+                    except StaffDirection.DoesNotExist:
+                        directions = Direction.objects.none()  # пустой QuerySet
+
+                    learner = Learner.objects.create(
                         worker=worker,
                         position=position
                     )
+                    learner.direction.set(directions)
+                    for direction in directions:
+                        KnowledgeDate.objects.create_or_update_active(learner=learner, direction=direction)
                 return super().form_valid(form)
             else:
                 # 6. Если формсет невалиден — показываем ошибки
@@ -107,7 +118,6 @@ class WorkerCreateView(CreateView):
                 context['position_formset'] = position_formset
                 transaction.set_rollback(True)
                 return self.render_to_response(context)
-
 
         except Exception as e:
             transaction.set_rollback(True)
@@ -167,11 +177,19 @@ class WorkerUpdateView(UpdateView):
 
         for position in current_positions:
             if position.pk not in existing_learner_positions:
-                Learner.objects.create(
+                try:
+                    staff_direction = StaffDirection.objects.get(position=position.name)
+                    directions = staff_direction.direction.all()
+                except StaffDirection.DoesNotExist:
+                    directions = Direction.objects.none()  # пустой QuerySet
+
+                learner = Learner.objects.create(
                     worker=worker,
                     position=position
-                    # Другие поля, если есть
                 )
+                learner.direction.set(directions)
+                for direction in directions:
+                    KnowledgeDate.objects.create_or_update_active(learner=learner, direction=direction)
 
 
 class WorkerDeleteView(DeleteView):

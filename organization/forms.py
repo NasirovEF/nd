@@ -76,13 +76,13 @@ class PositionForm(StileFormMixin, forms.ModelForm):
 class WorkerCreateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
-        fields = ["name", "surname", "patronymic"]
+        fields = ["surname", "name", "patronymic"]
 
 
 class WorkerUpdateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
-        fields = ["name", "surname", "patronymic", "dismissed"]
+        fields = ["surname", "name", "patronymic", "dismissed"]
 
 
 class PositionFormSet(BaseInlineFormSet):

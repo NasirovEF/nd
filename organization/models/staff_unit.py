@@ -8,10 +8,10 @@ class StaffUnit(models.Model):
     """Класс штатной единицы"""
 
     name = models.CharField(
-        max_length=150, verbose_name="Сокращенное наименование должности (профессии)"
+        max_length=150, verbose_name="Сокращенное наименование должности (профессии)", unique=True
     )
     full_name = models.CharField(
-        max_length=150, verbose_name="Полное наименование должности (профессии)"
+        max_length=150, verbose_name="Полное наименование должности (профессии)", unique=True
     )
     position_group = models.ManyToManyField("PositionGroup", verbose_name="Группа работников", related_name="staffunit")
 

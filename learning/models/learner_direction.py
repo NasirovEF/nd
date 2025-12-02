@@ -1,7 +1,7 @@
 from django.db import models
 from datetime import date
 from learning.services import add_doc_url
-from organization.models import Position, Worker, Organization, Branch, Division, District, Group
+from organization.models import Position, Worker, Organization, Branch, Division, District, Group, StaffUnit
 from organization.services import NULLABLE
 
 
@@ -65,3 +65,21 @@ class Learner(models.Model):
 
     def __str__(self):
         return f"{self.position}, {self.worker}"
+
+
+class StaffDirection(models.Model):
+    """Модель минимальных наборов направлений обучения для профессий"""
+    position = models.OneToOneField(StaffUnit, on_delete=models.CASCADE, verbose_name="", related_name="staff_direction")
+    direction = models.ManyToManyField("Direction", verbose_name="Направление обучения", related_name="staff_direction")
+
+    class Meta:
+        verbose_name = "Набор направлений обучения для профессии"
+        verbose_name_plural = "Наборы направлений обучения для профессий"
+
+    def __str__(self):
+        directions = []
+        for direction in self.direction.all():
+            directions.append(str(direction))
+        str_directions = ", ".join(directions)
+        return f"{self.position}, направления обучения: {str_directions}"
+
