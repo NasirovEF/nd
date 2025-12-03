@@ -6,14 +6,18 @@ from organization.services import NULLABLE
 
 class Test(models.Model):
     """Модель тестов"""
-    program = models.ManyToManyField("Program", verbose_name="Программа", related_name="test")
+    program = models.OneToOneField("Program", verbose_name="Программа", related_name="test", on_delete=models.SET_NULL, **NULLABLE)
 
     class Meta:
         verbose_name = "Тест"
         verbose_name_plural = "Тесты"
 
     def __str__(self):
-        return f"Тест к {self.program.name}"
+        if self.program:
+            return f"Тест к {self.program.name}"
+        else:
+            return "Тест без программы"
+
 
 
 class Question(models.Model):

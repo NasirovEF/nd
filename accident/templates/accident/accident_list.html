@@ -1,0 +1,143 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<button class="btn btn-outline-primary m-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop"
+        aria-controls="staticBackdrop">
+    Параметры поиска
+</button>
+<a class="btn btn-outline-danger my-4 mx-4" href="{% url 'accident:accident_create' %}">Добавить НС</a>
+
+<div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
+     aria-labelledby="staticBackdropLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="staticBackdropLabel">Параметры поиска</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <p class="mx-3">Показано # из # НС</p>
+    <div class="offcanvas-body">
+        <form method="get">
+            <div class="card">
+                <div class="card-body">
+                    <input name="order" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите № или дату приказа"
+                           aria-label="Search" value="{{search_params.order}}">
+                    <p>Дата c <input name="date_from" class="form-control text-center" type="date" placeholder="Дата с"
+                                     aria-label="Search" value="{{search_params.date_from}}"></p>
+                    <p>Дата по <input name="date_to" class="form-control text-center" type="date" placeholder="Дата по"
+                                      aria-label="Search" value="{{search_params.date_to}}"></p>
+                    <input name="OST" class="form-control my-2 text-center" list="OSTOptions" id="OSTDataList"
+                           placeholder="Введите название ОСТ..." value="{{search_params.ost}}">
+                    <datalist id="OSTOptions">
+                        {% for organization in organizations %}
+                        <option value="{{ organization }}">
+                            {% endfor %}
+                    </datalist>
+                    <input name="category" class="form-control my-2 text-center" list="categoryOptions"
+                           id="categoryDataList"
+                           placeholder="Выберите категорию НС" value="{{search_params.category}}">
+                    <datalist id="categoryOptions">
+                        {% for category in categories %}
+                        <option value="{{ category }}">
+                            {% endfor %}
+                    </datalist>
+
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <span class="form-label">Смертельный НС</span>
+                        </div>
+                        <div class="col-auto form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox"
+                                   value="1" id="is_death" name="is_death"
+                                   {% if search_params.is_death == '1' %}checked{% endif %}>
+                            <label class="form-check-label" for="is_death">Да</label>
+                        </div>
+                        <div class="col-auto form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox"
+                                   value="0" id="is_not_death" name="is_death"
+                                   {% if search_params.is_death == '0' %}checked{% endif %}>
+                            <label class="form-check-label" for="is_not_death">Нет</label>
+                        </div>
+                    </div>
+
+
+                    <input name="description" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите описание НС"
+                           aria-label="Search" value="{{search_params.description}}">
+                </div>
+            </div>
+            <div class="d-grid gap-2 my-2">
+                <button type="submit" class="btn btn-outline-primary">
+                    Поиск
+                </button>
+                <a class="btn btn-outline-secondary" href="{% url 'accident:accident_list' %}">
+                    Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+
+        <table class="table table-sm table-hover text-center fixed-columns table align-middle">
+            <thead>
+            <tr>
+                <th class="col-3" scope="col">№ и дата приказа</th>
+                <th class="col-3" scope="col">Дата НС</th>
+                <th class="col-3" scope="col">ОСТ</th>
+                <th class="col-3" scope="col">Категория НС</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for accident in object_list %}
+            <tr>
+                <th><a href="{% url 'accident:accident_detail' accident.pk %}">{{ accident.order }}</a></th>
+                <td>{{ accident.date }}</td>
+                <td>{{ accident.organization }}</td>
+                <td>{{ accident.category.name }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-1"></div>
+</div>
+{% comment %}
+<div class="position-relative m-4">
+    <div class="position-absolute top-50 start-50 translate-middle">
+        <nav aria-label="...">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="{{ page_obj.previous_page_number }}">Предыдущая</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Предыдущая</span>
+                </li>
+                {% endif %}
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="{{ page_obj.previous_page_number }}">{{
+                    page_obj.previous_page_number }}</a></li>
+                {% endif %}
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">{{ page_obj.number }}</span>
+                </li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="{{ page_obj.next_page_number }}">{{
+                    page_obj.next_page_number }}</a></li>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ page_obj.next_page_number }}">Следующая</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Следующая</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endcomment %}
+{% endblock %}

@@ -1,0 +1,149 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+
+{% block content %}
+<a class="btn btn-outline-primary btn-sm m-2" href="{% url 'organization:district_detail' object.district.pk %}">
+    Назад
+</a>
+<div class="card">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
+                    type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">
+                Основная информация
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
+                    type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">
+                Документы для обучения
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane"
+                    type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">
+                Вопросы для подготовки
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="disabled-tab" data-bs-toggle="tab" data-bs-target="#disabled-tab-pane"
+                    type="button" role="tab" aria-controls="disabled-tab-pane" aria-selected="false" disabled>
+                Disabled
+            </button>
+        </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
+             tabindex="0">
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <div class="card-body px-4">
+                        <p class="text"><small class="text-body-secondary my-2">{{object.organization}} {{object.branch}}</small></p>
+                        <p class="text"><small class="text-body-secondary my-2">
+                            {% if object.group %}{{object.group}}{%endif%} {{object.district}} {{object.division}}
+                        </small></p>
+                        <h5 class="card-title">Наименование программы: <strong>{{ object.name }}</strong></h5>
+                        {% if object.position %}
+                        <p class="card-text my-2">Для должности/профессии: {{ object.position }}</p>
+                        {% endif %}
+                        <p class="card-text">По направлению обучения: {{ object.direction.all|get_direction_name }}</p>
+                        <p class="card-text">Утверждена: {{ object.approve }} от {{ object.approval_date }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+            <!-- Содержимое вкладки "Документы для обучения" -->
+        </div>
+        <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
+            <div class="row">
+                <div class="col-10 offset-1">
+                    <p class="text-muted text-center m-4">
+                        Выберите ответ для каждого вопроса. Правильность ответа отобразится сразу.
+                    </p>
+                    {% for question in object.test.question.all %}
+                    <div class="card question-card mb-2 p-3 shadow-sm">
+                        <h5 class="text-primary mb-3">Вопрос №{{ forloop.counter }}</h5>
+                        <p class="card-text fs-5">{{ question.text }}</p>
+                        <h6 class="text-primary">Варианты ответа:</h6>
+                        {% for answer in question.answer.all %}
+                        <div class="form-check mb-2">
+                            <input class="form-check-input"
+                                   type="radio"
+                                   name="question_{{ question.id }}"
+                                   id="answer_{{ answer.id }}"
+                                   data-correct="{{ answer.is_correct|yesno:'true,false' }}">
+                            <label class="form-check-label" for="answer_{{ answer.id }}">
+                                {{ answer.text }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                        <div class="feedback alert mt-3" style="display: none;"></div>
+                    </div>
+                    {% endfor %}
+                    <!-- Кнопка сброса -->
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-reset m-2" id="resetBtn">
+                            Сбросить все ответы
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="disabled-tab-pane" role="tabpanel" aria-labelledby="disabled-tab" tabindex="0">
+            <!-- Содержимое отключенной вкладки -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Обработка выбора ответа
+    function handleAnswer(radio) {
+        const questionCard = radio.closest('.question-card');
+        const feedback = questionCard.querySelector('.feedback');
+
+        // Сброс стилей
+        questionCard.classList.remove('correct', 'incorrect');
+        feedback.style.display = 'none';
+        feedback.classList.remove('alert-success', 'alert-danger');
+
+        if (radio.checked) {
+            const isCorrect = radio.dataset.correct === 'true';
+
+            if (isCorrect) {
+                questionCard.classList.add('correct');
+                feedback.classList.add('alert-success');
+                feedback.textContent = 'Правильно! ✓';
+            } else {
+                questionCard.classList.add('incorrect');
+                feedback.classList.add('alert-danger');
+                feedback.textContent = 'Неверно. Попробуйте ещё раз.';
+            }
+
+            feedback.style.display = 'block';
+        }
+    }
+
+    // Назначаем обработчики на все радио-кнопки
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', () => handleAnswer(radio));
+    });
+
+    // Кнопка сброса
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.checked = false;
+
+            const questionCard = radio.closest('.question-card');
+            const feedback = questionCard.querySelector('.feedback');
+
+            questionCard.classList.remove('correct', 'incorrect');
+            feedback.style.display = 'none';
+            feedback.classList.remove('alert-success', 'alert-danger');
+            feedback.textContent = '';
+        });
+    });
+</script>
+{% endblock %}

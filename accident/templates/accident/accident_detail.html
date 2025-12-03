@@ -1,0 +1,30 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+<a class="btn btn-outline-secondary btn-sm my-4 mx-4" href="{% url 'accident:accident_list' %}">Назад</a>
+<div class="row">
+    <div class="col-2"></div>
+    <div class="col-8">
+        <div class="card">
+            <div class="row g-0">
+                <div class="col-md-4">
+                    <img src="{{ object.image|media_filter }}" class="img-fluid rounded-start"/>
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ object.order }}</h5>
+                        <p class="card-text">{{ object.description }}</p>
+                        <p class="card-text"><small class="text-body-secondary">Количество просмотров: </small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <a href="{% url 'accident:accident_update' object.pk %}"
+                   class="btn btn-outline-primary">Редактировать</a>
+                <a href="{% url 'accident:accident_delete' object.pk %}" class="btn btn-outline-danger">Удалить</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-2"></div>
+</div>
+{% endblock %}

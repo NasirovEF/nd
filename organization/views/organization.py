@@ -18,6 +18,11 @@ class OrganizationListView(ListView):
 
     model = Organization
 
+    def get_queryset(self, *args, **kwargs):
+        queryset = super().get_queryset(*args, **kwargs)
+        queryset = queryset.filter(is_main=True)
+        return queryset
+
 
 class OrganizationDetailView(DetailView):
     """Просмотр одного из ОСТов"""

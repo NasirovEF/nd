@@ -24,9 +24,12 @@ class StileFormMixin:
                 # Для чекбоксов
                 field.widget.attrs['class'] = 'form-check-input'
             elif isinstance(field, DateField):
-                # Для дат
-                field.widget.attrs['class'] = f'{current_classes} form-control'.strip()
-                field.widget.attrs['type'] = 'date'
+                field.widget = forms.DateInput(
+                    attrs={
+                        'class': 'form-control',
+                        'type': 'date'
+                    }
+                )
             elif isinstance(field, SelectMultiple):
                 # Для множественного выбора — добавляем классы к существующим
                 new_classes = f'{current_classes} form-control form-select selectpicker'.strip()
@@ -46,25 +49,25 @@ class OrganizationForm(StileFormMixin, forms.ModelForm):
 class BranchForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Branch
-        fields = ["name"]
+        exclude = ["organization"]
 
 
 class GroupForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Group
-        fields = ["name"]
+        exclude = ["district"]
 
 
 class DistrictForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = District
-        fields = ["name"]
+        exclude = ["division"]
 
 
 class DivisionForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Division
-        fields = ["name"]
+        exclude = ["branch"]
 
 
 class PositionForm(StileFormMixin, forms.ModelForm):

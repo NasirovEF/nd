@@ -6,7 +6,10 @@ from organization.services import NULLABLE
 class Organization(models.Model):
     """Класс ОСТ"""
 
-    name = models.CharField(max_length=150, verbose_name="Наименование ОСТ")
+    name = models.CharField(max_length=150, verbose_name="Наименование ОСТ", unique=True)
+    full_name = models.CharField(max_length=250, verbose_name="Полное наименование ОСТ")
+    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура ОСТ")
+    is_main = models.BooleanField(verbose_name="Признак основной ОСТ", default=False)
 
     class Meta:
         verbose_name = "ОСТ"
@@ -26,7 +29,9 @@ class Branch(models.Model):
         related_name="branch",
         **NULLABLE
     )
-    name = models.CharField(max_length=150, verbose_name="Наименование филиала")
+    name = models.CharField(max_length=150, verbose_name="Наименование филиала", unique=True)
+    full_name = models.CharField(max_length=250, verbose_name="Полное наименование филиала")
+    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура филиала")
 
     class Meta:
         verbose_name = "Филиал"
@@ -41,6 +46,7 @@ class Group(models.Model):
 
     district = models.ForeignKey("District", on_delete=models.CASCADE, verbose_name="Участок", related_name="group", **NULLABLE)
     name = models.CharField(max_length=150, verbose_name="Наименование группы")
+    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура")
 
     class Meta:
         verbose_name = "Группа"
@@ -54,6 +60,7 @@ class District(models.Model):
     """Класс участка"""
 
     name = models.CharField(max_length=150, verbose_name="Наименование участка")
+    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура")
     division = models.ForeignKey(
         "Division",
         on_delete=models.CASCADE,
@@ -74,8 +81,9 @@ class Division(models.Model):
     """Класс структурного подразделения"""
 
     name = models.CharField(
-        max_length=150, verbose_name="Наименование структурного подразделения"
+        max_length=150, verbose_name="Наименование структурного подразделения", unique=True
     )
+    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура")
 
     branch = models.ForeignKey(
         Branch, on_delete=models.CASCADE, verbose_name="филиал", related_name="division", **NULLABLE

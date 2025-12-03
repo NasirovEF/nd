@@ -1,6 +1,6 @@
 from django.db import models
-from datetime import date
-from learning.services import add_doc_url
+from django.core.exceptions import ValidationError
+from learning.services import add_doc_url, get_current_date
 from organization.models import Position, Worker, Organization, Branch, Division, District, Group, StaffUnit
 from organization.services import NULLABLE
 
@@ -8,7 +8,8 @@ from organization.services import NULLABLE
 class Direction(models.Model):
     """Модель направления обучения"""
     name = models.CharField(max_length=150, verbose_name="Направление обучения", unique=True)
-    periodicity = models.PositiveIntegerField(verbose_name="Периодичность обучения")
+    description = models.TextField(verbose_name="Описание", **NULLABLE)
+    periodicity = models.PositiveIntegerField(verbose_name="Периодичность обучения в днях")
 
     class Meta:
         verbose_name = "Направление обучения"
@@ -25,7 +26,7 @@ class Program(models.Model):
     duration = models.PositiveIntegerField(verbose_name="Продолжительность обучения (часов)")
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, related_name="program", verbose_name="Наименование профессии", **NULLABLE)
     approve = models.CharField(max_length=150, verbose_name="Программа утверждена", help_text="Введите должность, И.О. Фамилию лица утвердившего программу")
-    approval_date = models.DateField(verbose_name="Дата утверждения программы", default=date.today, help_text="Введите дату в формате ДД.ММ.ГГ")
+    approval_date = models.DateField(verbose_name="Дата утверждения программы", default=get_current_date, help_text="Введите дату в формате ДД.ММ.ГГГГ")
     organization = models.ForeignKey(Organization, verbose_name="ОСТ", related_name="organization", on_delete=models.SET_NULL, **NULLABLE)
     branch = models.ForeignKey(Branch, verbose_name="Филиал", related_name="program", on_delete=models.SET_NULL, **NULLABLE)
     division = models.ForeignKey(Division, verbose_name="Структурное подразделение", related_name="program", on_delete=models.SET_NULL, **NULLABLE)
@@ -37,12 +38,15 @@ class Program(models.Model):
                                 upload_to=add_doc_url, **NULLABLE)
 
     def save(self, *args, **kwargs):
-        if self.replacement is None:
-            self.is_active = True
-        else:
-            self.is_active = False
-
-        return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
+        if self.replacement:
+            try:
+                replaced_program = Program.objects.get(pk=self.replacement.pk)
+                if replaced_program.is_active:
+                    replaced_program.is_active = False
+                    replaced_program.save(update_fields=['is_active'])
+            except Program.DoesNotExist:
+                raise ValidationError(f"Программа с ID {self.replacement.pk} не найдена.")
 
     class Meta:
         verbose_name = "Программа обучения"

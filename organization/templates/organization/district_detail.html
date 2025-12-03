@@ -51,7 +51,6 @@
                 <table class="table table-hover text-center">
                     <thead>
                     <tr>
-                        <th scope="col">№ п/п</th>
                         <th scope="col">ФИО</th>
                         <th scope="col">Должность</th>
                         <th scope="col"></th>
@@ -62,11 +61,10 @@
                     {% for worker in object.worker.all %}
                     {% if not worker.group %}
                     <tr>
-                        <th scope="row">{{forloop.counter}}</th>
                         <td>{{ worker }}</td>
                         <td>{{ worker|get_main_position }}</td>
                         <td>
-                            <a class="btn btn-primary btn-sm" type="button"
+                            <a class="btn btn-outline-primary btn-sm" type="button"
                                href="{% url 'organization:worker_detail' worker.pk %}">
                                 Подробнее
                             </a>
@@ -99,16 +97,16 @@
                 <table class="table table-hover text-center">
                     <thead>
                     <tr>
-                        <th scope="col">№ п/п</th>
                         <th scope="col">Наименование программы</th>
                         <th scope="col">Дата утверждения</th>
                         <th scope="col">Скан-копия программы</th>
+                        <th scope="col"></th>
                         <th scope="col"></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
-                        <th scope="row">{{forloop.counter}}</th>
+                        <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -144,10 +142,6 @@
                                 aria-controls="v-pills-program"
                                 aria-selected="true">Список программ
                         </button>
-                        <button class="nav-link" id="v-pills-test-tab" data-bs-toggle="pill"
-                                data-bs-target="#v-pills-test" type="button" role="tab"
-                                aria-controls="v-pills-test" aria-selected="false">Список тестов
-                        </button>
                         <button class="nav-link btn-secondary btn-sm" id="v-pills-archive-tab" data-bs-toggle="pill"
                                 data-bs-target="#v-pills-archive" type="button" role="tab"
                                 aria-controls="v-pills-archive" aria-selected="false">Архив программ
@@ -163,10 +157,12 @@
                                     <th scope="col">Дата утверждения</th>
                                     <th scope="col">Скан-копия программы</th>
                                     <th scope="col"></th>
+                                    <th scope="col"></th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {% for program in object.program.all %}
+                                {% if program.is_active %}
                                 {% if not program.group %}
                                 <tr>
                                     <td>{{program.name}}</td>
@@ -176,6 +172,10 @@
                                         {% else %}
                                         <div class="text-danger">отсутствует</div>
                                         {% endif %}
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-outline-primary btn-sm" type="button"
+                                           href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
                                     </td>
                                     <td>
                                         <div class="btn-group dropend">
@@ -197,15 +197,67 @@
                                     </td>
                                 </tr>
                                 {% endif %}
+                                {% endif %}
                                 {% endfor %}
                                 </tbody>
                             </table>
                         </div>
-                        <div class="tab-pane fade" id="v-pills-test" role="tabpanel"
-                             aria-labelledby="v-pills-test-tab" tabindex="0">...
-                        </div>
                         <div class="tab-pane fade" id="v-pills-archive" role="tabpanel"
-                             aria-labelledby="v-pills-archive-tab" tabindex="0">...
+                             aria-labelledby="v-pills-archive-tab" tabindex="0">
+
+                            <table class="table table-hover text-center">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Наименование программы</th>
+                                    <th scope="col">Дата утверждения</th>
+                                    <th scope="col">Скан-копия программы</th>
+                                    <th scope="col"></th>
+                                    <th scope="col"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for program in object.program.all %}
+                                {% if not program.is_active %}
+                                {% if not program.group %}
+                                <tr>
+                                    <td>{{program.name}}</td>
+                                    <td>{{program.approval_date}}</td>
+                                    <td>{% if program.doc_scan %}
+                                        <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
+                                        {% else %}
+                                        <div class="text-danger">отсутствует</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-outline-primary btn-sm" type="button"
+                                           href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group dropend">
+                                            <button type="button"
+                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                Редактировать
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item"
+                                                       href="{% url 'learning:program_update' program.pk %}">Изменить
+                                                </a></li>
+                                                <hr>
+                                                <li><a class="dropdown-item"
+                                                       href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endif %}
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
                         </div>
                     </div>
                 </div>
@@ -284,7 +336,6 @@
                                 <table class="table table-hover text-center">
                                     <thead>
                                     <tr>
-                                        <th scope="col">№ п/п</th>
                                         <th scope="col">ФИО</th>
                                         <th scope="col">Должность</th>
                                         <th scope="col"></th>
@@ -294,7 +345,6 @@
                                     <tbody>
                                     {% for worker in group.worker.all %}
                                     <tr>
-                                        <th scope="row">{{forloop.counter}}</th>
                                         <td>{{ worker }}</td>
                                         <td>{{ worker|get_main_position }}</td>
                                         <td><a class="btn btn-primary btn-sm" type="button"
@@ -330,16 +380,16 @@
                                 <table class="table table-hover text-center">
                                     <thead>
                                     <tr>
-                                        <th scope="col">№ п/п</th>
                                         <th scope="col">Наименование программы</th>
                                         <th scope="col">Дата утверждения</th>
                                         <th scope="col">Скан-копия программы</th>
+                                        <th scope="col"></th>
                                         <th scope="col"></th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr>
-                                        <th scope="row">{{forloop.counter}}</th>
+                                        <td></td>
                                         <td></td>
                                         <td></td>
                                         <td></td>
@@ -377,10 +427,6 @@
                                                 aria-controls="v-pills-program-forGroup"
                                                 aria-selected="true">Список программ
                                         </button>
-                                        <button class="nav-link" id="v-pills-test-tab-forGroup" data-bs-toggle="pill"
-                                                data-bs-target="#v-pills-test-forGroup" type="button" role="tab"
-                                                aria-controls="v-pills-testforGroup" aria-selected="false">Список тестов
-                                        </button>
                                         <button class="nav-link btn-secondary btn-sm" id="v-pills-archive-tab-forGroup"
                                                 data-bs-toggle="pill"
                                                 data-bs-target="#v-pills-archive-forGroup" type="button" role="tab"
@@ -399,10 +445,12 @@
                                                     <th scope="col">Дата утверждения</th>
                                                     <th scope="col">Скан-копия программы</th>
                                                     <th scope="col"></th>
+                                                    <th scope="col"></th>
                                                 </tr>
                                                 </thead>
                                                 <tbody>
                                                 {% for program in group.program.all %}
+                                                {% if program.is_active %}
                                                 <tr>
                                                     <td>{{program.name}}</td>
                                                     <td>{{program.approval_date}}</td>
@@ -413,7 +461,10 @@
                                                         <div class="text-danger">отсутствует</div>
                                                         {% endif %}
                                                     </td>
-
+                                                    <td>
+                                                        <a type="button" class="btn-outline-primary btn-sm"
+                                                           href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
+                                                    </td>
 
                                                     <td>
                                                         <div class="btn-group dropend">
@@ -434,15 +485,64 @@
                                                         </div>
                                                     </td>
                                                 </tr>
+                                                {% endif %}
                                                 {% endfor %}
                                                 </tbody>
                                             </table>
                                         </div>
-                                        <div class="tab-pane fade" id="v-pills-test" role="tabpanel"
-                                             aria-labelledby="v-pills-test-tab" tabindex="0">...
-                                        </div>
-                                        <div class="tab-pane fade" id="v-pills-archive" role="tabpanel"
-                                             aria-labelledby="v-pills-archive-tab" tabindex="0">...
+                                        <div class="tab-pane fade" id="v-pills-archive-forGroup" role="tabpanel"
+                                             aria-labelledby="v-pills-archive-tab" tabindex="0">
+                                            <table class="table table-hover text-center">
+                                                <thead>
+                                                <tr>
+                                                    <th scope="col">Наименование программы</th>
+                                                    <th scope="col">Дата утверждения</th>
+                                                    <th scope="col">Скан-копия программы</th>
+                                                    <th scope="col"></th>
+                                                    <th scope="col"></th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for program in group.program.all %}
+                                                {% if not program.is_active %}
+                                                <tr>
+                                                    <td>{{program.name}}</td>
+                                                    <td>{{program.approval_date}}</td>
+                                                    <td>{% if program.doc_scan %}
+                                                        <a class="btn btn-link-secondary btn-sm"
+                                                           href="{{program.doc_scan.url}}">Скан-файл</a>
+                                                        {% else %}
+                                                        <div class="text-danger">отсутствует</div>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a type="button" class="btn-outline-primary btn-sm"
+                                                           href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
+                                                    </td>
+
+                                                    <td>
+                                                        <div class="btn-group dropend">
+                                                            <button type="button"
+                                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                                Редактировать
+                                                            </button>
+                                                            <ul class="dropdown-menu">
+                                                                <li><a class="dropdown-item"
+                                                                       href="{% url 'learning:program_update' program.pk %}">Изменить
+                                                                </a></li>
+                                                                <hr>
+                                                                <li><a class="dropdown-item"
+                                                                       href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
+                                                                </a></li>
+                                                            </ul>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
@@ -454,9 +554,6 @@
             {% endfor %}
         </div>
 
-
-        <a href="#" class="card-link">Card link</a>
-        <a href="#" class="card-link">Another link</a>
     </div>
 </div>
 

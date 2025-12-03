@@ -3,7 +3,7 @@ from django.urls import path
 from learning.apps import LearningConfig
 from learning.views.direction import DirectionCreateView, DirectionUpdateView, DirectionDeleteView
 from learning.views.learner import LearnerCreateView, LearnerUpdateView, LearnerDeleteView, LearnerListView
-from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView
+from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView, ProgramDetailView
 from learning.views.prot_test import TestCreateView
 from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, ProtocolDeleteView, ProtocolListView, \
     ProtocolDetailView
@@ -22,6 +22,7 @@ urlpatterns = [
     path("learner_delete/<int:pk>", LearnerDeleteView.as_view(), name="learner_delete"),
 
     path("program_create/", ProgramCreateView.as_view(), name="program_create"),
+    path("program_detail/<int:pk>", ProgramDetailView.as_view(), name="program_detail"),
     path("program_update/<int:pk>", ProgramUpdateView.as_view(), name="program_update"),
     path("program_delete/<int:pk>", ProgramDeleteView.as_view(), name="program_delete"),
 

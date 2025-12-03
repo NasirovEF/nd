@@ -63,7 +63,7 @@ class LearnerForm(StileFormMixin, forms.ModelForm):
 class ProgramForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Program
-        fields = "__all__"
+        exclude = ["is_active"]
 
 
 class ProtocolResultForm(StileFormMixin, forms.ModelForm):
