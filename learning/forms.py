@@ -6,10 +6,16 @@ from learning.models import (
     Program, ProtocolResult, Question, Answer, Test
 )
 from django.forms import BaseInlineFormSet
+
+from learning.models.learner_direction import LearningDoc, LearningPoster
 from organization.forms import StileFormMixin
 
 
 class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['program'].queryset = Program.objects.filter(is_active=True)
+
     class Meta:
         model = Protocol
         fields = "__all__"
@@ -95,7 +101,6 @@ class AnswerForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['text'].widget.attrs.update({'required': True})
 
-
     class Meta:
         model = Answer
         fields = ['text', 'is_correct']
@@ -115,13 +120,10 @@ class AnswerForm(forms.ModelForm):
         is_correct = cleaned_data.get('is_correct')
         text = cleaned_data.get('text')
 
-
         if is_correct and (not text or text.strip() == ''):
             self.add_error('text', "Нельзя отметить ответ как правильный, если текст ответа пуст.")
 
-
         return cleaned_data
-
 
 
 class QuestionForm(forms.ModelForm):
@@ -165,3 +167,15 @@ AnswerFormSets = forms.inlineformset_factory(
     validate_max=False,
     validate_min=False,
 )
+
+
+class LearningDocForm(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = LearningDoc
+        fields = "__all__"
+
+
+class LearningPosterForm(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = LearningPoster
+        fields = ["name", "image"]

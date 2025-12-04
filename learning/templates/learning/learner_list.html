@@ -1,0 +1,138 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+<button class="btn btn-outline-primary m-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop"
+        aria-controls="staticBackdrop">
+    Параметры поиска
+</button>
+<a class="btn btn-outline-primary my-4" href="#">Кнопка</a>
+
+<div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
+     aria-labelledby="staticBackdropLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="staticBackdropLabel">Параметры поиска</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+
+    <p class="mx-3">Показано # из # работников</p>
+    <div class="offcanvas-body">
+        <form method="get">
+            <div class="card">
+                <div class="card-body">
+                    <p>Дата c <input name="date_from" class="form-control text-center" type="date" placeholder="Дата с"
+                                     aria-label="Search" value="{{search_params.date_from}}"></p>
+                    <p>Дата по <input name="date_to" class="form-control text-center" type="date" placeholder="Дата по"
+                                      aria-label="Search" value="{{ search_params.date_to }}"></p>
+                    <input name="division" class="form-control my-2 text-center" list="divisionOptions"
+                           id="divisionDataList" value="{{search_params.division}}"
+                           placeholder="Введите название структурного подразделения...">
+                    <datalist id="divisionOptions">
+                        {% for division in divisions %}
+                        <option value="{{ division }}">
+                            {% endfor %}
+                    </datalist>
+                    <input name="direction" class="form-control my-2 text-center" list="directionOptions"
+                           id="directionDataList" value="{{search_params.direction}}"
+                           placeholder="Выберите направление обучения">
+                    <datalist id="directionOptions">
+                        {% for direction in directions %}
+                        <option value="{{ direction }}">
+                            {% endfor %}
+                    </datalist>
+
+                    <input name="surname" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите Фамилию работника"
+                           aria-label="Search" value="{{search_params.surname}}">
+                    <input name="name" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите Имя работника"
+                           aria-label="Search" value="{{search_params.name}}">
+                    <input name="patronymic" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите Отчество работника"
+                           aria-label="Search" value="{{search_params.patronymic}}">
+                </div>
+            </div>
+            <div class="d-grid gap-2 my-2">
+                <button type="submit" class="btn btn-outline-primary">
+                    Поиск
+                </button>
+                <a href="{% url 'learning:learner_list' %}" class="btn btn-outline-secondary">Очистить</a>
+            </div>
+        </form>
+    </div>
+
+</div>
+<div class="text-center my-2"><h2>График проверки знаний по охране труда</h2></div>
+<div class="container-lg">
+    <table class="table table-sm table-hover table-bordered lh-sm py-1">
+        <thead>
+        <tr class="text-center align-middle lh-sm py-1">
+            <th class="col-1">
+                Структурное
+                подразделение
+            </th>
+            <th>Участок
+            </th>
+            <th>Должность,
+                И.О. Фамилия
+            </th>
+            {% for direction in directions %}
+            <th>Дата
+                проверки знаний по направлению: {{direction}}
+                <span class="text-secondary">предыдущая<br>по плану</span>
+            </th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody class="table-group-divider text-center align-middle">
+        {% for learner in object_list %}
+        <tr>
+            <td>{{learner.worker.division}}</td>
+            <td>{{learner.worker.district}}</td>
+            <td>{{learner}}</td>
+            {% for direction in directions %}
+            <td class="lh-sm py-1">{{direction|get_learner_direction:learner}}<br>{{direction|get_knowledge_date:learner}}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% comment %}
+<div class="position-relative m-4">
+    <div class="position-absolute top-50 start-50 translate-middle">
+        <nav aria-label="...">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="{{ page_obj.previous_page_number }}">Предыдущая</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Предыдущая</span>
+                </li>
+                {% endif %}
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="{{ page_obj.previous_page_number }}">{{
+                    page_obj.previous_page_number }}</a></li>
+                {% endif %}
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">{{ page_obj.number }}</span>
+                </li>
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="{{ page_obj.next_page_number }}">{{
+                    page_obj.next_page_number }}</a></li>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ page_obj.next_page_number }}">Следующая</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Следующая</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endcomment %}
+{% endblock %}

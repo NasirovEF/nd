@@ -56,6 +56,28 @@ class Program(models.Model):
         return f"{self.name}"
 
 
+class LearningDoc(models.Model):
+    """Модель документов для обучения"""
+    program = models.ForeignKey("Program", on_delete=models.SET_NULL, verbose_name="Программа обучения", related_name="learning_doc", **NULLABLE)
+    name = models.TextField(verbose_name="Наименование документа")
+    doc = models.FileField(verbose_name="Файл документа", upload_to="learning/learning_doc/")
+
+    class Meta:
+        verbose_name = "Документ для обучения"
+        verbose_name_plural = "Документы для обучения"
+
+
+class LearningPoster(models.Model):
+    """Модель плаката обучения"""
+    program = models.ForeignKey("Program", on_delete=models.SET_NULL, verbose_name="Программа обучения", related_name="learning_poster", **NULLABLE)
+    name = models.TextField(verbose_name="Наименование плаката")
+    image = models.ImageField(verbose_name="Картинка плаката", upload_to="learning/learning_poster/")
+
+    class Meta:
+        verbose_name = "Плакат для обучения"
+        verbose_name_plural = "Плакаты для обучения"
+
+
 class Learner(models.Model):
     """Модель обучаемого"""
     worker = models.ForeignKey(Worker, on_delete=models.CASCADE, verbose_name="Работник", related_name="learner", **NULLABLE)
