@@ -7,6 +7,9 @@ from organization.services import NULLABLE
 class Test(models.Model):
     """Модель тестов"""
     program = models.OneToOneField("Program", verbose_name="Программа", related_name="test", on_delete=models.SET_NULL, **NULLABLE)
+    is_active = models.BooleanField(verbose_name="Активен", default=True)
+    time_limit = models.PositiveIntegerField(verbose_name="Время на тест (мин)", default=20, **NULLABLE)
+    passing_score = models.PositiveIntegerField(verbose_name="Проходной балл (%)", default=90)
 
     class Meta:
         verbose_name = "Тест"
@@ -19,12 +22,11 @@ class Test(models.Model):
             return "Тест без программы"
 
 
-
 class Question(models.Model):
     """Модель Вопроса к тесту"""
-
     test = models.ForeignKey("Test", on_delete=models.CASCADE, verbose_name="Вопрос", related_name="question")
     text = models.TextField(verbose_name="Текст вопроса")
+    weight = models.PositiveIntegerField(verbose_name="Вес вопроса (баллы)", default=1)
 
     class Meta:
         verbose_name = "Вопрос"
@@ -50,12 +52,44 @@ class Answer(models.Model):
 
 
 class TestResult(models.Model):
-    learner = models.ForeignKey("Learner", verbose_name="Работник", on_delete=models.CASCADE, related_name="test_result")
-    test = models.ForeignKey("Test", verbose_name="Тест", on_delete=models.CASCADE, related_name="test_result")
+    """Модель результата теста"""
+    learner = models.ForeignKey("Learner", verbose_name="Работник", on_delete=models.CASCADE, related_name="test_results")
+    test = models.ForeignKey("Test", verbose_name="Тест", on_delete=models.CASCADE, related_name="results")
     test_date = models.DateTimeField(verbose_name="Дата тестирования", auto_now_add=True)
     is_passed = models.BooleanField(verbose_name="Сдан?", default=False)
+    score = models.DecimalField(verbose_name="Набранный балл (%)", max_digits=5, decimal_places=2, default=0)
+    total_score = models.PositiveIntegerField(verbose_name="Максимально возможный балл", default=0)
+
+    attempt_number = models.PositiveIntegerField(verbose_name="Попытка №", default=1)
 
     class Meta:
-        unique_together = ('test', 'learner')
+        unique_together = ('test', 'learner', 'attempt_number')
         verbose_name = "Результат теста"
         verbose_name_plural = "Результаты тестирования"
+
+
+class TestAssignment(models.Model):
+    """Модель процесса назначения теста"""
+    learner = models.ForeignKey("Learner", verbose_name="Работник", on_delete=models.CASCADE, related_name="assigned_tests")
+    test = models.ForeignKey("Test", verbose_name="Тест", on_delete=models.CASCADE, related_name="assignments")
+    assigned_date = models.DateTimeField(verbose_name="Дата назначения", auto_now_add=True)
+    deadline = models.DateTimeField(verbose_name="Срок выполнения", null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        verbose_name="Статус",
+        choices=[
+            ('assigned', 'Назначен'),
+            ('in_progress', 'В процессе'),
+            ('completed', 'Завершён'),
+            ('expired', 'Просрочен'),
+        ],
+        default='assigned'
+    )
+    attempts_left = models.PositiveIntegerField(verbose_name="Осталось попыток", default=1)
+
+    class Meta:
+        verbose_name = "Назначение теста"
+        verbose_name_plural = "Назначения тестов"
+
+
+

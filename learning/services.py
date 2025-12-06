@@ -1,5 +1,4 @@
 from django.utils import timezone
-from django.apps import apps
 
 
 def get_current_date():
@@ -11,7 +10,6 @@ def add_doc_url(instance, filename):
     Функция для upload_to в FileField.
     Формирует путь с префиксом по названию приложения.
     """
-    # Получаем название приложения модели
     app_label = instance._meta.app_label
 
     path_parts = [

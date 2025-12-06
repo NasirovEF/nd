@@ -67,9 +67,21 @@ class LearnerForm(StileFormMixin, forms.ModelForm):
 
 
 class ProgramForm(StileFormMixin, forms.ModelForm):
+    def clean_replacement(self):
+        replacement = self.cleaned_data.get('replacement')
+        if replacement == self.instance:
+            raise forms.ValidationError("Программа не может заменять саму себя.")
+        return replacement
+
     class Meta:
         model = Program
         exclude = ["is_active"]
+
+
+class ProgramFormNotActive(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = Program
+        exclude = ["replacement", "is_active"]
 
 
 class ProtocolResultForm(StileFormMixin, forms.ModelForm):
@@ -127,6 +139,13 @@ class AnswerForm(forms.ModelForm):
 
 
 class QuestionForm(forms.ModelForm):
+
+    def clean_text(self):
+        text = self.cleaned_data.get('text')
+        if text and not text.strip():
+            raise forms.ValidationError('Текст вопроса не может быть пустым.')
+        return text
+
     class Meta:
         model = Question
         fields = ['text']
@@ -150,7 +169,8 @@ QuestionFormSet = forms.inlineformset_factory(
     Test,
     Question,
     form=QuestionForm,
-    extra=3,
+    extra=10,
+    max_num=10,
     can_delete=True,
     # Важно: не пропускать пустые формы при валидации
     validate_max=False,
@@ -163,6 +183,7 @@ AnswerFormSets = forms.inlineformset_factory(
     form=AnswerForm,
     formset=AnswerFormSet,
     extra=3,
+    max_num=3,
     can_delete=False,
     validate_max=False,
     validate_min=False,

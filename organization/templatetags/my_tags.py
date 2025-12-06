@@ -16,6 +16,12 @@ def media_filter(path):
 
 
 @register.filter()
+def poster_page(value):
+    return "/media/other/poster.jpg"
+
+
+
+@register.filter()
 def get_protocol_url(direction, learner):
     try:
         protocol = Protocol.objects.filter(direction=direction, learner=learner).order_by("-prot_date", "-id").first()

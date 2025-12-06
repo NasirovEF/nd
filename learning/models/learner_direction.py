@@ -32,12 +32,19 @@ class Program(models.Model):
     division = models.ForeignKey(Division, verbose_name="Структурное подразделение", related_name="program", on_delete=models.SET_NULL, **NULLABLE)
     district = models.ForeignKey(District, verbose_name="Участок", related_name="program", on_delete=models.SET_NULL, **NULLABLE)
     group = models.ForeignKey(Group, verbose_name="Группа", related_name="program", on_delete=models.SET_NULL, **NULLABLE)
-    replacement = models.ForeignKey("self", on_delete=models.SET_NULL, verbose_name="Замена программы", related_name="program", **NULLABLE)
+    replacement = models.ForeignKey("self", on_delete=models.SET_NULL, verbose_name="Замена программы", related_name="replacement_for",  help_text="Выберите программу, которую эта программа заменяет (не может быть самой собой)", **NULLABLE)
     is_active = models.BooleanField(verbose_name="Актуальность", default=True)
     doc_scan = models.FileField(verbose_name="Скан-копия программы обучения",
                                 upload_to=add_doc_url, **NULLABLE)
 
+    def clean(self):
+        super().clean()
+        if self.replacement == self:
+            raise ValidationError("Программа не может заменять саму себя.")
+
     def save(self, *args, **kwargs):
+        # Перед сохранением вызываем clean() для проверки
+        self.clean()
         super().save(*args, **kwargs)
         if self.replacement:
             try:
@@ -45,6 +52,13 @@ class Program(models.Model):
                 if replaced_program.is_active:
                     replaced_program.is_active = False
                     replaced_program.save(update_fields=['is_active'])
+                    if replaced_program.test and not self.test:
+                        replaced_program.test.program = self
+                        replaced_program.test.save(update_fields=['program'])
+                    elif replaced_program.test and self.test:
+                        self.test.delete()
+                        replaced_program.test.program = self
+                        replaced_program.test.save(update_fields=['program'])
             except Program.DoesNotExist:
                 raise ValidationError(f"Программа с ID {self.replacement.pk} не найдена.")
 
@@ -59,7 +73,7 @@ class Program(models.Model):
 class LearningDoc(models.Model):
     """Модель документов для обучения"""
     program = models.ForeignKey("Program", on_delete=models.SET_NULL, verbose_name="Программа обучения", related_name="learning_doc", **NULLABLE)
-    name = models.TextField(verbose_name="Наименование документа")
+    name = models.CharField(verbose_name="Наименование документа", max_length=250)
     doc = models.FileField(verbose_name="Файл документа", upload_to="learning/learning_doc/")
 
     class Meta:
@@ -70,7 +84,7 @@ class LearningDoc(models.Model):
 class LearningPoster(models.Model):
     """Модель плаката обучения"""
     program = models.ForeignKey("Program", on_delete=models.SET_NULL, verbose_name="Программа обучения", related_name="learning_poster", **NULLABLE)
-    name = models.TextField(verbose_name="Наименование плаката")
+    name = models.CharField(verbose_name="Наименование плаката", max_length=250)
     image = models.ImageField(verbose_name="Картинка плаката", upload_to="learning/learning_poster/")
 
     class Meta:

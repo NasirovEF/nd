@@ -16,9 +16,6 @@
                         <div class="card-body">
                             <div class="learning_doc_form">
                                 {{ form.as_p }}
-                                {% if learning_poster_formset.can_delete %}
-                                Удалить плакат полностью {{ form.DELETE }}
-                                {% endif %}
                             </div>
                         </div>
                     </div>

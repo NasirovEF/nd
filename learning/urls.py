@@ -5,7 +5,7 @@ from learning.views.direction import DirectionCreateView, DirectionUpdateView, D
 from learning.views.learner import LearnerCreateView, LearnerUpdateView, LearnerDeleteView, LearnerListView
 from learning.views.learning_doc_poster import LearningDocUpdateView, LearningPosterUpdateView
 from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView, ProgramDetailView
-from learning.views.prot_test import TestCreateView
+from learning.views.prot_test import TestUpdateView
 from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, ProtocolDeleteView, ProtocolListView, \
     ProtocolDetailView
 from learning.views.protocol_result import ProtocolResultsUpdateView
@@ -37,5 +37,6 @@ urlpatterns = [
 
     path("protocol_results_edit/<int:pk>", ProtocolResultsUpdateView.as_view(), name="protocol_results_edit"),
 
-    path("test_create/", TestCreateView.as_view(), name="test_create"),
+    path("test_update/<int:pk>", TestUpdateView.as_view(), name="test_update"),
+
 ]
