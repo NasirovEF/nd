@@ -1,14 +1,47 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 from organization.services import NULLABLE
 
 
-class Organization(models.Model):
+class BaseNamedEntity(models.Model):
+    """
+    Абстрактный базовый класс для всех именованных сущностей.
+    Содержит общие поля: название, полное название, аббревиатура.
+    """
+    name = models.CharField(
+        max_length=150,
+        verbose_name="Наименование",
+        help_text="Краткое официальное название"
+    )
+    full_name = models.CharField(
+        max_length=250,
+        verbose_name="Полное наименование",
+        blank=True,
+        help_text="Полное официальное название (если отличается от краткого)"
+    )
+    abbreviation = models.CharField(
+        max_length=50,
+        verbose_name="Аббревиатура",
+        blank=True,
+        help_text="Сокращённое обозначение"
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        """Базовая валидация именованных сущностей."""
+        if not self.name:
+            raise ValidationError("Наименование не может быть пустым")
+
+
+class Organization(BaseNamedEntity):
     """Класс ОСТ"""
 
-    name = models.CharField(max_length=150, verbose_name="Наименование ОСТ", unique=True)
-    full_name = models.CharField(max_length=250, verbose_name="Полное наименование ОСТ")
-    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура ОСТ")
     is_main = models.BooleanField(verbose_name="Признак основной ОСТ", default=False)
 
     class Meta:
@@ -29,9 +62,6 @@ class Branch(models.Model):
         related_name="branch",
         **NULLABLE
     )
-    name = models.CharField(max_length=150, verbose_name="Наименование филиала", unique=True)
-    full_name = models.CharField(max_length=250, verbose_name="Полное наименование филиала")
-    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура филиала")
 
     class Meta:
         verbose_name = "Филиал"
@@ -45,12 +75,10 @@ class Group(models.Model):
     """Класс группы участка"""
 
     district = models.ForeignKey("District", on_delete=models.CASCADE, verbose_name="Участок", related_name="group", **NULLABLE)
-    name = models.CharField(max_length=150, verbose_name="Наименование группы")
-    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура")
 
     class Meta:
         verbose_name = "Группа"
-        verbose_name_plural = "Группа"
+        verbose_name_plural = "Группы"
 
     def __str__(self):
         return f"{self.name}"
@@ -59,8 +87,6 @@ class Group(models.Model):
 class District(models.Model):
     """Класс участка"""
 
-    name = models.CharField(max_length=150, verbose_name="Наименование участка")
-    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура")
     division = models.ForeignKey(
         "Division",
         on_delete=models.CASCADE,
@@ -79,11 +105,6 @@ class District(models.Model):
 
 class Division(models.Model):
     """Класс структурного подразделения"""
-
-    name = models.CharField(
-        max_length=150, verbose_name="Наименование структурного подразделения", unique=True
-    )
-    abbreviation = models.CharField(max_length=50, verbose_name="Аббревиатура")
 
     branch = models.ForeignKey(
         Branch, on_delete=models.CASCADE, verbose_name="филиал", related_name="division", **NULLABLE

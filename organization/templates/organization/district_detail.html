@@ -13,7 +13,7 @@
             </button>
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item"
-                       href="{% url 'organization:worker_create' %}?organization={{object.division.branch.organization.pk}}&branch={{object.division.branch.pk}}&division={{object.division.pk}}&district={{object.pk}}">Добавить
+                       href="{% url 'organization:worker_create' %}?district={{object.pk}}">Добавить
                     работника
                 </a></li>
                 <li><a class="dropdown-item"
@@ -281,7 +281,7 @@
                             </button>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item"
-                                       href="{% url 'organization:worker_create' %}?organization={{object.division.branch.organization.pk}}&branch={{ object.division.branch.pk }}&division={{ object.division.pk }}&district={{ object.pk }}&group={{ group.pk }}">Добавить
+                                       href="{% url 'organization:worker_create' %}?district={{ object.pk }}&group={{ group.pk }}">Добавить
                                     работника
                                 </a></li>
                                 <li><a class="dropdown-item"

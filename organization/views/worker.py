@@ -65,9 +65,6 @@ class WorkerCreateView(CreateView):
         try:
             # 1. Заполняем поля работника
             worker = form.save(commit=False)
-            worker.organization = Organization.objects.get(pk=self.request.GET.get("organization"))
-            worker.branch = Branch.objects.get(pk=self.request.GET.get("branch"))
-            worker.division = Division.objects.get(pk=self.request.GET.get("division"))
             worker.district = District.objects.get(pk=self.request.GET.get("district"))
             worker.group = Group.objects.get(pk=self.request.GET.get("group")) if self.request.GET.get(
                 "group") else None

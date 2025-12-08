@@ -14,8 +14,8 @@ admin.site.register(StaffDirection)
 
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'program')
-    search_fields = ('program__name',)
+    list_display = ('__str__', 'direction', 'sub_direction')
+    search_fields = ('direction__name', 'sub_direction__name')
 
 
 class AnswerInline(admin.TabularInline):

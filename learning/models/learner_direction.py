@@ -10,6 +10,7 @@ class Direction(models.Model):
     name = models.CharField(max_length=150, verbose_name="Направление обучения", unique=True)
     description = models.TextField(verbose_name="Описание", **NULLABLE)
     periodicity = models.PositiveIntegerField(verbose_name="Периодичность обучения в днях")
+    have_sub_direction = models.BooleanField(verbose_name="Имеет поднаправления", default=False, help_text="Только для 'В'")
 
     class Meta:
         verbose_name = "Направление обучения"
@@ -17,6 +18,56 @@ class Direction(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+    def save(self, *args, **kwargs):
+        is_creating = not self.pk
+        super().save(*args, **kwargs)
+
+        if is_creating:
+            from learning.models import Test
+            if not Test.objects.filter(
+                    direction=self,
+                    sub_direction__isnull=True
+            ).exists():
+                Test.objects.create(
+                    direction=self,
+                    title=f"Тест по направлению «{self.name}»",
+                    description=f"Итоговый тест для направления «{self.name}»"
+                )
+
+
+class SubDirection(models.Model):
+    """Класс поднаправлений для программы В"""
+
+    name = models.CharField(verbose_name="Направления обучения по программе В", max_length=250)
+    direction = models.ForeignKey(Direction, on_delete=models.CASCADE, verbose_name="Направление обучения", related_name="sub_direction")
+
+    class Meta:
+        verbose_name = "Поднаправление обучения для программы В"
+        verbose_name_plural = "Поднаправления обучения для программы В"
+
+    def __str__(self):
+        return f"{self.name}"
+
+    def clean(self):
+        if not self.direction.have_sub_direction:
+            raise ValidationError("Данное направление обучение только для программы 'B'")
+
+
+    def save(self, *args, **kwargs):
+        is_creating = not self.pk
+        super().save(*args, **kwargs)  # Сохраняем поднаправление
+
+        # Если это создание — создаём тест
+        if is_creating:
+            from learning.models import Test
+            if not Test.objects.filter(sub_direction=self).exists():
+                Test.objects.create(
+                    direction=self.direction,
+                    sub_direction=self,
+                    title=f"Тест по поднаправлению «{self.name}»",
+                    description=f"Итоговый тест для поднаправления «{self.name}»"
+                )
 
 
 class Program(models.Model):
@@ -46,21 +97,6 @@ class Program(models.Model):
         # Перед сохранением вызываем clean() для проверки
         self.clean()
         super().save(*args, **kwargs)
-        if self.replacement:
-            try:
-                replaced_program = Program.objects.get(pk=self.replacement.pk)
-                if replaced_program.is_active:
-                    replaced_program.is_active = False
-                    replaced_program.save(update_fields=['is_active'])
-                    if replaced_program.test and not self.test:
-                        replaced_program.test.program = self
-                        replaced_program.test.save(update_fields=['program'])
-                    elif replaced_program.test and self.test:
-                        self.test.delete()
-                        replaced_program.test.program = self
-                        replaced_program.test.save(update_fields=['program'])
-            except Program.DoesNotExist:
-                raise ValidationError(f"Программа с ID {self.replacement.pk} не найдена.")
 
     class Meta:
         verbose_name = "Программа обучения"

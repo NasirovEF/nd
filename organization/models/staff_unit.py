@@ -61,27 +61,6 @@ class Worker(models.Model):
     image = models.ImageField(upload_to="organization/worker/", verbose_name="Фотография работника",  **NULLABLE)
     dismissed = models.BooleanField(verbose_name="Уволен", default=False)
 
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.SET_NULL,
-        **NULLABLE,
-        verbose_name="ОСТ",
-        related_name="worker"
-    )
-    branch = models.ForeignKey(
-        Branch,
-        on_delete=models.SET_NULL,
-        **NULLABLE,
-        verbose_name="Филиал",
-        related_name="worker"
-    )
-    division = models.ForeignKey(
-        Division,
-        on_delete=models.SET_NULL,
-        **NULLABLE,
-        verbose_name="Структурное подразделение",
-        related_name="worker"
-    )
     district = models.ForeignKey(
         District,
         on_delete=models.SET_NULL,
@@ -96,6 +75,18 @@ class Worker(models.Model):
         verbose_name="Группа участка",
         related_name="worker"
     )
+
+    @property
+    def organization(self):
+        return self.district.division.branch.organization if self.district else None
+
+    @property
+    def branch(self):
+        return self.district.division.branch if self.district else None
+
+    @property
+    def division(self):
+        return self.district.division if self.district else None
 
     class Meta:
         verbose_name = "Работник"

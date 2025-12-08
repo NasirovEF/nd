@@ -100,7 +100,7 @@ class ProtocolResultForm(StileFormMixin, forms.ModelForm):
 class TestForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Test
-        fields = ['program']
+        fields = []
 
 
 class AnswerForm(forms.ModelForm):

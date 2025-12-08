@@ -31,14 +31,6 @@ class ProgramCreateView(CreateView):
     model = Program
     form_class = ProgramForm
 
-    def form_valid(self, form):
-        program = form.save()
-        if hasattr(program, 'test') and program.test is not None:
-            return super().form_valid(form)
-        else:
-            Test.objects.create(program=program)
-            return super().form_valid(form)
-
     def get_success_url(self):
         return reverse("learning:program_detail", args=[self.object.pk])
 

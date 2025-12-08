@@ -1,25 +1,52 @@
 from django.db import models
-
+from django.core.exceptions import ValidationError
 from learning.services import get_current_date
 from organization.services import NULLABLE
 
 
 class Test(models.Model):
-    """Модель тестов"""
-    program = models.OneToOneField("Program", verbose_name="Программа", related_name="test", on_delete=models.SET_NULL, **NULLABLE)
-    is_active = models.BooleanField(verbose_name="Активен", default=True)
-    time_limit = models.PositiveIntegerField(verbose_name="Время на тест (мин)", default=20, **NULLABLE)
-    passing_score = models.PositiveIntegerField(verbose_name="Проходной балл (%)", default=90)
+    """Тест для направления или поднаправления"""
+    direction = models.ForeignKey(
+        "Direction",
+        on_delete=models.CASCADE,
+        verbose_name="Направление",
+        related_name="test"
+    )
+    sub_direction = models.ForeignKey(
+        "SubDirection",
+        on_delete=models.CASCADE,
+        verbose_name="Поднаправление",
+        **NULLABLE,
+        help_text="Оставьте пустым, если тест для всего направления",
+        related_name="test"
+    )
 
     class Meta:
         verbose_name = "Тест"
         verbose_name_plural = "Тесты"
+        constraints = [
+            models.UniqueConstraint(
+                fields=['direction', 'sub_direction'],
+                name='unique_test_per_direction_or_subdirection'
+            )
+        ]
 
     def __str__(self):
-        if self.program:
-            return f"Тест к {self.program.name}"
-        else:
-            return "Тест без программы"
+        if self.sub_direction:
+            return f"Тест к направлению обучения: ({self.direction.name} → {self.sub_direction.name})"
+        return f"Тест к направлению обучения: ({self.direction.name})"
+
+    def clean(self):
+        # Проверка: если направление не имеет поднаправлений, sub_direction должно быть пустым
+        if not self.direction.have_sub_direction and self.sub_direction:
+            raise ValidationError({
+                'sub_direction': "Это направление не поддерживает поднаправления."
+            })
+        # Если sub_direction задан, он должен относиться к этому направлению
+        if self.sub_direction and self.sub_direction.direction != self.direction:
+            raise ValidationError({
+                'sub_direction': "Поднаправление не относится к выбранному направлению."
+            })
 
 
 class Question(models.Model):
