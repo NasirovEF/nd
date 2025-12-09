@@ -52,7 +52,7 @@ class Organization(BaseNamedEntity):
         return f"{self.name}"
 
 
-class Branch(models.Model):
+class Branch(BaseNamedEntity):
     """Класс филиала ОСТ"""
 
     organization = models.ForeignKey(
@@ -71,7 +71,7 @@ class Branch(models.Model):
         return f"{self.name}"
 
 
-class Group(models.Model):
+class Group(BaseNamedEntity):
     """Класс группы участка"""
 
     district = models.ForeignKey("District", on_delete=models.CASCADE, verbose_name="Участок", related_name="group", **NULLABLE)
@@ -84,7 +84,7 @@ class Group(models.Model):
         return f"{self.name}"
 
 
-class District(models.Model):
+class District(BaseNamedEntity):
     """Класс участка"""
 
     division = models.ForeignKey(
@@ -103,7 +103,7 @@ class District(models.Model):
         return f"{self.name}"
 
 
-class Division(models.Model):
+class Division(BaseNamedEntity):
     """Класс структурного подразделения"""
 
     branch = models.ForeignKey(

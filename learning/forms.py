@@ -169,8 +169,8 @@ QuestionFormSet = forms.inlineformset_factory(
     Test,
     Question,
     form=QuestionForm,
-    extra=10,
-    max_num=10,
+    extra=1,
+    max_num=1,
     can_delete=True,
     # Важно: не пропускать пустые формы при валидации
     validate_max=False,

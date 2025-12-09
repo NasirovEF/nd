@@ -25,6 +25,7 @@ class ProgramDetailView(DetailView):
     model = Program
 
 
+
 class ProgramCreateView(CreateView):
     """Создание филиалов"""
 

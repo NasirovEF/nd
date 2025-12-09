@@ -30,9 +30,7 @@ class Direction(models.Model):
                     sub_direction__isnull=True
             ).exists():
                 Test.objects.create(
-                    direction=self,
-                    title=f"Тест по направлению «{self.name}»",
-                    description=f"Итоговый тест для направления «{self.name}»"
+                    direction=self
                 )
 
 
@@ -64,9 +62,7 @@ class SubDirection(models.Model):
             if not Test.objects.filter(sub_direction=self).exists():
                 Test.objects.create(
                     direction=self.direction,
-                    sub_direction=self,
-                    title=f"Тест по поднаправлению «{self.name}»",
-                    description=f"Итоговый тест для поднаправления «{self.name}»"
+                    sub_direction=self
                 )
 
 
