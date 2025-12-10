@@ -24,6 +24,24 @@ class ProgramDetailView(DetailView):
 
     model = Program
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        tests = []
+        questions =[]
+        for direction in self.object.direction.all():
+            if direction.have_sub_direction:
+                for subdirection in direction.sub_direction.all():
+                    for test in subdirection.test.all():
+                        tests.append(test)
+            else:
+                for test in direction.test.all():
+                    tests.append(test)
+        for test in tests:
+            for question in test.question.all():
+                questions.append(question)
+        context["tests"] = tests
+        context["questions"] = questions
+        return context
 
 
 class ProgramCreateView(CreateView):

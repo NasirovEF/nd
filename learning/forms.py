@@ -67,18 +67,36 @@ class LearnerForm(StileFormMixin, forms.ModelForm):
 
 
 class ProgramForm(StileFormMixin, forms.ModelForm):
-    def clean_replacement(self):
-        replacement = self.cleaned_data.get('replacement')
-        if replacement == self.instance:
-            raise forms.ValidationError("Программа не может заменять саму себя.")
-        return replacement
+    error_css_class = 'text-danger'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        replacement = cleaned_data.get('replacement')
+        if replacement:
+            if self.instance.pk and replacement.pk == self.instance.pk:
+                self.add_error(
+                    'replacement',
+                    "Программа не может заменять саму себя."
+                )
+
+        subdirection = cleaned_data.get('subdirection')
+        direction = cleaned_data.get('direction')
+
+        if subdirection and subdirection.exists():
+            if not direction.filter(have_sub_direction=True).exists():
+                self.add_error(
+                    'direction',
+                    "Выберите направление обучения 'В' или уберите поднаправления"
+                )
+
+        return cleaned_data
 
     class Meta:
         model = Program
         exclude = ["is_active"]
 
 
-class ProgramFormNotActive(StileFormMixin, forms.ModelForm):
+class ProgramFormNotActive(ProgramForm):
     class Meta:
         model = Program
         exclude = ["replacement", "is_active"]

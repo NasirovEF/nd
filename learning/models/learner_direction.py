@@ -70,6 +70,7 @@ class Program(models.Model):
     """Модель программы обучения"""
     name = models.CharField(max_length=150, verbose_name="Наименование программы обучения")
     direction = models.ManyToManyField(Direction, related_name="program", verbose_name="Направление обучения")
+    subdirection = models.ManyToManyField(SubDirection, related_name="program", verbose_name="Поднаправление обучения", blank=True, help_text="В случае если выбрано направление обучения 'В'")
     duration = models.PositiveIntegerField(verbose_name="Продолжительность обучения (часов)")
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, related_name="program", verbose_name="Наименование профессии", **NULLABLE)
     approve = models.CharField(max_length=150, verbose_name="Программа утверждена", help_text="Введите должность, И.О. Фамилию лица утвердившего программу")
@@ -83,16 +84,6 @@ class Program(models.Model):
     is_active = models.BooleanField(verbose_name="Актуальность", default=True)
     doc_scan = models.FileField(verbose_name="Скан-копия программы обучения",
                                 upload_to=add_doc_url, **NULLABLE)
-
-    def clean(self):
-        super().clean()
-        if self.replacement == self:
-            raise ValidationError("Программа не может заменять саму себя.")
-
-    def save(self, *args, **kwargs):
-        # Перед сохранением вызываем clean() для проверки
-        self.clean()
-        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Программа обучения"
