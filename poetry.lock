@@ -736,6 +736,20 @@ dev = ["build", "hatch"]
 doc = ["sphinx"]
 
 [[package]]
+name = "transliterate"
+version = "1.10.2"
+description = "Bi-directional transliterator for Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "transliterate-1.10.2-py2.py3-none-any.whl", hash = "sha256:010a5021bf6021689c4fade0985f3f7b3db1f2f16a48a09a56797f171c08ed42"},
+    {file = "transliterate-1.10.2.tar.gz", hash = "sha256:bc608e0d48e687db9c2b1d7ea7c381afe0d1849cad216087d8e03d8d06a57c85"},
+]
+
+[package.dependencies]
+six = ">=1.1.0"
+
+[[package]]
 name = "typing-extensions"
 version = "4.15.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
@@ -760,4 +774,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "c9b5fd632e010d48ac73ca83a10d259f3ed9df421165002e455a104c1da4694b"
+content-hash = "a91df03d65c504f54ed8aff1333607f466d29a2b3d6ffb1eeb83277f4d0e489a"
