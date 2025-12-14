@@ -5,4 +5,4 @@ from  django.contrib.auth.forms import AuthenticationForm
 
 class UserLoginViewForm(StileFormMixin, AuthenticationForm):
     model = User
-    fields = ("username", "service_number", "password")
+    fields = ("service_number", "password")

@@ -59,6 +59,7 @@ class Worker(models.Model):
     name = models.CharField(max_length=50, verbose_name="Имя")
     patronymic = models.CharField(max_length=50, verbose_name="Отчество", **NULLABLE)
     image = models.ImageField(upload_to="organization/worker/", verbose_name="Фотография работника",  **NULLABLE)
+    service_number = models.CharField(max_length=30, verbose_name="Табельный номер", unique=True)
     dismissed = models.BooleanField(verbose_name="Уволен", default=False)
 
     district = models.ForeignKey(
@@ -94,3 +95,14 @@ class Worker(models.Model):
 
     def __str__(self):
         return f'{self.name[:1]}.{self.patronymic[:1]}. {self.surname}'
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if hasattr(self, 'user'):
+            if self.dismissed:
+                self.user.is_active = False
+                self.user.save(update_fields=['is_active'])
+            else:
+                self.user.is_active = True
+                self.user.save(update_fields=['is_active'])

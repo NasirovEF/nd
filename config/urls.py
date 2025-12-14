@@ -8,4 +8,5 @@ urlpatterns = [
     path("", include("organization.urls", namespace="organization")),
     path("", include("learning.urls", namespace="learning")),
     path("", include("accident.urls", namespace="accident")),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path("", include("users.urls", namespace="users")),
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

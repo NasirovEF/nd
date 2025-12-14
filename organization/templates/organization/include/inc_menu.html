@@ -13,13 +13,30 @@
             <div class="offcanvas-body">
                 <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                     <li class="nav-item">
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        <div>
+                            {% if user.is_authenticated %}
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle mt-2"
+                                    data-bs-toggle="dropdown"
                                     aria-expanded="false">
                                 Профиль
                             </button>
+                            <ul class="dropdown-menu">
+                                {% if user.worker %}
+                                <li><a class="dropdown-item" href="{% url 'learning:protocol_list' %}">Личный
+                                    кабинет</a></li>
+                                {% endif %}
+                                {% if user.is_staff %}
+                                <li><a class="dropdown-item" href="admin/">Администрирование</a></li>
+                                {% endif %}
+                                <hr>
+                                <li><a class="dropdown-item" href="{% url 'users:logout' %}">Выйти</a></li>
+                            </ul>
+                            {% else %}
+                            <a class="btn btn-outline-primary" href="{% url 'users:login' %}">Войти</a>
+                            {% endif %}
                         </div>
-                        <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2" data-bs-toggle="dropdown"
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2"
+                                data-bs-toggle="dropdown"
                                 aria-expanded="false">
                             Обучение по ОТ
                         </button>
@@ -32,7 +49,8 @@
                                    href="{% url 'learning:direction_list' %}">Направления обучения</a></li>
                         </ul>
                         <div>
-                            <a class="btn btn-outline-primary my-2" href="{% url 'accident:accident_list' %}">Несчастные случаи</a>
+                            <a class="btn btn-outline-primary my-2" href="{% url 'accident:accident_list' %}">Несчастные
+                                случаи</a>
                         </div>
                     </li>
                 </ul>

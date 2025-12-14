@@ -17,6 +17,8 @@ from organization.models import Worker, District, Group, Organization, Branch, D
 from django.forms import inlineformset_factory
 from django.db import transaction
 
+from users.models import User
+
 
 class WorkerListView(ListView):
     """Просмотр списка работников"""
@@ -91,7 +93,6 @@ class WorkerCreateView(CreateView):
             # 4. Валидируем и сохраняем формсет
             if position_formset.is_valid():
                 position_formset.save(commit=True)  # ← commit=True обязательно!
-
                 # 5. Создаём Learner для всех позиций
                 for position in worker.position.all():
                     try:
@@ -107,6 +108,11 @@ class WorkerCreateView(CreateView):
                     learner.direction.set(directions)
                     for direction in directions:
                         KnowledgeDate.objects.create_or_update_active(learner=learner, direction=direction)
+                user = User.objects.create(worker=worker)
+                login_name = user.get_login_name
+                service_num = user.service_number or ""
+                user.set_password(f"{login_name}{service_num}")
+                user.save()
                 return super().form_valid(form)
             else:
                 # 6. Если формсет невалиден — показываем ошибки
