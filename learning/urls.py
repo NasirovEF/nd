@@ -2,6 +2,7 @@ from django.urls import path
 
 from learning.apps import LearningConfig
 from learning.views.direction import DirectionListView
+from learning.views.exam import my_exams, start_exam, take_exam, submit_answers, exam_results
 from learning.views.learner import LearnerCreateView, LearnerUpdateView, LearnerDeleteView, LearnerListView
 from learning.views.learning_doc_poster import LearningDocUpdateView, LearningPosterUpdateView
 from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView, ProgramDetailView
@@ -34,5 +35,11 @@ urlpatterns = [
     path("protocol_results_edit/<int:pk>", ProtocolResultsUpdateView.as_view(), name="protocol_results_edit"),
 
     path("test_update/<int:pk>", TestUpdateView.as_view(), name="test_update"),
+
+    path('my-exams/', my_exams, name='my_exams'),
+    path('start-exam/<int:assignment_id>/', start_exam, name='start_exam'),
+    path('take-exam/<int:result_id>/', take_exam, name='take_exam'),
+    path('submit-answers/<int:result_id>/', submit_answers, name='submit_answers'),
+    path('results/', exam_results, name='exam_results'),
 
 ]

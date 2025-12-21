@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from learning.services import get_current_date
+from django.core.validators import MinValueValidator
 from organization.services import NULLABLE
 
 
@@ -78,27 +78,56 @@ class Answer(models.Model):
         return f"{self.text}"
 
 
-class TestResult(models.Model):
-    """Модель результата теста"""
-    learner = models.ForeignKey("Learner", verbose_name="Работник", on_delete=models.CASCADE, related_name="test_results")
-    test = models.ForeignKey("Test", verbose_name="Тест", on_delete=models.CASCADE, related_name="results")
+class ExamResult(models.Model):
+    """Результат прохождения экзамена"""
+    learner = models.ForeignKey(
+        "Learner",
+        on_delete=models.CASCADE,
+        verbose_name="Работник",
+        related_name="exam_results"
+    )
+    exam = models.ForeignKey(
+        "Exam",
+        on_delete=models.CASCADE,
+        verbose_name="Экзамен",
+        related_name="results"
+    )
     test_date = models.DateTimeField(verbose_name="Дата тестирования", auto_now_add=True)
     is_passed = models.BooleanField(verbose_name="Сдан?", default=False)
-    score = models.DecimalField(verbose_name="Набранный балл (%)", max_digits=5, decimal_places=2, default=0)
+    score = models.DecimalField(
+        verbose_name="Набранный балл (%)",
+        max_digits=5,
+        decimal_places=2,
+        default=0
+    )
     total_score = models.PositiveIntegerField(verbose_name="Максимально возможный балл", default=0)
-
     attempt_number = models.PositiveIntegerField(verbose_name="Попытка №", default=1)
+    answered_questions = models.JSONField(
+        verbose_name="Ответы пользователя",
+        null=True,
+        blank=True
+    )  # для истории ответов
 
     class Meta:
-        unique_together = ('test', 'learner', 'attempt_number')
-        verbose_name = "Результат теста"
-        verbose_name_plural = "Результаты тестирования"
+        verbose_name = "Результат экзамена"
+        verbose_name_plural = "Результаты экзаменов"
+        unique_together = ('exam', 'learner', 'attempt_number')
 
 
-class TestAssignment(models.Model):
-    """Модель процесса назначения теста"""
-    learner = models.ForeignKey("Learner", verbose_name="Работник", on_delete=models.CASCADE, related_name="assigned_tests")
-    test = models.ForeignKey("Test", verbose_name="Тест", on_delete=models.CASCADE, related_name="assignments")
+class ExamAssignment(models.Model):
+    """Назначение экзамена работнику"""
+    learner = models.ForeignKey(
+        "Learner",
+        on_delete=models.CASCADE,
+        verbose_name="Работник",
+        related_name="exam_assignments"
+    )
+    exam = models.ForeignKey(
+        "Exam",
+        on_delete=models.CASCADE,
+        verbose_name="Экзамен",
+        related_name="assignments"
+    )
     assigned_date = models.DateTimeField(verbose_name="Дата назначения", auto_now_add=True)
     deadline = models.DateTimeField(verbose_name="Срок выполнения", null=True, blank=True)
     status = models.CharField(
@@ -115,8 +144,50 @@ class TestAssignment(models.Model):
     attempts_left = models.PositiveIntegerField(verbose_name="Осталось попыток", default=1)
 
     class Meta:
-        verbose_name = "Назначение теста"
-        verbose_name_plural = "Назначения тестов"
+        verbose_name = "Назначение экзамена"
+        verbose_name_plural = "Назначения экзаменов"
+        unique_together = ('learner', 'exam')
+
+    def __str__(self):
+        return f"{self.learner} — {self.exam}"
 
 
+class Exam(models.Model):
+    """Экзамен, объединяющий тесты по программе"""
+    program = models.ForeignKey(
+        "Program",
+        on_delete=models.CASCADE,
+        verbose_name="Программа",
+        related_name="exams"
+    )
+    is_active = models.BooleanField(verbose_name="Активен", default=True)
+    time_limit = models.PositiveIntegerField(
+        verbose_name="Время на тест (мин)",
+        default=20,
+        null=True,
+        blank=True
+    )
+    passing_score = models.PositiveIntegerField(
+        verbose_name="Проходной балл (%)",
+        default=70,
+        validators=[MinValueValidator(0)]
+    )
+    total_questions = models.PositiveIntegerField(
+        verbose_name="Количество вопросов в тесте",
+        default=20,
+        validators=[MinValueValidator(1)]
+    )
 
+    class Meta:
+        verbose_name = "Экзамен"
+        verbose_name_plural = "Экзамены"
+
+    def __str__(self):
+        return f"{self.name} ({self.program.name})"
+
+    def get_random_questions(self):
+        """Возвращает N случайных вопросов из всех тестов программы"""
+        tests = Test.objects.filter(direction__program=self.program)
+        questions = Question.objects.filter(test__in=tests)
+        return questions.order_by('?')[:self.total_questions]
+    

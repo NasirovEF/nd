@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 
 from learning.forms import ProgramForm, ProgramFormNotActive
-from learning.models import Program, Test
+from learning.models import Program, Exam
 
 
 class ProgramListView(ListView):
@@ -49,6 +49,11 @@ class ProgramCreateView(CreateView):
 
     model = Program
     form_class = ProgramForm
+
+    def form_valid(self, form):
+        program = form.save()
+        Exam.objects.create(program=program)
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse("learning:program_detail", args=[self.object.pk])

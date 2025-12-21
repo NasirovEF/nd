@@ -1,0 +1,50 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+
+        <h1>Ваши результаты</h1>
+
+        {% if results %}
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Экзамен</th>
+                <th>Программа</th>
+                <th>Дата</th>
+                <th>Балл (%)</th>
+                <th>Статус</th>
+                <th>Попытка</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ result.exam.name }}</td>
+                <td>{{ result.exam.program.name }}</td>
+                <td>{{ result.test_date|date:"d.m.Y H:i" }}</td>
+                <td>{{ result.score }}</td>
+                <td>
+                    {% if result.is_passed %}
+                    <span class="text-success">Сдан</span>
+                    {% else %}
+                    <span class="text-danger">Не сдан</span>
+                    {% endif %}
+                </td>
+                <td>{{ result.attempt_number }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>У вас нет результатов экзаменов.</p>
+        {% endif %}
+
+        <a href="{% url 'my_exams' %}" class="btn btn-primary">Вернуться к экзаменам</a>
+
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}

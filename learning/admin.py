@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Learner, Protocol, ProtocolResult, Program, Direction, KnowledgeDate, Test, Question, Answer, TestResult, StaffDirection, SubDirection
+from .models import Learner, Protocol, ProtocolResult, Program, Direction, KnowledgeDate, Test, Question, Answer, ExamResult, StaffDirection, SubDirection
 
 admin.site.register(Learner)
 admin.site.register(Protocol)
@@ -9,7 +9,7 @@ admin.site.register(Program)
 admin.site.register(Direction)
 admin.site.register(SubDirection)
 admin.site.register(KnowledgeDate)
-admin.site.register(TestResult)
+admin.site.register(ExamResult)
 admin.site.register(StaffDirection)
 
 

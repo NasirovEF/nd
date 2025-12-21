@@ -8,7 +8,7 @@
             {% csrf_token %}
 
             <fieldset class="mb-2">
-                <legend class="border-bottom pb-2 mb-3">Основной тест</legend>
+                <legend class="border-bottom pb-2 mb-3">Вопросы к направлению обучения {{object.direction}} {% if object.sub_direction %}({{object.sub_direction}}) {% endif %}</legend>
                 {{ form.as_p }}
             </fieldset>
 

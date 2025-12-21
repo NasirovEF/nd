@@ -1,0 +1,125 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+
+        <h1>{{ result.exam.name }}</h1>
+        <p>Программа: {{ result.exam.program.name }}</p>
+        <p>Время на выполнение: {{ time_limit }} мин</p>
+
+        <div id="timer" class="mb-3 text-danger font-weight-bold"></div>
+
+        <form id="exam-form">
+            {% csrf_token %}
+
+            {% for question in questions %}
+                <div class="question mb-4">
+                    <h5>{{ question.text }}</h5>
+                    {% for answer in question.answers.all %}
+                        <div class="form-check">
+                            <input id="answer_{{ answer.id }}"
+                                   class="form-check-input"
+                                   type="checkbox"
+                                   name="question_{{ question.id }}"
+                                   value="{{ answer.id }}">
+                            <label for="answer_{{ answer.id }}"
+                                   class="form-check-label">
+                                {{ answer.text }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <button type="button"
+                    class="btn btn-success"
+                    id="submit-btn"
+                    onclick="submitAnswers()">
+                Завершить тест
+            </button>
+        </form>
+
+        <script>
+            let timer;
+            const timeLimit = {{ time_limit|default:0 }} * 60; // в секундах
+
+            function startTimer() {
+                let remainingTime = timeLimit;
+                const timerElement = document.getElementById('timer');
+
+                timer = setInterval(() => {
+                    const minutes = Math.floor(remainingTime / 60);
+                    const seconds = remainingTime % 60;
+                    timerElement.textContent = `Осталось: ${minutes}:${seconds.toString().padStart(2, '0')} мин`;
+
+                    // Визуальное предупреждение при <5 минут
+                    if (remainingTime <= 300) {
+                        timerElement.classList.add('font-weight-bold', 'text-warning');
+                    }
+
+                    if (remainingTime <= 0) {
+                        clearInterval(timer);
+                        submitAnswers(); // Автоматически отправляем ответы
+                    }
+                    remainingTime--;
+                }, 1000);
+            }
+
+            function submitAnswers() {
+                const answers = [];
+                document.querySelectorAll('input[type="checkbox"]:checked').forEach(input => {
+                    const questionId = input.name.split('_')[1];
+                    answers.push({
+                        question_id: parseInt(questionId),
+                        answer_ids: [parseInt(input.value)]
+                    });
+                });
+
+                // Проверка на наличие ответов
+                if (answers.length === 0) {
+                    alert("Пожалуйста, выберите хотя бы один ответ.");
+                    return;
+                }
+
+                // Отключаем кнопку на время отправки
+                const submitBtn = document.getElementById('submit-btn');
+                submitBtn.disabled = true;
+
+                fetch(`/submit-answers/{{ result.id }}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ answers })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+
+                    if (data.status === 'success') {
+                        alert(`Тест завершён! Ваш балл: ${data.score}%. ${data.is_passed ? 'Вы сдали!' : 'Вы не сдали.'}`);
+                        window.location.href = '/results/';
+                    } else {
+                        alert('Ошибка при отправке ответов: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    submitBtn.disabled = false;
+                    alert('Произошла ошибка: ' + error);
+                });
+            }
+
+            // Запуск таймера при загрузке страницы
+            window.onload = function() {
+                if (timeLimit > 0) {
+                    startTimer();
+                }
+            };
+        </script>
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}
