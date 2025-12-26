@@ -48,6 +48,9 @@
                         {% if object.position %}
                         <p class="card-text">Совмещаемая должность/профессия: {{object|get_extra_position}}</p>
                         {% endif %}
+                        {% for learner in object.learner.all %}
+                        <a href="{% url 'learning:my_exams' learner.pk %}">Экзамены для {{learner}}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

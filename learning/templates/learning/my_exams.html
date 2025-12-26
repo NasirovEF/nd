@@ -1,0 +1,32 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+
+        <h1>Ваши экзамены</h1>
+        {% if assignments %}
+        <ul>
+            {% for assignment in assignments %}
+            <li>
+                <strong>{{ assignment.exam.name }}</strong><br>
+                Программа: {{ assignment.exam.program.name }}<br>
+                Статус: {{ assignment.status|capfirst }}<br>
+                Срок: {% if assignment.deadline %}{{ assignment.deadline }}{% else %}Не задан{% endif %}<br>
+                Попыток осталось: {{ assignment.attempts_left }}
+                {{ current_learner_id }}
+                {% if assignment.status == 'assigned' %}
+                <a href="{% url 'learning:start_exam' assignment.learner.pk assignment.id %}" class="btn btn-primary">Начать</a>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>У вас нет назначенных экзаменов.</p>
+        {% endif %}
+
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}

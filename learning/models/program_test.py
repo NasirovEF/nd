@@ -158,14 +158,14 @@ class Exam(models.Model):
         "Program",
         on_delete=models.CASCADE,
         verbose_name="Программа",
-        related_name="exams"
+        related_name="exams",
+        **NULLABLE
     )
     is_active = models.BooleanField(verbose_name="Активен", default=True)
     time_limit = models.PositiveIntegerField(
         verbose_name="Время на тест (мин)",
         default=20,
-        null=True,
-        blank=True
+        **NULLABLE
     )
     passing_score = models.PositiveIntegerField(
         verbose_name="Проходной балл (%)",
@@ -183,7 +183,7 @@ class Exam(models.Model):
         verbose_name_plural = "Экзамены"
 
     def __str__(self):
-        return f"{self.name} ({self.program.name})"
+        return f"Экзамен к {self.program.name}"
 
     def get_random_questions(self):
         """Возвращает N случайных вопросов из всех тестов программы"""

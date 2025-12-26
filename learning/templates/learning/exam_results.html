@@ -41,7 +41,7 @@
         <p>У вас нет результатов экзаменов.</p>
         {% endif %}
 
-        <a href="{% url 'my_exams' %}" class="btn btn-primary">Вернуться к экзаменам</a>
+        <a href="{% url 'organization:worker_detail' user.worker.pk %}" class="btn btn-primary">Вернуться к экзаменам</a>
 
 
     </div>

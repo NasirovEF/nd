@@ -89,6 +89,20 @@ class Program(models.Model):
         verbose_name = "Программа обучения"
         verbose_name_plural = "Программы обучения"
 
+    def save(self, *args, **kwargs):
+        # Перед сохранением вызываем clean() для проверки
+        self.clean()
+        super().save(*args, **kwargs)
+        if self.replacement:
+            try:
+                replaced_program = Program.objects.get(pk=self.replacement.pk)
+                if replaced_program.is_active:
+                    replaced_program.is_active = False
+                    replaced_program.save(update_fields=['is_active'])
+                    replaced_program.exams.update(is_active=False)
+            except Program.DoesNotExist:
+                raise ValidationError(f"Программа с ID {self.replacement.pk} не найдена.")
+
     def __str__(self):
         return f"{self.name}"
 

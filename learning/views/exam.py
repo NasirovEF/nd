@@ -1,12 +1,16 @@
 from django.core.exceptions import ValidationError
-from learning.models import ExamAssignment, ExamResult, Question
+from learning.models import ExamAssignment, ExamResult, Question, Learner
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 import json
+from django.http import HttpResponseNotFound
+import logging
+from django.db import transaction
+
+logger = logging.getLogger(__name__)
 
 
 def assign_exam_to_learner(learner, exam, deadline=None, max_attempts=1):
@@ -54,7 +58,7 @@ def calculate_exam_result(result, user_answers):
 
     for item in user_answers:
         question = Question.objects.get(id=item['question_id'])
-        correct_answers = question.answers.filter(is_correct=True)
+        correct_answers = question.answer.filter(is_correct=True)
         user_answer_ids = set(item['answer_ids'])
         correct_ids = set(correct_answers.values_list('id', flat=True))
 
@@ -79,72 +83,114 @@ def complete_exam_assignment(assignment, result):
 
 
 @login_required
-def my_exams(request):
+def my_exams(request, learner_id):
     """Список назначенных экзаменов"""
+    try:
+        learner = request.user.worker.learner.get(pk=learner_id)
+    except Learner.DoesNotExist:
+        return HttpResponseNotFound("Learner not found")
+
     assignments = ExamAssignment.objects.filter(
-        learner=request.user,
+        learner=learner,
         status__in=['assigned', 'in_progress']
     ).select_related('exam')
-    return render(request, 'exams/my_exams.html', {'assignments': assignments})
+    return render(request, 'learning/my_exams.html', {'assignments': assignments})
 
 
 @login_required
-def start_exam(request, assignment_id):
+def start_exam(request, learner_id, assignment_id):
     """Старт попытки прохождения экзамена"""
-    assignment = get_object_or_404(ExamAssignment, id=assignment_id, learner=request.user)
+    try:
+        learner = request.user.worker.learner.get(pk=learner_id)
+    except Learner.DoesNotExist:
+        return HttpResponseNotFound("Learner not found")
+
+    assignment = get_object_or_404(ExamAssignment, learner=learner, id=assignment_id)
 
     if assignment.status == 'assigned':
         try:
             result = start_exam_attempt(assignment)
-            return redirect('take_exam', result_id=result.id)
+            return redirect('learning:take_exam', learner_id=learner.pk, result_id=result.id)
         except ValidationError as e:
             messages.error(request, str(e))
 
-    return redirect('my_exams')
+    return redirect('learning:my_exams')
 
 
 @login_required
-def take_exam(request, result_id):
+def take_exam(request, learner_id, result_id):
     """Экран прохождения экзамена"""
+
+    try:
+        learner = request.user.worker.learner.get(pk=learner_id)
+    except Learner.DoesNotExist:
+        return HttpResponseNotFound("Learner not found")
+
     result = get_object_or_404(
         ExamResult.objects.select_related('exam'),
         id=result_id,
-        learner=request.user
+        learner=learner
     )
     questions = result.exam.get_random_questions()
 
-    return render(request, 'exams/take_exam.html', {
+    return render(request, 'learning/take_exam.html', {
         'result': result,
         'questions': questions,
         'time_limit': result.exam.time_limit
     })
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-def submit_answers(request, result_id):
-    """Обработка отправленных ответов"""
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            user_answers = data.get('answers', [])
+@csrf_protect  # Вместо csrf_exempt
+def submit_answers(request, learner_id, result_id):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
-            result = ExamResult.objects.get(id=result_id, learner=request.user)
+    try:
+        learner = Learner.objects.get(worker=request.user.worker, pk=learner_id)
+        data = json.loads(request.body)
+        user_answers = data.get('answers', [])
+
+        # Проверка и получение результата
+        result = ExamResult.objects.select_related('exam').get(
+            id=result_id,
+            learner=learner
+        )
+
+        # 2. Получаем ExamAssignment, связанный с этим экзаменом и учеником
+        exam_assignment = ExamAssignment.objects.get(
+            exam=result.exam,
+            learner=learner,
+            status='in_progress'
+        )
+        with transaction.atomic():
             calculate_exam_result(result, user_answers)
-            complete_exam_assignment(result.exam_assignment, result)
+            complete_exam_assignment(exam_assignment, result)
 
-            return JsonResponse({
-                'status': 'success',
-                'score': round(result.score, 2),
-                'is_passed': result.is_passed
-            })
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+        return JsonResponse({
+            'status': 'success',
+            'score': round(result.score, 2),
+            'is_passed': result.is_passed
+        })
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+    except Learner.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Ученик не найден'})
+    except ExamResult.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Экзамен не найден или завершён'})
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Некорректный JSON'})
+    except ValidationError as e:
+        return JsonResponse({'status': 'error', 'message': e.message})
+    except Exception as e:
+        logger.error(f"[submit_answers] Ошибка: {e}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': 'Внутренняя ошибка сервера'})
 
 
 @login_required
-def exam_results(request):
+def exam_results(request, learner_id):
     """Просмотр результатов экзаменов"""
-    results = ExamResult.objects.filter(learner=request.user).select_related('exam')
-    return render(request, 'exams/exam_results.html', {'results': results})
+    try:
+        learner = request.user.worker.learner.get(pk=learner_id)
+    except Learner.DoesNotExist:
+        return HttpResponseNotFound("Learner not found")
+    results = ExamResult.objects.filter(learner=learner).select_related('exam')
+    return render(request, 'learning/exam_results.html', {'results': results})

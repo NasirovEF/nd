@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Learner, Protocol, ProtocolResult, Program, Direction, KnowledgeDate, Test, Question, Answer, ExamResult, StaffDirection, SubDirection
+from .models import Learner, Protocol, ProtocolResult, Program, Direction, KnowledgeDate, Test, Question, Answer, \
+    ExamResult, StaffDirection, SubDirection, Exam, ExamAssignment
 
 admin.site.register(Learner)
 admin.site.register(Protocol)
@@ -10,6 +11,8 @@ admin.site.register(Direction)
 admin.site.register(SubDirection)
 admin.site.register(KnowledgeDate)
 admin.site.register(ExamResult)
+admin.site.register(Exam)
+admin.site.register(ExamAssignment)
 admin.site.register(StaffDirection)
 
 

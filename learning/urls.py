@@ -36,10 +36,10 @@ urlpatterns = [
 
     path("test_update/<int:pk>", TestUpdateView.as_view(), name="test_update"),
 
-    path('my-exams/', my_exams, name='my_exams'),
-    path('start-exam/<int:assignment_id>/', start_exam, name='start_exam'),
-    path('take-exam/<int:result_id>/', take_exam, name='take_exam'),
-    path('submit-answers/<int:result_id>/', submit_answers, name='submit_answers'),
-    path('results/', exam_results, name='exam_results'),
+    path('my-exams/<int:learner_id>', my_exams, name='my_exams'),
+    path('start-exam/<int:learner_id>/<int:assignment_id>/', start_exam, name='start_exam'),
+    path('take-exam/<int:learner_id>/<int:result_id>/', take_exam, name='take_exam'),
+    path('submit-answers/<int:learner_id>/<int:result_id>/', submit_answers, name='submit_answers'),
+    path('results/<int:learner_id>/', exam_results, name='exam_results'),
 
 ]
