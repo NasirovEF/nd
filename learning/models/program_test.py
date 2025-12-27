@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
+
+from learning.models import Direction
 from organization.services import NULLABLE
 
 
@@ -169,7 +171,7 @@ class Exam(models.Model):
     )
     passing_score = models.PositiveIntegerField(
         verbose_name="Проходной балл (%)",
-        default=70,
+        default=80,
         validators=[MinValueValidator(0)]
     )
     total_questions = models.PositiveIntegerField(
@@ -187,7 +189,24 @@ class Exam(models.Model):
 
     def get_random_questions(self):
         """Возвращает N случайных вопросов из всех тестов программы"""
-        tests = Test.objects.filter(direction__program=self.program)
-        questions = Question.objects.filter(test__in=tests)
+        # Все направления программы
+        directions = Direction.objects.filter(program=self.program)
+
+        # Базовые тесты (привязаны напрямую к направлениям)
+        base_tests = Test.objects.filter(direction__in=directions)
+
+        # Тесты из поднаправлений (только если есть направления с поднаправлениями)
+        subdirection_tests = Test.objects.none()  # Пустой queryset по умолчанию
+
+        directions_with_subs = directions.filter(have_sub_direction=True)
+        if directions_with_subs.exists():
+            subdirection_tests = Test.objects.filter(
+                sub_direction__direction__in=directions_with_subs
+            )
+
+        all_tests = base_tests | subdirection_tests
+
+        questions = Question.objects.filter(test__in=all_tests)
         return questions.order_by('?')[:self.total_questions]
+
     

@@ -1,6 +1,6 @@
 from django import template
 from django.utils.safestring import mark_safe
-from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult
+from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult, ExamAssignment
 from datetime import date
 
 from organization.models import Position
@@ -108,3 +108,12 @@ def get_extra_position(worker):
         return ", ".join(positions)
     else:
         return "отсутствует"
+
+
+@register.filter()
+def get_assignments(learner):
+    assignments = ExamAssignment.objects.filter(
+        learner=learner,
+        status__in=['assigned',]
+    ).select_related('exam')
+    return assignments

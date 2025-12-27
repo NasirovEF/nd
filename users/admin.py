@@ -8,7 +8,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         # Поля, доступные для редактирования
         fieldsets = (
             (None, {
-                'fields': ('service_number', 'email', 'worker', 'is_active', 'is_staff')
+                'fields': ('username', 'service_number', 'email', 'worker', 'is_active', 'is_staff')
             }),
             ('Права', {
                 'fields': ('is_superuser', 'groups', 'user_permissions'),

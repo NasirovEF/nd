@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from learning.models import ExamAssignment, ExamResult, Question, Learner
+from learning.models import ExamAssignment, ExamResult, Question, Learner, Answer
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -77,24 +77,9 @@ def calculate_exam_result(result, user_answers):
 
 def complete_exam_assignment(assignment, result):
     """Обновить статус назначения после завершения попытки"""
-    assignment.status = 'completed' if result.is_passed else 'failed'
+    assignment.status = 'completed'
     assignment.save()
     return assignment
-
-
-@login_required
-def my_exams(request, learner_id):
-    """Список назначенных экзаменов"""
-    try:
-        learner = request.user.worker.learner.get(pk=learner_id)
-    except Learner.DoesNotExist:
-        return HttpResponseNotFound("Learner not found")
-
-    assignments = ExamAssignment.objects.filter(
-        learner=learner,
-        status__in=['assigned', 'in_progress']
-    ).select_related('exam')
-    return render(request, 'learning/my_exams.html', {'assignments': assignments})
 
 
 @login_required
@@ -140,7 +125,7 @@ def take_exam(request, learner_id, result_id):
     })
 
 
-@csrf_protect  # Вместо csrf_exempt
+@csrf_protect
 def submit_answers(request, learner_id, result_id):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request'})
@@ -150,13 +135,11 @@ def submit_answers(request, learner_id, result_id):
         data = json.loads(request.body)
         user_answers = data.get('answers', [])
 
-        # Проверка и получение результата
         result = ExamResult.objects.select_related('exam').get(
             id=result_id,
             learner=learner
         )
 
-        # 2. Получаем ExamAssignment, связанный с этим экзаменом и учеником
         exam_assignment = ExamAssignment.objects.get(
             exam=result.exam,
             learner=learner,
@@ -193,4 +176,51 @@ def exam_results(request, learner_id):
     except Learner.DoesNotExist:
         return HttpResponseNotFound("Learner not found")
     results = ExamResult.objects.filter(learner=learner).select_related('exam')
-    return render(request, 'learning/exam_results.html', {'results': results})
+    return render(request, 'learning/exam_results.html', {'results': results, 'learner': learner})
+
+
+@login_required
+def detail_exam_results(request, result_id):
+    try:
+        result = ExamResult.objects.get(pk=result_id)
+    except ExamResult.DoesNotExist:
+        return HttpResponseNotFound("Ошибка, результат не найден")
+
+    content_list = []
+
+    if result.answered_questions:
+        for answer in result.answered_questions:
+            content = {}
+            question_id = answer['question_id']
+            selected_answer_id = answer['answer_ids'][0]  # Берём первый (и единственный) ID
+
+            # Получаем вопрос
+            try:
+                question = Question.objects.get(pk=question_id)
+                content['question_text'] = question.text
+            except Question.DoesNotExist:
+                content['question_text'] = "Вопрос не найден"
+
+            # Получаем выбранный ответ пользователя
+            try:
+                selected_answer = Answer.objects.get(pk=selected_answer_id)
+                content['user_answer_text'] = selected_answer.text
+                content['is_user_answer_correct'] = selected_answer.is_correct
+            except Answer.DoesNotExist:
+                content['user_answer_text'] = "Ответ не найден"
+                content['is_user_answer_correct'] = False
+
+            # Получаем правильный ответ (всегда один)
+            correct_answer = Answer.objects.filter(
+                question=question,
+                is_correct=True
+            ).first()  # first() вернёт None, если нет правильного ответа
+
+            content['correct_answer_text'] = (
+                correct_answer.text if correct_answer else "Правильный ответ не указан"
+            )
+
+            content_list.append(content)
+
+    return render(request, 'learning/detail_exam_result.html', {'content_list': content_list, 'result': result})
+

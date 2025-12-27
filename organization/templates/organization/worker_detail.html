@@ -1,7 +1,7 @@
 {% extends 'organization/base.html' %}
 {% load my_tags %}
 {% block content %}
-<a class="btn btn-outline-primary btn-sm m-2" type="button"
+<a class="btn btn-outline-secondary btn-sm m-2" type="button"
    href="{% url 'organization:district_detail' object.district.pk %}">
     Назад
 </a>
@@ -22,11 +22,6 @@
                     type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Обучение
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="disabled-tab" data-bs-toggle="tab" data-bs-target="#disabled-tab-pane"
-                    type="button" role="tab" aria-controls="disabled-tab-pane" aria-selected="false" disabled>Disabled
-            </button>
-        </li>
     </ul>
     <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
@@ -44,23 +39,39 @@
                             {% endif %} {{object.district}} {{object.division}}</small></p>
                         <h5 class="card-title"><strong>{{object.surname}} {{object.name}}
                             {{ object.patronymic}}</strong></h5>
-                        <p class="card-text my-2">Должность/профессия: <strong>{{ object|get_main_position }}</strong></p>
+                        <p class="card-text my-2">Должность/профессия: <strong>{{ object|get_main_position }}</strong>
+                        </p>
                         {% if object.position %}
                         <p class="card-text">Совмещаемая должность/профессия: {{object|get_extra_position}}</p>
                         {% endif %}
-                        {% for learner in object.learner.all %}
-                        <a href="{% url 'learning:my_exams' learner.pk %}">Экзамены для {{learner}}</a>
-                        {% endfor %}
                     </div>
                 </div>
             </div>
+
+            {% for learner in object.learner.all %}
+            {% for assignment in learner|get_assignments %}
+            <div class="card text-center col-2 m-2 ">
+                <div class="card-body">
+                    <h6 class="card-title">Тестирование по программе: {{ assignment.exam.program.name }}</h6>
+                    Статус: {{ assignment.get_status_display }}<br>
+                    Срок: {% if assignment.deadline %}{{ assignment.deadline }}{% else %}Не задан{% endif %}<br>
+                    Попыток осталось: {{ assignment.attempts_left }}
+                    <a href="{% url 'learning:start_exam' learner.pk assignment.pk %}" class="btn btn-primary mt-2">Начать</a>
+                </div>
+                <div class="card-footer text-body-secondary">
+                    2 days ago
+                </div>
+            </div>
+            {% endfor %}
+            {% endfor %}
+
         </div>
         <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
             ...
         </div>
         <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
             <div class="btn-group m-2">
-                <button type="button" class="btn btn-primary  btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                <button type="button" class="btn btn-outline-primary  btn-sm dropdown-toggle" data-bs-toggle="dropdown"
                         aria-expanded="false">
                     Действия
                 </button>
@@ -69,6 +80,18 @@
                            href="{% url 'learning:learner_update' object.pk %}">Редактировать профиль
                         обучаемого</a></li>
                 </ul>
+            </div>
+            <div class="btn-group m-2">
+                <button type="button" class="btn btn-outline-primary  btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    Результаты тестов
+                </button>
+                <ul class="dropdown-menu">
+                    {% for learner in object.learner.all %}
+                    <li><a class="dropdown-item"
+                           href="{% url 'learning:exam_results' learner.pk %} ">{{learner.position}}</a></li>
+                </ul>
+                 {% endfor %}
             </div>
             <div class="card">
                 <div class="card-body">
@@ -85,7 +108,7 @@
                         <tbody>
                         {% for learner in object.learner.all %}
                         <tr>
-                            <td colspan="5">Обучение по профессии/должности: {{learner.position}}</td>
+                            <td colspan="5">Обучение по профессии/должности: {{learner.position}}
                         </tr>
                         {% for direction in learner.direction.all %}
                         <tr>
@@ -95,7 +118,8 @@
                                 <span class="text-success">удовлетворительно</span>
                                 {% else %}
                                 <span class="text-danger">неудовлетворительно</span>
-                                {% endif %}</td>
+                                {% endif %}
+                            </td>
                             <td>
                                 {% if direction|get_protocol_url:learner %}
                                 <a class="btn btn-link-secondary btn-sm" href="{{direction|get_protocol_url:learner}}">Скан-файл</a>
@@ -111,9 +135,6 @@
                     </table>
                 </div>
             </div>
-        </div>
-        <div class="tab-pane fade" id="disabled-tab-pane" role="tabpanel" aria-labelledby="disabled-tab" tabindex="0">
-            ...
         </div>
     </div>
 </div>

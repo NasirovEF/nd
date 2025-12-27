@@ -110,6 +110,7 @@ class WorkerCreateView(CreateView):
                         KnowledgeDate.objects.create_or_update_active(learner=learner, direction=direction)
                 user = User.objects.create(worker=worker)
                 login_name = user.get_login_name
+                user.username = login_name
                 service_num = user.service_number or ""
                 user.set_password(f"{login_name}{service_num}")
                 user.save()

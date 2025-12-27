@@ -1,0 +1,50 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+
+        <h4 class="my-2">Результаты тестирования:</h4>
+        <h6 class="my-2">Работник: {{ result.learner }}</h6>
+        <h6 class="my-2">Дата тестирования: {{ result.test_date|date:"d.m.Y" }}</h6>
+        {% if content_list %}
+        <table class="table table-hover text-center">
+            <thead>
+            <tr>
+                <th>№ п/п</th>
+                <th>Вопрос</th>
+                <th>Ответ пользователя</th>
+                <th>Правильный ответ</th>
+                <th>Набранный балл</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for content in content_list %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ content.question_text }}</td>
+                <td>{{ content.user_answer_text }}</td>
+                <td>{{ content.correct_answer_text }}</td>
+                <td>
+                    {% if content.is_user_answer_correct %}
+                    <span class="text-success">1</span>
+                    {% else %}
+                    <span class="text-danger">0</span>
+                    {% endif %}
+                </td>
+
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>У вас нет результатов экзаменов.</p>
+        {% endif %}
+
+        <a href="#" class="btn btn-primary">Вернуться к экзаменам</a>
+
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}
