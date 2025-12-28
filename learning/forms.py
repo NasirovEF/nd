@@ -209,12 +209,28 @@ AnswerFormSets = forms.inlineformset_factory(
 
 
 class LearningDocForm(StileFormMixin, forms.ModelForm):
+    # Скрытое поле для хранения ID связанного объекта
+    object_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
+
     class Meta:
         model = LearningDoc
-        fields = "__all__"
+        fields = ['name', 'doc', 'object_id']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Если есть instance, заполняем object_id
+        if self.instance and self.instance.pk:
+            self.fields['object_id'].initial = self.instance.object_id
 
 
 class LearningPosterForm(StileFormMixin, forms.ModelForm):
+    object_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
+
     class Meta:
         model = LearningPoster
-        fields = ["name", "image"]
+        fields = ['name', 'image', 'object_id']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['object_id'].initial = self.instance.object_id

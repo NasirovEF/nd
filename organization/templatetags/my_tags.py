@@ -2,7 +2,7 @@ from django import template
 from django.utils.safestring import mark_safe
 from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult, ExamAssignment
 from datetime import date
-
+from django.utils import  timezone
 from organization.models import Position
 
 register = template.Library()
@@ -117,3 +117,11 @@ def get_assignments(learner):
         status__in=['assigned',]
     ).select_related('exam')
     return assignments
+
+
+@register.filter()
+def date_delta(date_end):
+    now = timezone.now()
+    delta_date = date_end - now
+
+    return delta_date.days

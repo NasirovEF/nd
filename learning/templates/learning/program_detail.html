@@ -62,11 +62,11 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item"
-                           href="{% url 'learning:learning_doc_update' object.pk %}">
+                           href="{% url 'learning:program_docs' object.pk %}">
                         Материалы по обучению
                     </a></li>
                     <li><a class="dropdown-item"
-                           href="{% url 'learning:learning_poster_update' object.pk %}">
+                           href="{% url 'learning:program_posters' object.pk %}">
                         Плакаты по обучению
                     </a></li>
                 </ul>
@@ -96,7 +96,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for document in object.learning_doc.all %}
+                                {% for document in object.get_learning_docs %}
                                 <tr>
                                     <td><a href="{{document.doc.url}}">{{document.name}}</a></td>
                                 </tr>
@@ -117,7 +117,7 @@
                                     </div>
 
                                     <!-- Остальные плакаты -->
-                                    {% for poster in object.learning_poster.all %}
+                                    {% for poster in object.get_learning_posters %}
                                     <div class="carousel-item">
                                         <img src="{{ poster.image|media_filter }}" class="d-block w-100"
                                              alt="Изображение постера">

@@ -1,7 +1,8 @@
 {% extends 'organization/base.html' %}
 {% block content %}
 <div class="row">
-    <div class="col-1"></div>
+    <div class="col-1">
+     <a href="{% url 'organization:worker_detail' learner.worker.pk %}" class="btn btn-sm btn-outline-secondary m-2">Назад</a></div>
     <div class="col-10">
 
         <h4 class="my-2">Результаты тестирования:</h4>
@@ -41,8 +42,6 @@
         {% else %}
         <p>У вас нет результатов экзаменов.</p>
         {% endif %}
-
-        <a href="{% url 'organization:worker_detail' user.worker.pk %}" class="btn btn-primary">Вернуться к экзаменам</a>
 
 
     </div>

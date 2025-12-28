@@ -54,12 +54,12 @@
                 <div class="card-body">
                     <h6 class="card-title">Тестирование по программе: {{ assignment.exam.program.name }}</h6>
                     Статус: {{ assignment.get_status_display }}<br>
-                    Срок: {% if assignment.deadline %}{{ assignment.deadline }}{% else %}Не задан{% endif %}<br>
+                    Срок: {% if assignment.deadline %}{{ assignment.deadline|date:"d.m.Y" }}{% else %}Не задан{% endif %}<br>
                     Попыток осталось: {{ assignment.attempts_left }}
                     <a href="{% url 'learning:start_exam' learner.pk assignment.pk %}" class="btn btn-primary mt-2">Начать</a>
                 </div>
                 <div class="card-footer text-body-secondary">
-                    2 days ago
+                    Осталось дней: {{assignment.deadline|date_delta}}
                 </div>
             </div>
             {% endfor %}

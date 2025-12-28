@@ -1,14 +1,17 @@
 {% extends 'organization/base.html' %}
 {% block content %}
 <div class="row">
-    <div class="col-1"></div>
+    <div class="col-1">
+         <a href="{% url 'learning:exam_results' result.learner.pk %}" class="btn btn-sm btn-outline-secondary m-2">Назад</a>
+    </div>
     <div class="col-10">
 
-        <h4 class="my-2">Результаты тестирования:</h4>
+        <h4 class="mt-5">Результаты тестирования:</h4>
         <h6 class="my-2">Работник: {{ result.learner }}</h6>
+        <h6 class="my-2">Направления тестирования: {% for direction  in result.exam.program.direction.all %}{{ direction }}{%endfor%}</h6>
         <h6 class="my-2">Дата тестирования: {{ result.test_date|date:"d.m.Y" }}</h6>
         {% if content_list %}
-        <table class="table table-hover text-center">
+        <table class="table table-bordered text-center">
             <thead>
             <tr>
                 <th>№ п/п</th>
@@ -18,7 +21,7 @@
                 <th>Набранный балл</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody class="table-group-divider">
             {% for content in content_list %}
             <tr>
                 <td>{{ forloop.counter }}</td>
@@ -41,7 +44,6 @@
         <p>У вас нет результатов экзаменов.</p>
         {% endif %}
 
-        <a href="#" class="btn btn-primary">Вернуться к экзаменам</a>
 
 
     </div>

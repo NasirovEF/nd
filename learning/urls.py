@@ -1,6 +1,7 @@
 from django.urls import path
 
 from learning.apps import LearningConfig
+from learning.models import Program, ProgramBriefing
 from learning.views.direction import DirectionListView
 from learning.views.exam import start_exam, take_exam, submit_answers, exam_results, detail_exam_results
 from learning.views.learner import LearnerUpdateView, LearnerListView
@@ -23,8 +24,20 @@ urlpatterns = [
     path("program_detail/<int:pk>", ProgramDetailView.as_view(), name="program_detail"),
     path("program_update/<int:pk>", ProgramUpdateView.as_view(), name="program_update"),
     path("program_delete/<int:pk>", ProgramDeleteView.as_view(), name="program_delete"),
-    path("learning_doc_update/<int:pk>", LearningDocUpdateView.as_view(), name="learning_doc_update"),
-    path("learning_poster_update/<int:pk>", LearningPosterUpdateView.as_view(), name="learning_poster_update"),
+
+    path('program/<int:pk>/docs/', LearningDocUpdateView.as_view(), {
+        'model_class': Program
+    }, name='program_docs'),
+    path('briefing/<int:pk>/docs/', LearningDocUpdateView.as_view(), {
+        'model_class': ProgramBriefing
+    }, name='briefing_docs'),
+
+    path('program/<int:pk>/poster/', LearningPosterUpdateView.as_view(), {
+        'model_class': Program
+    }, name='program_posters'),
+    path('briefing/<int:pk>/poster/', LearningPosterUpdateView.as_view(), {
+        'model_class': ProgramBriefing
+    }, name='briefing_posters'),
 
     path("protocol_list/", ProtocolListView.as_view(), name="protocol_list"),
     path("protocol_create/", ProtocolCreateView.as_view(), name="protocol_create"),

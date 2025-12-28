@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from learning.services import add_doc_url, get_current_date
 from organization.models import Position, Worker, Organization, Branch, Division, District, Group, StaffUnit
 from organization.services import NULLABLE
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 
 class Direction(models.Model):
@@ -66,28 +68,25 @@ class SubDirection(models.Model):
                 )
 
 
-class Program(models.Model):
-    """Модель программы обучения"""
-    name = models.CharField(max_length=150, verbose_name="Наименование программы обучения")
-    direction = models.ManyToManyField(Direction, related_name="program", verbose_name="Направление обучения")
-    subdirection = models.ManyToManyField(SubDirection, related_name="program", verbose_name="Поднаправление обучения", blank=True, help_text="В случае если выбрано направление обучения 'В'")
+class BaseProgram(models.Model):
+    """Базовая модель программы обучения/инструктажа"""
+    name = models.CharField(max_length=150, verbose_name="Наименование программы")
     duration = models.PositiveIntegerField(verbose_name="Продолжительность обучения (часов)")
-    position = models.ForeignKey(Position, on_delete=models.SET_NULL, related_name="program", verbose_name="Наименование профессии", **NULLABLE)
+    position = models.ForeignKey(Position, on_delete=models.SET_NULL, verbose_name="Наименование профессии", **NULLABLE)
     approve = models.CharField(max_length=150, verbose_name="Программа утверждена", help_text="Введите должность, И.О. Фамилию лица утвердившего программу")
     approval_date = models.DateField(verbose_name="Дата утверждения программы", default=get_current_date, help_text="Введите дату в формате ДД.ММ.ГГГГ")
-    organization = models.ForeignKey(Organization, verbose_name="ОСТ", related_name="organization", on_delete=models.SET_NULL, **NULLABLE)
-    branch = models.ForeignKey(Branch, verbose_name="Филиал", related_name="program", on_delete=models.SET_NULL, **NULLABLE)
-    division = models.ForeignKey(Division, verbose_name="Структурное подразделение", related_name="program", on_delete=models.SET_NULL, **NULLABLE)
-    district = models.ForeignKey(District, verbose_name="Участок", related_name="program", on_delete=models.SET_NULL, **NULLABLE)
-    group = models.ForeignKey(Group, verbose_name="Группа", related_name="program", on_delete=models.SET_NULL, **NULLABLE)
-    replacement = models.ForeignKey("self", on_delete=models.SET_NULL, verbose_name="Замена программы", related_name="replacement_for",  help_text="Выберите программу, которую эта программа заменяет (не может быть самой собой)", **NULLABLE)
+    organization = models.ForeignKey(Organization, verbose_name="ОСТ", on_delete=models.SET_NULL, **NULLABLE)
+    branch = models.ForeignKey(Branch, verbose_name="Филиал", on_delete=models.SET_NULL, **NULLABLE)
+    division = models.ForeignKey(Division, verbose_name="Структурное подразделение", on_delete=models.SET_NULL, **NULLABLE)
+    district = models.ForeignKey(District, verbose_name="Участок", on_delete=models.SET_NULL, **NULLABLE)
+    group = models.ForeignKey(Group, verbose_name="Группа", on_delete=models.SET_NULL, **NULLABLE)
+    replacement = models.ForeignKey("self", on_delete=models.SET_NULL, verbose_name="Замена программы", help_text="Выберите программу, которую эта программа заменяет (не может быть самой собой)", **NULLABLE)
     is_active = models.BooleanField(verbose_name="Актуальность", default=True)
     doc_scan = models.FileField(verbose_name="Скан-копия программы обучения",
                                 upload_to=add_doc_url, **NULLABLE)
 
     class Meta:
-        verbose_name = "Программа обучения"
-        verbose_name_plural = "Программы обучения"
+        abstract = True
 
     def save(self, *args, **kwargs):
         # Перед сохранением вызываем clean() для проверки
@@ -103,13 +102,42 @@ class Program(models.Model):
             except Program.DoesNotExist:
                 raise ValidationError(f"Программа с ID {self.replacement.pk} не найдена.")
 
+    def get_learning_docs(self):
+        """Возвращает все LearningDoc, связанные с этим Program"""
+        content_type = ContentType.objects.get_for_model(self)
+        return LearningDoc.objects.filter(
+            content_type=content_type,
+            object_id=self.pk
+        )
+
+    def get_learning_posters(self):
+        """Возвращает все LearningPoster, связанные с этим Program"""
+        contenttype = ContentType.objects.get_for_model(self)
+        return LearningPoster.objects.filter(
+            content_type=contenttype,
+            object_id=self.pk
+        )
+
     def __str__(self):
         return f"{self.name}"
 
 
+class Program(BaseProgram):
+    """Модель программы обучения"""
+    direction = models.ManyToManyField(Direction, related_name="program", verbose_name="Направление обучения")
+    subdirection = models.ManyToManyField(SubDirection, related_name="program", verbose_name="Поднаправление обучения", blank=True, help_text="В случае если выбрано направление обучения 'В'")
+
+    class Meta:
+        verbose_name = "Программа обучения"
+        verbose_name_plural = "Программы обучения"
+
+
 class LearningDoc(models.Model):
     """Модель документов для обучения"""
-    program = models.ForeignKey("Program", on_delete=models.SET_NULL, verbose_name="Программа обучения", related_name="learning_doc", **NULLABLE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
     name = models.CharField(verbose_name="Наименование документа", max_length=250)
     doc = models.FileField(verbose_name="Файл документа", upload_to="learning/learning_doc/")
 
@@ -120,7 +148,10 @@ class LearningDoc(models.Model):
 
 class LearningPoster(models.Model):
     """Модель плаката обучения"""
-    program = models.ForeignKey("Program", on_delete=models.SET_NULL, verbose_name="Программа обучения", related_name="learning_poster", **NULLABLE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
     name = models.CharField(verbose_name="Наименование плаката", max_length=250)
     image = models.ImageField(verbose_name="Картинка плаката", upload_to="learning/learning_poster/")
 
