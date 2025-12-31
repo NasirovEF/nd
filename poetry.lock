@@ -123,6 +123,42 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-click"
+version = "2.4.1"
+description = "Build Django management commands using the click CLI package."
+optional = false
+python-versions = "*"
+files = [
+    {file = "django_click-2.4.1-py2.py3-none-any.whl", hash = "sha256:80cfa57af0fae29a3d47f20a74d71aecd1f0bf299549cddb97d98a949e130f01"},
+    {file = "django_click-2.4.1.tar.gz", hash = "sha256:5b989ca791689391e6744f8a4dda9bc0aac06670f408c45794d6b83fbe7577ce"},
+]
+
+[package.dependencies]
+click = ">=7.1"
+
+[package.extras]
+a-sdist-g1-tp4b3-django-click-2-4-1-requirements-dev = ["Fabric", "Sphinx", "check-manifest", "flake8", "livereload", "mccabe", "pep8", "pep8-naming", "pyflakes", "sphinx-autobuild", "sphinx_rtd_theme", "wheel"]
+a-sdist-g1-tp4b3-django-click-2-4-1-requirements-test = ["coverage (<5)", "pytest", "pytest-cov", "pytest-django", "pytest-flake8"]
+
+[[package]]
+name = "django-pg-copy"
+version = "1.3.0"
+description = "Django management command to backup and restore PostgreSQL databases using the DATABASES settings."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "django_pg_copy-1.3.0-py3-none-any.whl", hash = "sha256:db66ff95cdc1383e2c63223c35fbe8b56cca7d18f11c7c948b818425a5903b25"},
+    {file = "django_pg_copy-1.3.0.tar.gz", hash = "sha256:a8ff46ba23c126f8c97a6363981c66ca87d1f1554e19b3f6d0ff23d40ddb3404"},
+]
+
+[package.dependencies]
+Django = "*"
+django-click = "*"
+
+[package.extras]
+dev = ["ipython", "pytest-coverage", "ruff"]
+
+[[package]]
 name = "docxcompose"
 version = "1.4.0"
 description = "Compose .docx documents"
@@ -774,4 +810,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "a91df03d65c504f54ed8aff1333607f466d29a2b3d6ffb1eeb83277f4d0e489a"
+content-hash = "f7aba260dbf6a760ae3488a3da19a2210dbde9855cb5a255dc59a5964e787305"

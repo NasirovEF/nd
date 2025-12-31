@@ -3,7 +3,7 @@ from learning.models import (
     Protocol,
     Direction,
     Learner,
-    Program, ProtocolResult, Question, Answer, Test
+    Program, ProtocolResult, Question, Answer, Test, ProgramBriefing
 )
 from django.forms import BaseInlineFormSet
 
@@ -234,3 +234,29 @@ class LearningPosterForm(StileFormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
             self.fields['object_id'].initial = self.instance.object_id
+
+
+class ProgramBriefingForm(StileFormMixin, forms.ModelForm):
+    error_css_class = 'text-danger'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        replacement = cleaned_data.get('replacement')
+        if replacement:
+            if self.instance.pk and replacement.pk == self.instance.pk:
+                self.add_error(
+                    'replacement',
+                    "Программа не может заменять саму себя."
+                )
+
+        return cleaned_data
+
+    class Meta:
+        model = ProgramBriefing
+        exclude = ["is_active"]
+
+
+class ProgramBriefingNotActive(ProgramBriefingForm):
+    class Meta:
+        model = ProgramBriefing
+        exclude = ["replacement", "is_active"]

@@ -2,6 +2,8 @@ from django.urls import path
 
 from learning.apps import LearningConfig
 from learning.models import Program, ProgramBriefing
+from learning.views.briefing import ProgramBriefingCreateView, ProgramBriefingDetailView, ProgramBriefingUpdateView, \
+    ProgramBriefingDeleteView
 from learning.views.direction import DirectionListView
 from learning.views.exam import start_exam, take_exam, submit_answers, exam_results, detail_exam_results
 from learning.views.learner import LearnerUpdateView, LearnerListView
@@ -54,4 +56,9 @@ urlpatterns = [
     path('submit-answers/<int:learner_id>/<int:result_id>/', submit_answers, name='submit_answers'),
     path('results/<int:learner_id>/', exam_results, name='exam_results'),
     path('detail_exam_results/<int:result_id>/', detail_exam_results, name='detail_exam_results'),
+
+    path("briefing_program_create/", ProgramBriefingCreateView.as_view(), name="briefing_program_create"),
+    path("briefing_program_detail/<int:pk>", ProgramBriefingDetailView.as_view(), name="briefing_program_detail"),
+    path("briefing_program_update/<int:pk>", ProgramBriefingUpdateView.as_view(), name="briefing_program_update"),
+    path("briefing_program_delete/<int:pk>", ProgramBriefingDeleteView.as_view(), name="briefing_program_delete"),
 ]

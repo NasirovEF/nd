@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "learning",
     "accident",
     "users",
+    "pg_copy",
 ]
 
 MIDDLEWARE = [
