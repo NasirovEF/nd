@@ -49,6 +49,7 @@ class ProgramBriefingDeleteView(DeleteView):
     """Удаление программы инструктажа"""
 
     model = ProgramBriefing
+    template_name = "learning/program_confirm_delete.html"
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.request.GET["district"]])

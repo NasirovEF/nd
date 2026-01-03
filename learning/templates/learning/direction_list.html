@@ -14,7 +14,7 @@
         {% for test in direction.test.all %}
         <tr>
             <td>
-                <a href="{% url 'learning:test_update' test.pk %}">{{direction.name}}. {{direction.description}}</a>
+                <a href="{% url 'learning:question_list' test.pk %}">{{direction.name}}. {{direction.description}}</a>
             </td>
         </tr>
         {% endfor %}
@@ -23,7 +23,7 @@
         {% for test in subdirection.test.all %}
         <tr>
             <td>
-                <a href="{% url 'learning:test_update' test.pk %}">{{direction.name}}. {{direction.description}} ({{subdirection.name}})</a>
+                <a href="{% url 'learning:question_list' test.pk %}">{{direction.name}}. {{direction.description}} ({{subdirection.name}})</a>
             </td>
         </tr>
        {% endfor %}

@@ -6,7 +6,7 @@ from learning.models import (
     Program, ProtocolResult, Question, Answer, Test, ProgramBriefing
 )
 from django.forms import BaseInlineFormSet
-
+from django.core.exceptions import ValidationError
 from learning.models.learner_direction import LearningDoc, LearningPoster
 from organization.forms import StileFormMixin
 
@@ -129,11 +129,12 @@ class AnswerForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['text'].widget.attrs.update({'required': True})
+        self.fields['text'].widget.attrs.pop('required', None)
+
 
     class Meta:
         model = Answer
-        fields = ['text', 'is_correct']
+        fields = ['id', 'text', 'is_correct']
         widgets = {
             'text': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -147,16 +148,27 @@ class AnswerForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        text = cleaned_data.get('text', '').strip()
         is_correct = cleaned_data.get('is_correct')
-        text = cleaned_data.get('text')
 
-        if is_correct and (not text or text.strip() == ''):
-            self.add_error('text', "Нельзя отметить ответ как правильный, если текст ответа пуст.")
-
+        # 1. Текст обязателен для всех ответов
+        if not text:
+            self.add_error('text', "Текст ответа не может быть пустым.")
+        # 2. Для правильного ответа текст уже проверен выше
         return cleaned_data
 
 
+
 class QuestionForm(forms.ModelForm):
+    text = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'style': 'height: 80px;',
+            'placeholder': 'Введите текст вопроса'
+        }),
+        required=True,  # Явно указываем обязательность
+        strip=True
+    )
 
     def clean_text(self):
         text = self.cleaned_data.get('text')
@@ -176,21 +188,91 @@ class QuestionForm(forms.ModelForm):
         }
 
 
+class QuestionFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+
+        for i, form in enumerate(self.forms):
+            # Пропускаем удалённые вопросы
+            if form.cleaned_data and form.cleaned_data.get('DELETE'):
+                continue
+
+            # Для существующих вопросов: проверяем ответы
+            if form.instance.pk:
+                self._validate_question_answers(form)
+
+            # Для новых вопросов (extra): проверяем, что пользователь начал заполнять ответы
+            elif form.has_changed():
+                self._validate_question_answers(form, is_new=True)
+
+    def _validate_question_answers(self, question_form, is_new=False):
+        # Получаем формсет ответов для этого вопроса
+        answer_formset = question_form.answer_formset
+
+        # Собираем валидные формы ответов (не удалённые и не пустые)
+        valid_answers = []
+        for ans_form in answer_formset.forms:
+            if ans_form.cleaned_data and ans_form.cleaned_data.get('DELETE'):
+                continue  # Пропускаем удалённые
+
+            text = ans_form.cleaned_data.get('text', '').strip()
+            if text:  # Только непустые ответы
+                valid_answers.append(ans_form)
+
+        # Проверка 1: должно быть ровно 3 ответа
+        if len(valid_answers) != 3:
+            msg = "Для вопроса должно быть ровно 3 варианта ответа."
+            if is_new:
+                msg += " Заполните все 3 поля."
+            question_form.add_error(None, msg)
+
+        # Проверка 2: ровно один правильный ответ
+        correct_count = sum(1 for f in valid_answers if f.cleaned_data.get('is_correct', False))
+        if correct_count != 1:
+            question_form.add_error(
+                None,
+                "Для вопроса должен быть выбран ровно один правильный ответ."
+            )
+
+
 class AnswerFormSet(BaseInlineFormSet):
-    def add_fields(self, form, index):
-        super().add_fields(form, index)
-        form.auto_id = f'answer-{self.instance.id or "new"}-{index}'
+    def clean(self):
+        super().clean()
+
+        validanswers = []
+        empty_text_errors = []
+
+        for i, form in enumerate(self.forms):
+            if form.cleaned_data and form.cleaned_data.get('DELETE'):
+                continue
+
+            text = form.cleaned_data.get('text', '').strip()
+            if not text:
+                empty_text_errors.append(f"Ответ {i+1}: текст не может быть пустым.")
+            else:
+                validanswers.append(form)
+
+
+        if empty_text_errors:
+            raise ValidationError(empty_text_errors)
+
+        if len(validanswers) != 3:
+            raise ValidationError("Для вопроса должно быть ровно 3 варианта ответа.")
+
+        correct_count = sum(1 for f in validanswers if f.cleaned_data.get('is_correct', False))
+        if correct_count != 1:
+            raise ValidationError("Для вопроса должен быть выбран ровно один правильный ответ.")
 
 
 # Формсеты
-QuestionFormSet = forms.inlineformset_factory(
+QuestionFormSets = forms.inlineformset_factory(
     Test,
     Question,
     form=QuestionForm,
-    extra=40,
-    max_num=40,
+    formset=QuestionFormSet,
+    extra=1,
+    max_num=100,
     can_delete=True,
-    # Важно: не пропускать пустые формы при валидации
     validate_max=False,
     validate_min=False,
 )
@@ -200,11 +282,12 @@ AnswerFormSets = forms.inlineformset_factory(
     Answer,
     form=AnswerForm,
     formset=AnswerFormSet,
-    extra=3,
+    extra=0,  # Важно: extra=0, чтобы не было пустых полей
     max_num=3,
+    min_num=3,  # Обязательно 3 формы
+    validate_min=True,
+    validate_max=True,
     can_delete=False,
-    validate_max=False,
-    validate_min=False,
 )
 
 

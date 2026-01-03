@@ -1,0 +1,152 @@
+{% extends 'organization/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+
+        <form method="post" id="question-form" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <fieldset class="mb-6">
+                <legend class="border-bottom pb-2 mb-4 fs-4">
+                    {% if object %}
+                    Редактирование вопроса по направлению {{object.test.direction}}
+                    {% if object.test.sub_direction %}({{object.test.sub_direction}}){% endif %}
+                    {% else %}
+                    Создание вопроса по направлению {{test.direction}}
+                     {% if test.sub_direction %}({{test.sub_direction}}){% endif %}
+                    {% endif %}
+                </legend>
+
+                <div class="card question-card mb-2 p-2 shadow-sm">
+                    <div class="card-body">
+
+                        <!-- Поле вопроса -->
+                        <div class="mb-4">
+                            <label for="{{ form.text.id_for_label }}" class="form-label fs-5">
+                                Текст вопроса <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="{{ form.text.html_name }}"
+                                      id="{{ form.text.id_for_label }}"
+                                      class="form-control {% if form.text.errors %}is-invalid{% endif %}"
+                                      placeholder="Введите текст вопроса"
+                                      rows="5"
+                                      required>{% if form.text.value %}{{ form.text.value|safe }}{% endif %}</textarea>
+                            {% if form.text.errors %}
+                            <div class="invalid-feedback d-block text-danger mt-1">
+                                {{ form.text.errors|safe }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Блок ответов -->
+                        <h5 class="text-primary mb-3">Варианты ответа:</h5>
+
+                        {{ answer_formset.management_form }}
+                        {% if answer_formset.management_form.non_field_errors %}
+                        <div class="alert alert-danger mt-2">
+                            {{ answer_formset.management_form.non_field_errors|safe }}
+                        </div>
+                        {% endif %}
+
+                        <div id="answers-container" class="answers">
+                            {% for answer_form in answer_formset %}
+                            <div class="answer-row mb-3 d-flex align-items-center gap-3">
+                                <!-- Скрытое поле ID — гарантированная передача -->
+                                {% with answer_id=answer_form.instance.pk %}
+                                <input type="hidden"
+                                       name="{{ answer_form.id.html_name }}"
+                                       value="{% if answer_id %}{{ answer_id }}{% endif %}"
+                                       id="{{ answer_form.id.auto_id }}">
+                                {% endwith %}
+                                <!-- Текст ответа  -->
+                                <div class="flex-grow-1">
+                                    <label for="{{ answer_form.text.id_for_label }}" class="form-label visually-hidden">
+                                        Ответ {{ forloop.counter }}
+                                    </label>
+                                    <textarea name="{{ answer_form.text.html_name }}"
+                                              id="{{ answer_form.text.id_for_label }}"
+                                              class="form-control {% if answer_form.text.errors %}is-invalid{% endif %}"
+                                              placeholder="Введите вариант ответа"
+                                              rows="2">{% if answer_form.text.value %}{{ answer_form.text.value|safe }}{% endif %}</textarea>
+
+                                    {% if answer_form.text.errors %}
+                                    <div class="invalid-feedback d-block text-danger mt-1">
+                                        {{ answer_form.text.errors|safe }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Чекбокс "Правильный ответ" -->
+                                <div class="form-check d-flex align-items-center">
+                                    <input type="checkbox"
+                                           name="{{ answer_form.is_correct.html_name }}"
+                                           id="{{ answer_form.is_correct.id_for_label }}"
+                                           class="form-check-input"
+                                           {% if answer_form.is_correct.value %}checked{% endif %}>
+                                    <label class="form-check-label ms-1"
+                                           for="{{ answer_form.is_correct.id_for_label }}">
+                                        Правильный
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                        </div> <!-- /answers-container -->
+
+
+                        {% if answer_formset.non_form_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            {{ answer_formset.non_form_errors|safe }}
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Кнопки -->
+            <div class="mt-4 text-center">
+                {% if is_create_view %}
+                <!-- Кнопки для CreateView -->
+                <button type="submit"
+                        name="action"
+                        value="save"
+                        class="btn btn-outline-primary btn-sm px-2"
+                        id="submit-btn">
+                    Сохранить
+                </button>
+                <!-- Кнопка "Сохранить и добавить новый" -->
+                <button type="submit"
+                        name="action"
+                        value="save_and_add"
+                        class="btn btn-outline-primary btn-sm px-4 ms-2">
+                    Сохранить и добавить новый вопрос
+                </button>
+                <a href="{% url 'learning:question_list' test.pk %}" class="btn btn-outline-secondary btn-sm px-4 ms-2">
+                    Отмена
+                </a>
+                {% else %}
+                <!-- Кнопка для UpdateView -->
+                <button type="submit"
+                        name="action"
+                        value="save"
+                        class="btn btn-outline-primary btn-sm px-2"
+                        id="submit-btn">
+                    Сохранить
+                </button>
+                <a href="{% url 'learning:question_list' object.test.pk %}"
+                   class="btn btn-outline-secondary btn-sm px-4 ms-2">
+                    Отмена
+                </a>
+                {% endif %}
+            </div>
+
+        </form>
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}

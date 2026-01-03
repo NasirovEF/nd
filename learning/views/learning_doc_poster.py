@@ -1,10 +1,11 @@
 from django.urls import reverse
 from django.views.generic import UpdateView
 from learning.forms import LearningDocForm, LearningPosterForm
-from learning.models import LearningPoster, LearningDoc, Program
+from learning.models import LearningPoster, LearningDoc, Program, ProgramBriefing
 from django.forms import modelformset_factory
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 
 class LearningDocUpdateView(UpdateView):
@@ -12,8 +13,16 @@ class LearningDocUpdateView(UpdateView):
     template_name = "learning/learning_doc.html"
 
     def dispatch(self, request, *args, **kwargs):
-        # Получаем класс модели из URL-параметров
+        # Сначала проверяем kwargs (из URL)
         self.model_class = self.kwargs.get('model_class')
+
+        # Если не найдено — берём из аргументов представления (как в ваших URL)
+        if self.model_class is None:
+            self.model_class = getattr(self, 'model_class', None)
+
+        if not self.model_class:
+            raise Http404("Model class not specified")
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
@@ -45,7 +54,11 @@ class LearningDocUpdateView(UpdateView):
         else:
             context['learning_doc_formset'] = LearningDocFormSet(queryset=learning_docs)
 
-        context['object'] = self.object  # Передаём объект в шаблон
+        context['object'] = self.object
+        if self.model_class == Program:
+            context['model_class'] = "program"
+        elif self.model_class == ProgramBriefing:
+            context['model_class'] = "program_briefing"
         return context
 
     def form_valid(self, form):
@@ -69,7 +82,10 @@ class LearningDocUpdateView(UpdateView):
             return self.form_invalid(form)
 
     def get_success_url(self):
-        return reverse("learning:program_detail", args=[self.object.pk])
+        if self.model_class == Program:
+            return reverse('learning:program_docs', kwargs={'pk': self.object.pk})
+        elif self.model_class == ProgramBriefing:
+            return reverse('learning:briefing_docs', kwargs={'pk': self.object.pk})
 
 
 class LearningPosterUpdateView(UpdateView):
@@ -77,8 +93,16 @@ class LearningPosterUpdateView(UpdateView):
     template_name = "learning/learning_poster.html"
 
     def dispatch(self, request, *args, **kwargs):
-        # Получаем класс модели из URL-параметров
+        # Сначала проверяем kwargs (из URL)
         self.model_class = self.kwargs.get('model_class')
+
+        # Если не найдено — берём из аргументов представления (как в ваших URL)
+        if self.model_class is None:
+            self.model_class = getattr(self, 'model_class', None)
+
+        if not self.model_class:
+            raise Http404("Model class not specified")
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
@@ -110,7 +134,11 @@ class LearningPosterUpdateView(UpdateView):
         else:
             context['learning_poster_formset'] = LearningPosterFormSet(queryset=learning_posters)
 
-        context['object'] = self.object  # Передаём объект в шаблон
+        context['object'] = self.object
+        if self.model_class == Program:
+            context['model_class'] = "program"
+        elif self.model_class == ProgramBriefing:
+            context['model_class'] = "program_briefing"
         return context
 
     def form_valid(self, form):
@@ -134,4 +162,8 @@ class LearningPosterUpdateView(UpdateView):
             return self.form_invalid(form)
 
     def get_success_url(self):
-        return reverse("learning:program_detail", args=[self.object.pk])
+        if self.model_class == Program:
+            return reverse('learning:program_posters', kwargs={'pk': self.object.pk})
+        elif self.model_class == ProgramBriefing:
+            return reverse('learning:briefing_posters', kwargs={'pk': self.object.pk})
+

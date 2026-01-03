@@ -5,11 +5,11 @@ from learning.models import Program, ProgramBriefing
 from learning.views.briefing import ProgramBriefingCreateView, ProgramBriefingDetailView, ProgramBriefingUpdateView, \
     ProgramBriefingDeleteView
 from learning.views.direction import DirectionListView
+from learning.views.direction_test import QuestionDeleteView, QuestionListView, QuestionCreateView, QuestionUpdateView
 from learning.views.exam import start_exam, take_exam, submit_answers, exam_results, detail_exam_results
 from learning.views.learner import LearnerUpdateView, LearnerListView
 from learning.views.learning_doc_poster import LearningDocUpdateView, LearningPosterUpdateView
 from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView, ProgramDetailView
-from learning.views.prot_test import TestUpdateView
 from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, ProtocolDeleteView, ProtocolListView, \
     ProtocolDetailView
 from learning.views.protocol_result import ProtocolResultsUpdateView
@@ -49,7 +49,12 @@ urlpatterns = [
 
     path("protocol_results_edit/<int:pk>", ProtocolResultsUpdateView.as_view(), name="protocol_results_edit"),
 
-    path("test_update/<int:pk>", TestUpdateView.as_view(), name="test_update"),
+    #path("test_update/<int:pk>", TestUpdateView.as_view(), name="test_update"),
+
+    path('question_list/<int:test_pk>', QuestionListView.as_view(), name='question_list'),
+    path("question_delete/<int:pk>", QuestionDeleteView.as_view(), name="question_delete"),
+    path("question_create/<int:test_pk>", QuestionCreateView.as_view(), name="question_create"),
+    path("question_update/<int:pk>", QuestionUpdateView.as_view(), name="question_update"),
 
     path('start-exam/<int:learner_id>/<int:assignment_id>/', start_exam, name='start_exam'),
     path('take-exam/<int:learner_id>/<int:result_id>/', take_exam, name='take_exam'),

@@ -29,8 +29,8 @@ class ProgramBriefing(BaseProgram):
     briefing = models.ManyToManyField("Briefing", verbose_name="Тип инструктажа", related_name="briefing_program")
 
     class Meta:
-        verbose_name = "Программа обучения"
-        verbose_name_plural = "Программы обучения"
+        verbose_name = "Программа инструктажа"
+        verbose_name_plural = "Программы инструктажей"
 
 
 class BriefingDay(models.Model):
