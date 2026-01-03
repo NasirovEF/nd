@@ -7,7 +7,7 @@ from django.views.generic import (
 from django.urls import reverse
 from django.http import Http404
 from learning.forms import ProgramBriefingForm, ProgramBriefingNotActive
-from learning.models import ProgramBriefing
+from learning.models import ProgramBriefing, Exam, Test
 
 
 class ProgramBriefingCreateView(CreateView):
@@ -15,6 +15,12 @@ class ProgramBriefingCreateView(CreateView):
 
     model = ProgramBriefing
     form_class = ProgramBriefingForm
+
+    def form_valid(self, form):
+        briefing_program = form.save()
+        Test.objects.create(briefing_program=briefing_program)
+        Exam.objects.create(briefing_program=briefing_program, total_questions=10)
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse("learning:briefing_program_detail", args=[self.object.pk])

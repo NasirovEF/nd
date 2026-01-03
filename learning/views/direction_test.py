@@ -12,8 +12,9 @@ class QuestionListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        for object in self.object_list:
-            context["test"] = object.test
+        test_pk = self.kwargs['test_pk']
+        test = get_object_or_404(Test, pk=test_pk)
+        context['test'] = test
         return context
 
     def get_queryset(self):

@@ -40,6 +40,7 @@ class BriefingDay(models.Model):
     briefing_day = models.DateField(verbose_name="Дата инструктажа", default=get_current_date)
     next_briefing_day = models.DateField(verbose_name="Дата следующего инструктажа", default=get_current_date)
     briefing_reason = models.TextField(verbose_name="Причина проведения инструктажа", **NULLABLE)
+    is_active = models.BooleanField(verbose_name="Актуальность", default=True)
 
     def calculate_next_date(self):
         if self.briefing_type.briefing_type in ["primary", "repeated"]:

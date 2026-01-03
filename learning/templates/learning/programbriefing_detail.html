@@ -47,7 +47,11 @@
                         {% if object.position %}
                         <p class="card-text my-2">Для должности/профессии: {{ object.position }}</p>
                         {% endif %}
-                        <p class="card-text">По направлению обучения: {{ object.direction.all|get_direction_name }}</p>
+                        <p class="card-text"> Вид инструктажа:
+                            {% for briefing in object.briefing.all %}
+                            {{ briefing }},
+                            {% endfor %}
+                        </p>
                         <p class="card-text">Утверждена: {{ object.approve }} от {{ object.approval_date }}</p>
                     </div>
                 </div>
@@ -68,6 +72,10 @@
                     <li><a class="dropdown-item"
                            href="{% url 'learning:briefing_posters' object.pk %}">
                         Плакаты по обучению
+                    </a></li>
+                    <li><a class="dropdown-item"
+                           href="{% url 'learning:question_list' object.test.pk %}">
+                        Вопросы к тесту
                     </a></li>
                 </ul>
             </div>
@@ -149,21 +157,25 @@
                     <p class="text-muted text-center m-4">
                         Выберите ответ для каждого вопроса. Правильность ответа отобразится сразу.
                     </p>
-                    {% for question in questions %}
+                    {% for question in object.test.question.all %}
                     <div class="card question-card mb-2 p-3 shadow-sm">
-                        <h5 class="text-primary mb-3">Вопрос №{{ forloop.counter }}</h5>
+                        <h5 class="text-primary">Вопрос №{{ forloop.counter }}</h5>
+                        <div class="answer-frame my-2 p-2 bg-light border rounded">
                         <p class="card-text fs-5">{{ question.text }}</p>
+                        </div>
                         <h6 class="text-primary">Варианты ответа:</h6>
                         {% for answer in question.answer.all %}
-                        <div class="form-check mb-2">
-                            <input class="form-check-input"
+                        <div class="form-check mb-2 position-relative">
+                            <input class="form-check-input position-absolute top-50 start-9 translate-middle-y"
                                    type="radio"
                                    name="question_{{ question.id }}"
                                    id="answer_{{ answer.id }}"
                                    data-correct="{{ answer.is_correct|yesno:'true,false' }}">
-                            <label class="form-check-label" for="answer_{{ answer.id }}">
+                            <div class="answer-frame p-2 bg-light border rounded">
+                            <label class="form-check-label text-break w-100" for="answer_{{ answer.id }}">
                                 {{ answer.text }}
                             </label>
+                                </div>
                         </div>
                         {% endfor %}
                         <div class="feedback alert mt-3" style="display: none;"></div>

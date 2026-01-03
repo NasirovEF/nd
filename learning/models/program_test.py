@@ -7,12 +7,13 @@ from organization.services import NULLABLE
 
 
 class Test(models.Model):
-    """Тест для направления или поднаправления"""
+    """Тест для направления, поднаправления, программы инструктажа"""
     direction = models.ForeignKey(
         "Direction",
         on_delete=models.CASCADE,
         verbose_name="Направление",
-        related_name="test"
+        related_name="test",
+        **NULLABLE
     )
     sub_direction = models.ForeignKey(
         "SubDirection",
@@ -22,21 +23,31 @@ class Test(models.Model):
         help_text="Оставьте пустым, если тест для всего направления",
         related_name="test"
     )
+    briefing_program = models.OneToOneField(
+        "ProgramBriefing",
+        on_delete=models.CASCADE,
+        verbose_name="Программа инструктажа",
+        related_name="test",
+        **NULLABLE
+    )
 
     class Meta:
         verbose_name = "Тест"
         verbose_name_plural = "Тесты"
         constraints = [
             models.UniqueConstraint(
-                fields=['direction', 'sub_direction'],
+                fields=['direction', 'sub_direction', 'briefing_program'],
                 name='unique_test_per_direction_or_subdirection'
             )
         ]
 
     def __str__(self):
-        if self.sub_direction:
-            return f"Тест к направлению обучения: ({self.direction.name} → {self.sub_direction.name})"
-        return f"Тест к направлению обучения: ({self.direction.name})"
+        if self.direction:
+            if self.sub_direction:
+                return f"Тест к направлению обучения: ({self.direction.name} → {self.sub_direction.name})"
+            return f"Тест к направлению обучения: ({self.direction.name})"
+        elif self.briefing_program:
+            return f"Тест к программе инструктажа: ({self.direction.name})"
 
     def clean(self):
         # Проверка: если направление не имеет поднаправлений, sub_direction должно быть пустым
@@ -115,6 +126,7 @@ class ExamResult(models.Model):
         verbose_name = "Результат экзамена"
         verbose_name_plural = "Результаты экзаменов"
         unique_together = ('exam', 'learner', 'attempt_number')
+        ordering = ['-test_date']
 
 
 class ExamAssignment(models.Model):
@@ -164,6 +176,13 @@ class Exam(models.Model):
         related_name="exams",
         **NULLABLE
     )
+    briefing_program = models.OneToOneField(
+        "ProgramBriefing",
+        on_delete=models.CASCADE,
+        verbose_name="Программа инструктажа",
+        related_name="exams",
+        **NULLABLE
+    )
     is_active = models.BooleanField(verbose_name="Активен", default=True)
     time_limit = models.PositiveIntegerField(
         verbose_name="Время на тест (мин)",
@@ -186,28 +205,35 @@ class Exam(models.Model):
         verbose_name_plural = "Экзамены"
 
     def __str__(self):
-        return f"Экзамен к {self.program.name}"
+        if self.program:
+            return f"Экзамен к {self.program.name}"
+        elif self.briefing_program:
+            return f"Экзамен к {self.briefing_program.name}"
 
     def get_random_questions(self):
         """Возвращает N случайных вопросов из всех тестов программы"""
-        # Все направления программы
-        directions = Direction.objects.filter(program=self.program)
+        if self.program:
+            directions = Direction.objects.filter(program=self.program)
 
-        # Базовые тесты (привязаны напрямую к направлениям)
-        base_tests = Test.objects.filter(direction__in=directions)
+            # Базовые тесты (привязаны напрямую к направлениям)
+            base_tests = Test.objects.filter(direction__in=directions)
 
-        # Тесты из поднаправлений (только если есть направления с поднаправлениями)
-        subdirection_tests = Test.objects.none()  # Пустой queryset по умолчанию
+            # Тесты из поднаправлений (только если есть направления с поднаправлениями)
+            subdirection_tests = Test.objects.none()  # Пустой queryset по умолчанию
 
-        directions_with_subs = directions.filter(have_sub_direction=True)
-        if directions_with_subs.exists():
-            subdirection_tests = Test.objects.filter(
-                sub_direction__direction__in=directions_with_subs
-            )
+            directions_with_subs = directions.filter(have_sub_direction=True)
+            if directions_with_subs.exists():
+                subdirection_tests = Test.objects.filter(
+                    sub_direction__direction__in=directions_with_subs
+                )
 
-        all_tests = base_tests | subdirection_tests
+            all_tests = base_tests | subdirection_tests
 
-        questions = Question.objects.filter(test__in=all_tests)
+            questions = Question.objects.filter(test__in=all_tests)
+        elif self.briefing_program:
+            tests = Test.objects.filter(briefing_program=self.briefing_program)
+            questions = Question.objects.filter(test__in=tests)
+
         return questions.order_by('?')[:self.total_questions]
 
     

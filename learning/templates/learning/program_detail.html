@@ -151,19 +151,23 @@
                     </p>
                     {% for question in questions %}
                     <div class="card question-card mb-2 p-3 shadow-sm">
-                        <h5 class="text-primary mb-3">Вопрос №{{ forloop.counter }}</h5>
+                        <h5 class="text-primary">Вопрос №{{ forloop.counter }}</h5>
+                        <div class="answer-frame my-2 p-2 bg-light border rounded">
                         <p class="card-text fs-5">{{ question.text }}</p>
+                        </div>
                         <h6 class="text-primary">Варианты ответа:</h6>
                         {% for answer in question.answer.all %}
-                        <div class="form-check mb-2">
-                            <input class="form-check-input"
+                        <div class="form-check mb-2 position-relative">
+                            <input class="form-check-input position-absolute top-50 start-9 translate-middle-y"
                                    type="radio"
                                    name="question_{{ question.id }}"
                                    id="answer_{{ answer.id }}"
                                    data-correct="{{ answer.is_correct|yesno:'true,false' }}">
-                            <label class="form-check-label" for="answer_{{ answer.id }}">
+                            <div class="answer-frame p-2 bg-light border rounded">
+                            <label class="form-check-label text-break w-100" for="answer_{{ answer.id }}">
                                 {{ answer.text }}
                             </label>
+                                </div>
                         </div>
                         {% endfor %}
                         <div class="feedback alert mt-3" style="display: none;"></div>
