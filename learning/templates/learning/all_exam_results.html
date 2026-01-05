@@ -1,0 +1,148 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1">
+        <button class="btn btn-outline-primary btn-sm m-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop"
+        aria-controls="staticBackdrop">
+    Параметры поиска
+</button>
+
+<div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
+     aria-labelledby="staticBackdropLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="staticBackdropLabel">Параметры поиска</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+
+    <p class="mx-3">Показано # из # протоколов</p>
+    <div class="offcanvas-body">
+        <form method="get">
+            <div class="card">
+                <div class="card-body">
+                    <p>Дата c <input name="date_from" class="form-control text-center" type="date" placeholder="Дата с"
+                                     aria-label="Search" value="{{content.search_params.date_from}}"></p>
+                    <p>Дата по <input name="date_to" class="form-control text-center" type="date" placeholder="Дата по"
+                                      aria-label="Search" value="{{ content.search_params.date_to }}"></p>
+                    <input name="division" class="form-control my-2 text-center" list="divisionOptions"
+                           id="divisionDataList" value="{{content.search_params.division}}"
+                           placeholder="Введите название структурного подразделения">
+                    <datalist id="divisionOptions">
+                        {% for division in divisions %}
+                        <option value="{{ division }}">
+                            {% endfor %}
+                    </datalist>
+                    <div class="row align-items-center g-3 mb-3">
+                        <div class="col-auto">
+                            <label class="form-label mb-0">Тест по</label>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1" id="is_learning"
+                                       name="has_program"
+                                       {% if content.search_params.has_program == '1' %}checked{% endif %}>
+                                <label class="form-check-label" for="is_learning">Обучению</label>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="0" id="is_briefing"
+                                       name="has_briefing_program" {% if content.search_params.has_briefing_program == '0' %}checked{% endif %}>
+                                <label class="form-check-label" for="is_briefing">Инструктажу</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center g-3 mb-3">
+                        <div class="col-auto">
+                            <label class="form-label mb-0">Статус теста</label>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1" id="is_passed" name="is_passed"
+                                       {% if content.search_params.is_passed == '1' %}checked{% endif %}>
+                                <label class="form-check-label" for="is_passed">Сдан</label>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="0" id="is_not_passed"
+                                       name="is_not_passed" {% if content.search_params.is_not_passed == '0' %}checked{% endif %}>
+                                <label class="form-check-label" for="is_not_passed">Не сдан</label>
+                            </div>
+                        </div>
+                    </div>
+                    <input name="surname" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите Фамилию работника"
+                           aria-label="Search" value="{{content.search_params.surname}}">
+                    <input name="name" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите Имя работника"
+                           aria-label="Search" value="{{content.search_params.name}}">
+                    <input name="patronymic" class="form-control my-2 text-center" type="search"
+                           placeholder="Введите Отчество работника"
+                           aria-label="Search" value="{{content.search_params.patronymic}}">
+                </div>
+            </div>
+            <div class="d-grid gap-2 my-2">
+                <button type="submit" class="btn btn-outline-primary">
+                    Поиск
+                </button>
+                <a href="{% url 'learning:all_exam_results' %}" class="btn btn-outline-secondary">Очистить</a>
+            </div>
+        </form>
+    </div>
+</div>
+    </div>
+    <div class="col-10">
+
+        <h4 class="my-2">Результаты тестирований работников</h4>
+
+        {% if results %}
+        <table class="table table-hover text-center">
+            <thead>
+            <tr>
+                <th>№ п/п</th>
+                <th>Работник</th>
+                <th>Тип тестирования</th>
+                <th>Дата</th>
+                <th>Балл (%)</th>
+                <th>Статус</th>
+                <th>Попытка</th>
+                <th>Оценочный лист</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ result.learner }}</td>
+                <td>
+                    {% if result.exam.program %}
+                    Обучение
+                    {% elif result.exam.briefing_program %}
+                    Инструктаж
+                    {% endif %}
+                </td>
+                <td>{{ result.test_date|date:"d.m.Y" }}</td>
+                <td>{{ result.score }}</td>
+                <td>
+                    {% if result.is_passed %}
+                    <span class="text-success">Сдан</span>
+                    {% else %}
+                    <span class="text-danger">Не сдан</span>
+                    {% endif %}
+                </td>
+                <td>{{ result.attempt_number }}</td>
+                 <td><a class="btn btn-outline-primary btn-sm" href="{% url 'learning:detail_exam_results' result.pk %}?all_results=1">подробнее</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Результаты тестирования отсутствуют</p>
+        {% endif %}
+
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}

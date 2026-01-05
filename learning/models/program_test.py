@@ -106,7 +106,7 @@ class ExamResult(models.Model):
         verbose_name="Экзамен",
         related_name="results"
     )
-    test_date = models.DateTimeField(verbose_name="Дата тестирования", auto_now_add=True)
+    test_date = models.DateField(verbose_name="Дата тестирования", auto_now_add=True)
     is_passed = models.BooleanField(verbose_name="Сдан?", default=False)
     score = models.DecimalField(
         verbose_name="Набранный балл (%)",
@@ -143,8 +143,8 @@ class ExamAssignment(models.Model):
         verbose_name="Экзамен",
         related_name="assignments"
     )
-    assigned_date = models.DateTimeField(verbose_name="Дата назначения", auto_now_add=True)
-    deadline = models.DateTimeField(verbose_name="Срок выполнения", null=True, blank=True)
+    assigned_date = models.DateField(verbose_name="Дата назначения", auto_now_add=True)
+    deadline = models.DateField(verbose_name="Срок выполнения", null=True, blank=True)
     status = models.CharField(
         max_length=20,
         verbose_name="Статус",

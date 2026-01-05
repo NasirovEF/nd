@@ -47,7 +47,7 @@
                         {% if object.position %}
                         <p class="card-text my-2">Для должности/профессии: {{ object.position }}</p>
                         {% endif %}
-                        <p class="card-text">По направлению обучения: {{ object.direction.all|get_direction_name }}</p>
+                        <p class="card-text">По направлению обучения: {% for direction in object.direction.all %}{{direction}},{% endfor %}</p>
                         <p class="card-text">Утверждена: {{ object.approve }} от {{ object.approval_date }}</p>
                     </div>
                 </div>

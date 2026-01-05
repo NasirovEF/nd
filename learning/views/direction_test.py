@@ -15,13 +15,18 @@ class QuestionListView(ListView):
         test_pk = self.kwargs['test_pk']
         test = get_object_or_404(Test, pk=test_pk)
         context['test'] = test
+        context['search_params'] = {
+            'question_text': self.request.GET.get('question_text', ''),}
         return context
 
     def get_queryset(self):
         test_pk = self.kwargs['test_pk']
         queryset = super().get_queryset()
-
-        return queryset.filter(test__pk=test_pk)
+        queryset = queryset.filter(test__pk=test_pk)
+        question_text = self.request.GET.get("question_text")
+        if question_text:
+            queryset = queryset.filter(text__icontains=question_text)
+        return queryset
 
 
 class QuestionDeleteView(DeleteView):

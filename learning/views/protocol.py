@@ -8,7 +8,7 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-
+from datetime import timedelta
 from learning.forms import ProtocolCreateForm, ProtocolUpdateForm
 from learning.models import Protocol, KnowledgeDate, ProtocolResult, Direction, Learner
 from organization.models import Division, Worker
@@ -54,7 +54,7 @@ class ProtocolListView(ListView):
         if division:
             queryset = queryset.filter(division__name__icontains=division)
         if direction:
-            queryset = queryset.filter(direction__name__icontains=direction)
+            queryset = queryset.filter(program__direction__name__icontains=direction)
         if date_from:
             queryset = queryset.filter(prot_date__gte=date_from)
         if date_to:
@@ -105,14 +105,39 @@ class ProtocolCreateView(CreateView):
 
     def form_valid(self, form):
         protocol = form.save()
-        directions = protocol.direction.all()
+        directions = set()
+        start_date = protocol.prot_date - timedelta(days=60)
+        date_filter = {
+            'test_date__range': (start_date, protocol.prot_date)
+        }
         learners = protocol.learner.all()
+        programs = protocol.program.all()
+        program_ids = list(protocol.program.values_list('id', flat=True))  # IDs программ протокола
+        for program in programs:
+            for direction in program.direction.all():
+                directions.add(direction)
 
         for learner in learners:
+            # 1. Проверяем: есть ли НЕСДАННЫЕ экзамены по программам протокола?
+            has_failed = learner.exam_results.filter(
+                exam__program__in=program_ids,
+                is_passed=False,
+                **date_filter
+            ).exists()
+
+            all_passed = not has_failed and (
+                    learner.exam_results.filter(
+                        exam__program__in=program_ids,
+                        is_passed=True,
+                        **date_filter
+                    ).values('exam__program_id').distinct().count() == len(program_ids)
+            )
+
             ProtocolResult.objects.create(
                 protocol=protocol,
                 learner=learner,
-                passed=True
+                passed=all_passed
+
             )
 
         for direction in directions:
@@ -137,13 +162,40 @@ class ProtocolUpdateView(UpdateView):
         self.object.protocol_result.all().delete()
         self.object.knowledge_date.all().delete()
 
-        for learner in protocol.learner.all():
-            result = ProtocolResult.objects.create(
+        directions = set()
+        start_date = protocol.prot_date - timedelta(days=60)
+        date_filter = {
+            'test_date__range': (start_date, protocol.prot_date)
+        }
+        learners = protocol.learner.all()
+        programs = protocol.program.all()
+        program_ids = list(protocol.program.values_list('id', flat=True))  # IDs программ протокола
+        for program in programs:
+            for direction in program.direction.all():
+                directions.add(direction)
+
+        for learner in learners:
+            # 1. Проверяем: есть ли НЕСДАННЫЕ экзамены по программам протокола?
+            has_failed = learner.exam_results.filter(
+                exam__program__in=program_ids,
+                is_passed=False,
+                **date_filter
+            ).exists()
+
+            all_passed = not has_failed and (
+                    learner.exam_results.filter(
+                        exam__program__in=program_ids,
+                        is_passed=True,
+                        **date_filter
+                    ).values('exam__program_id').distinct().count() == len(program_ids)
+            )
+
+            ProtocolResult.objects.create(
                 protocol=protocol,
                 learner=learner,
-                passed=True
+                passed=all_passed
+
             )
-            result.save()
 
         for direction in protocol.direction.all():
             for learner in protocol.learner.all():

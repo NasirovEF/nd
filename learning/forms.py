@@ -5,6 +5,7 @@ from learning.models import (
     Learner,
     Program, ProtocolResult, Question, Answer, Test, ProgramBriefing
 )
+from datetime import timedelta
 from django.forms import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from learning.models.learner_direction import LearningDoc, LearningPoster
@@ -28,7 +29,6 @@ class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
             'prot_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'program': forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true', 'title': 'Выберите программы обучения...'}),
             'learner': forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true', 'title': 'Выберите работников...'}),
-            'direction': forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true', 'title': 'Выберите направление обучения...'}),
             'doc_scan': forms.ClearableFileInput(attrs={'class': 'form-control', 'aria-label': 'Загрузка файла'}),
         }
 
@@ -36,13 +36,14 @@ class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
         errors = []
         cleaned_data = super().clean()
         learners = cleaned_data.get("learner")
-        directions = cleaned_data.get("direction")
-        if learners and directions:
+        programs = cleaned_data.get("program")
+        if learners and programs:
             for learner in learners:
                 learner_direction = learner.direction.all()
-                for direction in directions:
-                    if direction not in learner_direction:
-                        errors.append(f"{learner} не требуется обучение по {direction}")
+                for program in programs:
+                    for direction in program.direction.all():
+                        if direction not in learner_direction:
+                            errors.append(f"{learner} не требуется обучение по {direction}")
         if errors:
             raise forms.ValidationError(errors)
         return cleaned_data
@@ -81,7 +82,11 @@ class ProgramForm(StileFormMixin, forms.ModelForm):
 
         subdirection = cleaned_data.get('subdirection')
         direction = cleaned_data.get('direction')
-
+        if direction.filter(have_sub_direction=True) and not subdirection:
+            self.add_error(
+                'direction',
+                "Выберите поднаправления обучения 'В'"
+            )
         if subdirection and subdirection.exists():
             if not direction.filter(have_sub_direction=True).exists():
                 self.add_error(
@@ -110,9 +115,79 @@ class ProtocolResultForm(StileFormMixin, forms.ModelForm):
         label='Комментарий'
     )
 
+    def clean(self):
+        cleaned_data = super().clean()
+        learner = cleaned_data.get('learner')
+        passed = cleaned_data.get('passed')
+        protocol = cleaned_data.get('protocol')
+
+        if not learner or not protocol:
+            return cleaned_data
+
+        if passed is not True:
+            return cleaned_data
+
+        programs = protocol.program.all()
+        if not programs:
+            raise ValidationError('У протокола нет связанных программ.')
+
+        program_ids = [p.id for p in programs]
+        start_date = protocol.prot_date - timedelta(days=60)
+
+        # 1. Ищем несданные экзамены
+        failed_exams = learner.exam_results.filter(
+            exam__program__in=program_ids,
+            is_passed=False,
+            test_date__gte=start_date,
+            test_date__lte=protocol.prot_date
+        )
+
+        # 2. Ищем сданные экзамены
+        passed_exams = learner.exam_results.filter(
+            exam__program__in=program_ids,
+            is_passed=True,
+            test_date__gte=start_date,
+            test_date__lte=protocol.prot_date
+        )
+
+        # 3. Собираем ID программ, по которым есть результаты
+        covered_program_ids = set(passed_exams.values_list('exam__program_id', flat=True))
+        covered_program_ids.update(
+            failed_exams.values_list('exam__program_id', flat=True)
+        )
+
+        # 4. Проверяем, все ли программы покрыты
+        missing_programs = [
+            p for p in programs
+            if p.id not in covered_program_ids
+        ]
+
+        # 5. Формируем ошибки
+        errors = []
+
+        if failed_exams.exists():
+            failed_programs = failed_exams.values_list(
+                'exam__program__name', flat=True
+            ).distinct()
+            errors.append(
+                f'Работник не сдал тест по программам: {", ".join(failed_programs)}.'
+            )
+
+        if missing_programs:
+            missing_names = [p.name for p in missing_programs]
+            errors.append(
+                f'Нет результатов тестирования по программам: {", ".join(missing_names)}.'
+            )
+
+        if errors:
+            # Объединяем все ошибки
+            raise ValidationError('. '.join(errors) + ' Отметка "Сдал" невозможна.')
+
+        return cleaned_data
+
     class Meta:
         model = ProtocolResult
-        fields = ['id', 'passed', 'comment']
+        fields = ['id', 'protocol', 'learner', 'passed', 'comment']
 
 
 class TestForm(StileFormMixin, forms.ModelForm):

@@ -10,6 +10,8 @@ from django.http import HttpResponseNotFound
 import logging
 from django.db import transaction
 
+from organization.models import Worker
+
 logger = logging.getLogger(__name__)
 
 
@@ -170,13 +172,76 @@ def submit_answers(request, learner_id, result_id):
 
 @login_required
 def exam_results(request, learner_id):
-    """Просмотр результатов экзаменов"""
+    """Просмотр результатов экзаменов для одного работника"""
     try:
         learner = request.user.worker.learner.get(pk=learner_id)
     except Learner.DoesNotExist:
         return HttpResponseNotFound("Learner not found")
     results = ExamResult.objects.filter(learner=learner).select_related('exam')
     return render(request, 'learning/exam_results.html', {'results': results, 'learner': learner})
+
+
+def all_exam_results(request):
+    results = ExamResult.objects.all()
+    content = {}
+
+    content['search_params'] = {
+        'division': request.GET.get('division', ''),
+        'direction': request.GET.get('direction', ''),
+        'date_from': request.GET.get('date_from', ''),
+        'date_to': request.GET.get('date_to', ''),
+        'has_program': request.GET.get('has_program', ''),
+        'has_briefing_program': request.GET.get('has_briefing_program', ''),
+        'is_passed': request.GET.get('is_passed', ''),
+        'is_not_passed': request.GET.get('is_not_passed', ''),
+        'surname': request.GET.get('surname', ''),
+        'name': request.GET.get('name', ''),
+        'patronymic': request.GET.get('patronymic', ''),
+    }
+    division = request.GET.get("division")
+    date_from = request.GET.get("date_from")
+    date_to = request.GET.get("date_to")
+    has_program = request.GET.get("has_program")
+    has_briefing_program = request.GET.get("has_briefing_program")
+    is_passed = request.GET.get("is_passed")
+    is_not_passed = request.GET.get("is_not_passed")
+    surname = request.GET.get("surname")
+    name = request.GET.get("name")
+    patronymic = request.GET.get("patronymic")
+    if division:
+        results = results.filter(learner__worker__district__division__name__icontains=division)
+    if date_from:
+        results = results.filter(test_date__gte=date_from)
+    if date_to:
+        results = results.filter(test_date__lte=date_to)
+
+    if has_program == "1" and has_briefing_program != "0":
+        results = results.filter(exam__program__isnull=False)
+    elif has_program != "1" and has_briefing_program == "0":
+        results = results.filter(exam__briefing_program__isnull=False)
+    elif has_program == "1" and has_briefing_program == "0":
+        results = results.filter()
+
+    if is_passed == "1" and is_not_passed != "0":
+        results = results.filter(is_passed=True)
+    elif is_passed != "1" and is_not_passed == "0":
+        results = results.filter(is_passed=False)
+    elif is_passed == "1" and is_not_passed == "0":
+        results = results.filter()
+
+    if surname:
+        worker = Worker.objects.filter(surname__icontains=surname)
+        learner = Learner.objects.filter(worker__in=worker)
+        results = results.filter(learner__in=learner)
+    if name:
+        worker = Worker.objects.filter(name__icontains=name)
+        learner = Learner.objects.filter(worker__in=worker)
+        results = results.filter(learner__in=learner)
+    if patronymic:
+        worker = Worker.objects.filter(patronymic__icontains=patronymic)
+        learner = Learner.objects.filter(worker__in=worker)
+        results = results.filter(learner__in=learner)
+    return render(request, 'learning/all_exam_results.html', {'results': results, 'content': content})
 
 
 @login_required
@@ -187,6 +252,11 @@ def detail_exam_results(request, result_id):
         return HttpResponseNotFound("Ошибка, результат не найден")
 
     content_list = []
+
+    if request.GET.get("all_results") == "1":
+        all_results = True
+    else:
+        all_results = False
 
     if result.answered_questions:
         for answer in result.answered_questions:
@@ -222,5 +292,9 @@ def detail_exam_results(request, result_id):
 
             content_list.append(content)
 
-    return render(request, 'learning/detail_exam_result.html', {'content_list': content_list, 'result': result})
+    return render(request, 'learning/detail_exam_result.html', {
+        'content_list': content_list,
+        'result': result,
+        'all_results': all_results}
+                  )
 

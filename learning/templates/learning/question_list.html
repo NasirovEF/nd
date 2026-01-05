@@ -7,7 +7,8 @@
             Назад
         </a>
         {% elif test.briefing_program %}
-         <a href="{% url 'learning:briefing_program_detail' test.briefing_program.pk %}" class="btn btn-outline-secondary btn-sm m-2">
+        <a href="{% url 'learning:briefing_program_detail' test.briefing_program.pk %}"
+           class="btn btn-outline-secondary btn-sm m-2">
             Назад
         </a>
         {% endif %}
@@ -16,12 +17,49 @@
 
         <fieldset class="mb-2">
             <legend class="border-bottom pb-2">
+                {% if test.direction %}
                 Вопросы к направлению обучения {{ test.direction }}
                 {% if test.sub_direction %}({{ test.sub_direction }}){% endif %}
+                {% elif test.briefing_program %}
+                Вопросы к программе инструктажа {{ test.briefing_program }}
+                {% endif %}
             </legend>
         </fieldset>
-        <a href="{% url 'learning:question_create' test.pk %}"
-           class="btn btn-outline-primary btn-sm mb-4" aria-label="Редактировать вопрос">Добавить вопрос</a>
+
+        <form method="get" class="row align-items-center g-3 mb-4">
+            <!-- Кнопка "Добавить вопрос" (левая колонка) -->
+            <div class="col-auto">
+                <a href="{% url 'learning:question_create' test.pk %}"
+                   class="btn btn-outline-primary btn-sm"
+                   role="button">
+                    Добавить вопрос
+                </a>
+            </div>
+
+            <!-- Группа поиска (правая колонка, занимает остальное пространство) -->
+            <div class="col">
+                <div class="input-group">
+                    <input name="question_text"
+                           class="form-control text-center"
+                           type="search"
+                           placeholder="Введите текст вопроса"
+                           aria-label="Search"
+                           value="{{search_params.question_text}}">
+
+                    <button type="submit" class="btn btn-outline-primary">
+                        Поиск
+                    </button>
+
+                    <a href="{% url 'learning:question_list' test.pk %}"
+                       class="btn btn-outline-secondary"
+                       role="button">
+                        Очистить
+                    </a>
+                </div>
+            </div>
+        </form>
+
+
         <fieldset>
             {% for question in object_list %}
             <div class="card question-card mb-3 p-2 shadow-sm">

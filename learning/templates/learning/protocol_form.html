@@ -90,18 +90,7 @@
                         </div>
                         {% endif %}
                     </div>
-                    <!-- Поле "direction" -->
-                    <div class="mb-3">
-                        <label class="form-label">{{ form.direction.label }}</label>
-                        {{ form.direction }}
-                        {% if form.direction.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.direction.errors %}
-                            {{ error }}<br>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
+
                     <!-- Поле "doc_scan" -->
                     <div class="mb-3">
                         <label class="form-label">{{ form.doc_scan.label }}</label>

@@ -2,14 +2,30 @@
 {% block content %}
 <div class="row">
     <div class="col-1">
-         <a href="{% url 'learning:exam_results' result.learner.pk %}" class="btn btn-sm btn-outline-secondary m-2">Назад</a>
+        {% if all_results %}
+       <a href="{% url 'learning:all_exam_results' %}"
+           class="btn btn-sm btn-outline-secondary m-2">Назад</a>
+        {% else %}
+         <a href="{% url 'learning:exam_results' result.learner.pk %}"
+           class="btn btn-sm btn-outline-secondary m-2">Назад</a>
+        {% endif %}
     </div>
     <div class="col-10">
-
         <h4 class="mt-5">Результаты тестирования:</h4>
         <h6 class="my-2">Работник: {{ result.learner }}</h6>
-        <h6 class="my-2">Направления тестирования: {% for direction  in result.exam.program.direction.all %}{{ direction }}{%endfor%}</h6>
+        {% if result.exam.program %}
+        <h6 class="my-2">Направления тестирования: Программа обучения {{ result.exam.program }}
+            </h6>
+        {% elif result.exam.briefing_program %}
+        <h6 class="my-2">Направления тестирования: Программа инструктажа {{ result.exam.briefing_program }}
+           </h6>
+        {% endif %}
         <h6 class="my-2">Дата тестирования: {{ result.test_date|date:"d.m.Y" }}</h6>
+        <h6 class="my-2">Результат тестирования: {% if result.is_passed %}
+                    <span class="text-success">Сдан</span>
+                    {% else %}
+                    <span class="text-danger">Не сдан</span>
+                    {% endif %}</h6>
         {% if content_list %}
         <table class="table table-bordered text-center">
             <thead>
@@ -43,7 +59,6 @@
         {% else %}
         <p>У вас нет результатов экзаменов.</p>
         {% endif %}
-
 
 
     </div>

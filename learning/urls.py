@@ -6,7 +6,8 @@ from learning.views.briefing import ProgramBriefingCreateView, ProgramBriefingDe
     ProgramBriefingDeleteView
 from learning.views.direction import DirectionListView
 from learning.views.direction_test import QuestionDeleteView, QuestionListView, QuestionCreateView, QuestionUpdateView
-from learning.views.exam import start_exam, take_exam, submit_answers, exam_results, detail_exam_results
+from learning.views.exam import start_exam, take_exam, submit_answers, exam_results, detail_exam_results, \
+    all_exam_results
 from learning.views.learner import LearnerUpdateView, LearnerListView
 from learning.views.learning_doc_poster import LearningDocUpdateView, LearningPosterUpdateView
 from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView, ProgramDetailView
@@ -60,6 +61,8 @@ urlpatterns = [
     path('take-exam/<int:learner_id>/<int:result_id>/', take_exam, name='take_exam'),
     path('submit-answers/<int:learner_id>/<int:result_id>/', submit_answers, name='submit_answers'),
     path('results/<int:learner_id>/', exam_results, name='exam_results'),
+    path('all_results/', all_exam_results, name='all_exam_results'),
+
     path('detail_exam_results/<int:result_id>/', detail_exam_results, name='detail_exam_results'),
 
     path("briefing_program_create/", ProgramBriefingCreateView.as_view(), name="briefing_program_create"),

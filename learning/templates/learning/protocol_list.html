@@ -79,7 +79,6 @@
             </div>
         </form>
     </div>
-
 </div>
 <div class="container-lg">
     <table class="table table-sm table-hover text-center fixed-columns table align-middle">
@@ -96,7 +95,7 @@
         {% for protocol in object_list %}
         <tr>
             <td>{{protocol.division}}<br>{{protocol.division.branch}}</td>
-            <td>{{protocol.direction.all|get_direction_name}}</td>
+            <td>{{protocol.program.all|get_direction_name}}</td>
             <td>{{ protocol.prot_date }}</td>
             <td>{% if protocol.doc_scan %}
                 <a class="btn btn-link btn-sm" href="{{protocol.doc_scan.url}}">Скан-файл</a>

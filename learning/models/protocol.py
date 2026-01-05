@@ -13,7 +13,6 @@ class Protocol(models.Model):
     prot_date = models.DateField(verbose_name="Дата протокола проверки знаний", default=get_current_date)
     program = models.ManyToManyField("Program", verbose_name="Программа обучения", related_name="protocol")
     learner = models.ManyToManyField("Learner", verbose_name="Работники проходящие проверку знаний",  related_name="protocol")
-    direction = models.ManyToManyField("Direction", related_name="protocol", verbose_name="Направление обучения")
     doc_scan = models.FileField(verbose_name="Скан-копия протокола проверки знаний",
                                 upload_to=add_prot_url, **NULLABLE)
 

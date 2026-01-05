@@ -12,7 +12,7 @@
         <table class="table table-hover text-center">
             <thead>
             <tr>
-                <th>Программа</th>
+                <th>Тип тестирования</th>
                 <th>Дата</th>
                 <th>Балл (%)</th>
                 <th>Статус</th>
@@ -23,8 +23,12 @@
             <tbody>
             {% for result in results %}
             <tr>
-                <td>{{ result.exam.program.name }}</td>
-                <td>{{ result.test_date|date:"d.m.Y H:i" }}</td>
+                <td>{% if result.exam.program %}
+                    Обучение
+                    {% elif result.exam.briefing_program %}
+                    Инструктаж
+                    {% endif %}</td>
+                <td>{{ result.test_date|date:"d.m.Y" }}</td>
                 <td>{{ result.score }}</td>
                 <td>
                     {% if result.is_passed %}
