@@ -11,12 +11,18 @@
                 </div>
                 <div class="card-body">
                     {% csrf_token %}
-                    Вы действительно хотите удалить вопрос <br> <strong>{{ object.text }}</strong> ?
+                    Вы действительно хотите удалить инструктаж <br> <strong>{{ object.text }}</strong> ?
                 </div>
                 <div class="card-footer">
-                    <a href="{% url 'learning:question_list' object.test.pk %}" class="btn btn-outline-primary">
+                    {% if is_archive %}
+                    <a href="{% url 'learning:briefing_day_list' object.learner.worker.pk %}" class="btn btn-outline-primary">
                         Отмена
                     </a>
+                    {% else %}
+                    <a href="{% url 'organization:worker_detail' object.learner.worker.pk %}" class="btn btn-outline-primary">
+                        Отмена
+                    </a>
+                    {% endif %}
                     <button type="submit" class="btn btn-outline-danger">
                         Подтвердить
                     </button>

@@ -8,7 +8,7 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-from learning.models import Learner, KnowledgeDate
+from learning.models import Learner, KnowledgeDate, Briefing
 from django.utils.datastructures import MultiValueDictKeyError
 
 from learning.models.learner_direction import StaffDirection, Direction
@@ -32,6 +32,7 @@ class WorkerDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['briefings'] = Briefing.objects.all()
         return context
 
 

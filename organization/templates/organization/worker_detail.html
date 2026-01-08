@@ -54,7 +54,8 @@
                 <div class="card-body">
                     <h6 class="card-title">Тестирование по программе: {{ assignment.exam.program.name }}</h6>
                     Статус: {{ assignment.get_status_display }}<br>
-                    Срок: {% if assignment.deadline %}{{ assignment.deadline|date:"d.m.Y" }}{% else %}Не задан{% endif %}<br>
+                    Срок: {% if assignment.deadline %}{{ assignment.deadline|date:"d.m.Y" }}{% else %}Не задан
+                    {% endif %}<br>
                     Попыток осталось: {{ assignment.attempts_left }}
                     <a href="{% url 'learning:start_exam' learner.pk assignment.pk %}" class="btn btn-primary mt-2">Начать</a>
                 </div>
@@ -67,7 +68,92 @@
 
         </div>
         <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
-            ...
+            <div class="btn-group m-2">
+                <button type="button" class="btn btn-outline-primary  btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    Провести инструктаж
+                </button>
+                <ul class="dropdown-menu">
+                    {% for learner in object.learner.all %}
+                    <li><a class="dropdown-item"
+                           href="{% url 'learning:briefing_day_create' learner.pk %}">{{learner.position}}</a></li>
+                </ul>
+                {% endfor %}
+            </div>
+
+            <a href="{% url 'learning:briefing_day_list' object.pk %}" class="btn btn-outline-primary btn-sm">Архив
+                инструктажей</a>
+            <div class="card">
+                <div class="card-body">
+
+                    <table class="table table-hover text-center">
+                        <thead>
+                        <tr>
+                            <th scope="col">Вид инструктажа</th>
+                            <th scope="col">Дата инструктажа</th>
+                            <th scope="col">Наименование локального акта (локальных актов),<br>в объёме требований
+                                которого проведён инструктаж
+                            </th>
+                            <th scope="col">Причина проведения</th>
+                            <th scope="col">Дата следующего <br>инструктажа</th>
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for learner in object.learner.all %}
+                        <tr>
+                            <td colspan="6">Инструктажи по профессии/должности: {{learner.position}}
+                        </tr>
+                        {% for briefing in briefings %}
+                        {% with learner|get_briefing:briefing as briefing_obj %}
+                        <tr>
+                            <td>{{briefing}}</td>
+                            <td>{{ briefing_obj.briefing_day}}</td>
+                            <td>{% if briefing_obj.briefing_program %}
+                                {{ briefing_obj.briefing_program }}
+                                {% elif briefing_obj.other_briefing_doc %}
+                                {{ briefing_obj.other_briefing_doc }}
+                                {% endif %}
+                            </td>
+                            <td>{% if briefing_obj.briefing_reason %}
+                                {{ briefing_obj.briefing_reason}}
+                                {% else %}
+                                ------
+                                {% endif %}
+                            </td>
+                            <td>{% if briefing_obj.next_briefing_day %}
+                                {{ briefing_obj.next_briefing_day}}
+                                {% else %}
+                                ------
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if briefing_obj %}
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-outline-primary  btn-sm dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item"
+                                               href="#">Результат тестирования</a></li>
+                                        <li><a class="dropdown-item"
+                                               href="{% url 'learning:briefing_day_update' briefing_obj.pk %}">Изменить</a>
+                                        </li>
+                                        <li><a class="dropdown-item"
+                                               href="{% url 'learning:briefing_day_delete'  briefing.pk briefing_obj.learner.worker.pk %}?archive=1">Удалить</a></li>
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endwith %}
+                        {% endfor %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
             <div class="btn-group m-2">
@@ -91,7 +177,7 @@
                     <li><a class="dropdown-item"
                            href="{% url 'learning:exam_results' learner.pk %} ">{{learner.position}}</a></li>
                 </ul>
-                 {% endfor %}
+                {% endfor %}
             </div>
             <div class="card">
                 <div class="card-body">

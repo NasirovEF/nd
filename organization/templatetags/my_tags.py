@@ -1,6 +1,6 @@
 from django import template
 from django.utils.safestring import mark_safe
-from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult, ExamAssignment
+from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult, ExamAssignment, BriefingDay
 from datetime import date
 from django.utils import  timezone
 from organization.models import Position
@@ -126,3 +126,13 @@ def date_delta(date_end):
     delta_date = date_end - now
 
     return delta_date.days
+
+
+@register.filter()
+def get_briefing(learner, briefing_type):
+    briefing_day = BriefingDay.objects.filter(
+        learner=learner,
+        briefing_type=briefing_type
+    ).order_by("-briefing_day", "-id").first()
+    return briefing_day
+

@@ -3,11 +3,13 @@ from django.views.generic import (
     DeleteView,
     DetailView,
     UpdateView,
+    ListView,
 )
 from django.urls import reverse
 from django.http import Http404
-from learning.forms import ProgramBriefingForm, ProgramBriefingNotActive
-from learning.models import ProgramBriefing, Exam, Test
+from learning.forms import ProgramBriefingForm, ProgramBriefingNotActive, BriefingDayForm
+from learning.models import ProgramBriefing, Exam, Test, BriefingDay, Learner
+from django.http import HttpResponseNotFound
 
 
 class ProgramBriefingCreateView(CreateView):
@@ -59,3 +61,71 @@ class ProgramBriefingDeleteView(DeleteView):
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.request.GET["district"]])
+
+
+class BriefingDayCreateView(CreateView):
+    """Создание инструктажа"""
+    model = BriefingDay
+    form_class = BriefingDayForm
+
+    def form_valid(self, form):
+        briefing_day = form.save(commit=False)
+        learner = self.kwargs['learner_pk']
+        try:
+            briefing_day.learner = Learner.objects.get(pk=learner)
+            briefing_day.save()
+            return super().form_valid(form)
+        except Learner.DoesNotExist:
+            return HttpResponseNotFound("Работник не найден")
+
+    def get_success_url(self):
+        return reverse("organization:worker_detail", args=[self.object.learner.worker.pk])
+
+
+class BriefingDayUpdateView(UpdateView):
+    """Редактирование инструктажа"""
+    model = BriefingDay
+    form_class = BriefingDayForm
+
+    def get_success_url(self):
+        if self.request.GET.get("archive") == "1":
+            return reverse("learning:briefing_day_list", args=[self.object.learner.worker.pk])
+        else:
+            return reverse("organization:worker_detail", args=[self.object.learner.worker.pk])
+
+
+class BriefingDayListView(ListView):
+    """Просмотр архива инструктажей"""
+    model = BriefingDay
+
+    def get_queryset(self, *args, **kwargs):
+        queryset = super().get_queryset(*args, **kwargs)
+        learner = Learner.objects.filter(worker__pk=self.kwargs['worker_pk'])
+        queryset = queryset.filter(learner__in=learner)
+        return queryset
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['worker_pk'] = self.kwargs['worker_pk']
+        return context
+
+
+class BriefingDayDeleteView(DeleteView):
+    """Удаление инструктажа"""
+
+    model = BriefingDay
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        if self.request.GET.get("archive") == "1":
+            context['is_archive'] = True
+        else:
+            context['is_archive'] = False
+        return context
+
+    def get_success_url(self):
+        if self.request.GET.get("archive") == "1":
+            return reverse("learning:briefing_day_list", args=[self.kwargs['worker_pk']])
+        else:
+            return reverse("organization:worker_detail", args=[self.kwargs['worker_pk']])
+

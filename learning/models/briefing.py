@@ -35,16 +35,42 @@ class ProgramBriefing(BaseProgram):
 
 class BriefingDay(models.Model):
     """Модель дня проведения инструктажа"""
-    learner = models.ForeignKey("Learner", on_delete=models.CASCADE, verbose_name="Инструктируемый", related_name="briefing_day")
-    briefing_type = models.ForeignKey("Briefing", on_delete=models.SET_NULL, verbose_name="Вид инструктажа", **NULLABLE)
+    learner = models.ForeignKey(
+        "Learner", on_delete=models.CASCADE,
+        verbose_name="Инструктируемый",
+        related_name="briefing_day"
+    )
+    briefing_type = models.ForeignKey(
+        "Briefing",
+        on_delete=models.SET_NULL,
+        verbose_name="Вид инструктажа",
+        null=True
+    )
     briefing_day = models.DateField(verbose_name="Дата инструктажа", default=get_current_date)
-    next_briefing_day = models.DateField(verbose_name="Дата следующего инструктажа", default=get_current_date)
+    next_briefing_day = models.DateField(
+        verbose_name="Дата следующего инструктажа",
+        default=None,
+        **NULLABLE
+    )
+    briefing_program = models.ForeignKey(
+        "ProgramBriefing",
+        on_delete=models.SET_NULL,
+        verbose_name="Программа инструктажа",
+        related_name="briefing_day",
+        **NULLABLE
+    )
+    other_briefing_doc = models.TextField(
+        verbose_name="Документ в объеме которого проведен инструктаж "
+                     "(в случае отсутствия программы инструктажа)",
+        **NULLABLE)
     briefing_reason = models.TextField(verbose_name="Причина проведения инструктажа", **NULLABLE)
     is_active = models.BooleanField(verbose_name="Актуальность", default=True)
 
     def calculate_next_date(self):
-        if self.briefing_type.briefing_type in ["primary", "repeated"]:
+        if self.briefing_type.briefing_type == "repeated":
             self.next_briefing_day = self.briefing_day + timedelta(self.briefing_type.periodicity)
+        else:
+            return
 
     def save(self, *args, **kwargs):
         self.calculate_next_date()

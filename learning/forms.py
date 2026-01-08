@@ -3,7 +3,7 @@ from learning.models import (
     Protocol,
     Direction,
     Learner,
-    Program, ProtocolResult, Question, Answer, Test, ProgramBriefing
+    Program, ProtocolResult, Question, Answer, Test, ProgramBriefing, BriefingDay
 )
 from datetime import timedelta
 from django.forms import BaseInlineFormSet
@@ -43,7 +43,7 @@ class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
                 for program in programs:
                     for direction in program.direction.all():
                         if direction not in learner_direction:
-                            errors.append(f"{learner} не требуется обучение по {direction}")
+                            errors.append(f"Работнику ({learner}) не требуется обучение по направлению: {direction}")
         if errors:
             raise forms.ValidationError(errors)
         return cleaned_data
@@ -418,3 +418,9 @@ class ProgramBriefingNotActive(ProgramBriefingForm):
     class Meta:
         model = ProgramBriefing
         exclude = ["replacement", "is_active"]
+
+
+class BriefingDayForm(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = BriefingDay
+        exclude = ["learner", "next_briefing_day", "is_active"]

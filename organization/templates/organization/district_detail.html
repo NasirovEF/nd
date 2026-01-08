@@ -49,21 +49,28 @@
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="worker-tab-pane" role="tabpanel" aria-labelledby="worker-tab"
                  tabindex="0">
-                <table class="table table-hover text-center">
+                <table class="table table-sm table-hover text-center table align-middle">
                     <thead>
                     <tr>
-                        <th scope="col">ФИО</th>
-                        <th scope="col">Должность</th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
+                        <th scope="col" rowspan="2">ФИО</th>
+                        <th scope="col" rowspan="2">Должность</th>
+                        <th scope="col" colspan="2">Предстоящая дата</th>
+                        <th scope="col" rowspan="2"></th>
+                        <th scope="col" rowspan="2"></th>
+                    </tr>
+                    <tr>
+                        <th scope="col">Обучения</th>
+                        <th scope="col">Инструктажа</th>
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="table-group-divider">
                     {% for worker in object.worker.all %}
                     {% if not worker.group %}
                     <tr>
                         <td>{{ worker }}</td>
                         <td>{{ worker|get_main_position }}</td>
+                        <td></td>
+                        <td></td>
                         <td>
                             <a class="btn btn-outline-primary btn-sm" type="button"
                                href="{% url 'organization:worker_detail' worker.pk %}">
@@ -141,7 +148,7 @@
                                     <td>
                                         <div class="btn-group dropend">
                                             <button type="button"
-                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
                                                     data-bs-toggle="dropdown" aria-expanded="false">
                                                 Редактировать
                                             </button>
@@ -196,7 +203,7 @@
                                     <td>
                                         <div class="btn-group dropend">
                                             <button type="button"
-                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
                                                     data-bs-toggle="dropdown" aria-expanded="false">
                                                 Редактировать
                                             </button>
@@ -271,7 +278,7 @@
                                     <td>
                                         <div class="btn-group dropend">
                                             <button type="button"
-                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
                                                     data-bs-toggle="dropdown" aria-expanded="false">
                                                 Редактировать
                                             </button>
@@ -326,7 +333,7 @@
                                     <td>
                                         <div class="btn-group dropend">
                                             <button type="button"
-                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
                                                     data-bs-toggle="dropdown" aria-expanded="false">
                                                 Редактировать
                                             </button>
@@ -369,7 +376,7 @@
             <div id="Group-{{ group.pk }}" class="accordion-collapse collapse">
                 <div class="accordion-body">
                     <div class="btn-group dropend">
-                        <button type="button my-4" class="btn btn-link btn-sm dropdown-toggle"
+                        <button type="button my-4" class="btn btn-outline-primary btn-sm dropdown-toggle"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                             Редактировать
                         </button>
@@ -445,7 +452,7 @@
                                     <td>
                                         <div class="btn-group dropend">
                                             <button type="button"
-                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
                                                     data-bs-toggle="dropdown" aria-expanded="false">
                                                 Редактировать
                                             </button>
@@ -487,7 +494,7 @@
                                     <td>
                                         <div class="btn-group dropend">
                                             <button type="button"
-                                                    class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
                                                     data-bs-toggle="dropdown" aria-expanded="false">
                                                 Редактировать
                                             </button>
@@ -560,7 +567,7 @@
                                                 <td>
                                                     <div class="btn-group dropend">
                                                         <button type="button"
-                                                                class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                                class="btn btn-outline-primary btn-sm dropdown-toggle"
                                                                 data-bs-toggle="dropdown" aria-expanded="false">
                                                             Редактировать
                                                         </button>
@@ -614,7 +621,7 @@
                                                 <td>
                                                     <div class="btn-group dropend">
                                                         <button type="button"
-                                                                class="btn btn-link-secondary btn-sm dropdown-toggle"
+                                                                class="btn btn-outline-primary btn-sm dropdown-toggle"
                                                                 data-bs-toggle="dropdown" aria-expanded="false">
                                                             Редактировать
                                                         </button>
