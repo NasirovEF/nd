@@ -1,7 +1,15 @@
 {% extends 'organization/base.html' %}
 {% load my_tags %}
 {% block content %}
+<style>
+    .no-split-header thead tr:first-child th {
+    border-bottom: none;
+}
 
+.no-split-header thead tr:last-child th {
+    border-top: none;
+}
+</style>
 <div class="card mx-2">
     <div class="card-body">
         <h6 class="card-subtitle mb-2 text-body-secondary">{{ object.division }}</h6>
@@ -49,18 +57,18 @@
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="worker-tab-pane" role="tabpanel" aria-labelledby="worker-tab"
                  tabindex="0">
-                <table class="table table-sm table-hover text-center table align-middle">
+                <table class="table table-sm table-hover text-center align-middle no-split-header">
                     <thead>
                     <tr>
-                        <th scope="col" rowspan="2">ФИО</th>
+                        <th scope="col" rowspan="2" >ФИО</th>
                         <th scope="col" rowspan="2">Должность</th>
-                        <th scope="col" colspan="2">Предстоящая дата</th>
+                        <th scope="col" colspan="2" style="line-height:1.2; padding:0.25rem;">Предстоящая дата</th>
                         <th scope="col" rowspan="2"></th>
                         <th scope="col" rowspan="2"></th>
                     </tr>
                     <tr>
-                        <th scope="col">Обучения</th>
-                        <th scope="col">Инструктажа</th>
+                        <th scope="col" style="line-height:1.2; padding:0.25rem;">Обучения</th>
+                        <th scope="col" style="line-height:1.2; padding:0.25rem;">Инструктажа</th>
                     </tr>
                     </thead>
                     <tbody class="table-group-divider">
@@ -69,8 +77,8 @@
                     <tr>
                         <td>{{ worker }}</td>
                         <td>{{ worker|get_main_position }}</td>
-                        <td></td>
-                        <td></td>
+                        <td>{{ worker|get_nearest_knowledge_date }}</td>
+                        <td>{{ worker|get_nearest_briefing_date }}</td>
                         <td>
                             <a class="btn btn-outline-primary btn-sm" type="button"
                                href="{% url 'organization:worker_detail' worker.pk %}">

@@ -111,6 +111,34 @@ class LearnerUpdateView(UpdateView):
 
         return context
 
+    def _sync_knowledge_date(self, worker):
+        for learner in worker.learner.all():
+            # Текущие направления у learner (объекты Direction)
+            current_directions = learner.direction.all()
+            # Существующие направления в KnowledgeDate для этого learner
+            existing_knowledge_dates = KnowledgeDate.objects.filter(
+                learner=learner,
+                is_active=True
+            )
+            existing_directions = {kd.direction for kd in existing_knowledge_dates}
+
+            # 1. Добавляем новые направления
+            for direction in current_directions:
+                if direction not in existing_directions:
+                    KnowledgeDate.objects.create(
+                        learner=learner,
+                        direction=direction,
+                        is_active=True
+                    )
+
+            # 2. Деактивируем устаревшие направления
+            stale_directions = existing_directions - set(current_directions)
+            for direction in stale_directions:
+                knowledge_date = existing_knowledge_dates.filter(direction=direction).first()
+                if knowledge_date:  # Проверка на существование
+                    knowledge_date.is_active = False
+                    knowledge_date.save()
+
     def form_valid(self, form):
         self.object = form.save()
 
@@ -118,6 +146,7 @@ class LearnerUpdateView(UpdateView):
 
         if formset.is_valid():
             formset.save()
+            self._sync_knowledge_date(self.object)
             return super().form_valid(form)
         else:
             return self.form_invalid(form)

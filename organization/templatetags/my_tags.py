@@ -3,6 +3,8 @@ from django.utils.safestring import mark_safe
 from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult, ExamAssignment, BriefingDay
 from datetime import date
 from django.utils import  timezone
+
+from learning.services import get_current_date
 from organization.models import Position
 
 register = template.Library()
@@ -122,7 +124,7 @@ def get_assignments(learner):
 
 @register.filter()
 def date_delta(date_end):
-    now = timezone.now()
+    now = get_current_date()
     delta_date = date_end - now
 
     return delta_date.days
@@ -135,4 +137,34 @@ def get_briefing(learner, briefing_type):
         briefing_type=briefing_type
     ).order_by("-briefing_day", "-id").first()
     return briefing_day
+
+
+@register.filter()
+def get_nearest_knowledge_date(worker):
+    leaners = worker.learner.all()
+    knowledge_date = KnowledgeDate.objects.filter(
+        learner__in=leaners,
+        is_active=True,
+        next_date__gte=get_current_date()
+    ).order_by("next_date").first()
+    if knowledge_date is not None:
+        return knowledge_date.next_date
+    else:
+        return mark_safe('<span class="text">Данные не найдены</span>')
+
+
+@register.filter()
+def get_nearest_briefing_date(worker):
+    leaners = worker.learner.all()
+    briefing_day = BriefingDay.objects.filter(
+        learner__in=leaners,
+        is_active=True,
+        next_briefing_day__gte=get_current_date()
+    ).order_by("next_briefing_day").first()
+    if briefing_day is not None:
+        if briefing_day.next_briefing_day is not None:
+            return briefing_day.next_briefing_day
+    else:
+        return mark_safe('<span class="text">Данные не найдены</span>')
+
 

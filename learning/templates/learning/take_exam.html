@@ -23,7 +23,9 @@
                 <h5 class="text-primary mb-3">
                     Вопрос №{{ forloop.counter }}
                 </h5>
+                <div class="answer-frame my-2 p-2 bg-light border rounded">
                 <p class="card-text fs-5">{{ question.text }}</p>
+                </div>
                 <h6 class="text-primary">Варианты ответа:</h6>
                 {% for answer in question.answer.all %}
                 <div class="form-check mb-2">
@@ -33,9 +35,11 @@
                            id="answer_{{ answer.id }}"
                            value="{{ answer.id }}"
                            data-correct="{{ answer.is_correct|yesno:'true,false' }}">
-                    <label class="form-check-label" for="answer_{{ answer.id }}">
+                    <div class="answer-frame p-2 bg-light border rounded">
+                    <label class="form-check-label text-break w-100" for="answer_{{ answer.id }}">
                         {{ answer.text }}
                     </label>
+                    </div>
                 </div>
                 {% endfor %}
                 <!-- Блок обратной связи с ARIA -->
