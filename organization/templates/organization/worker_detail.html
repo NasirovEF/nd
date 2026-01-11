@@ -158,7 +158,12 @@
                                             data-bs-toggle="dropdown" aria-expanded="false">
                                     </button>
                                     <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#">Результат тестирования</a></li>
+                                        {% if briefing_obj|get_last_test_for_briefing %}
+                                        {% with briefing_obj|get_last_test_for_briefing as result %}
+                                        <li><a class="dropdown-item"
+                                               href="{% url 'learning:detail_exam_results' result.pk %}">Результат тестирования</a></li>
+                                        {% endwith %}
+                                        {% endif %}
                                         <li>
                                             <a class="dropdown-item"
                                                href="{% url 'learning:briefing_day_update' briefing_obj.pk %}">Изменить</a>

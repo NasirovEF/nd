@@ -23,6 +23,9 @@
         {% if all_results %}
             <a href="{% url 'learning:all_exam_results' %}"
                class="btn btn-sm btn-outline-secondary m-2">Назад</a>
+        {% elif all_assignments %}
+            <a href="{% url 'learning:all_results_for_exam' result.exam.pk result.learner.pk %}"
+               class="btn btn-sm btn-outline-secondary m-2">Назад</a>
         {% else %}
             <a href="{% url 'learning:exam_results' result.learner.pk %}"
                class="btn btn-sm btn-outline-secondary m-2">Назад</a>

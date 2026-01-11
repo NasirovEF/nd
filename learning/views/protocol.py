@@ -125,21 +125,25 @@ class ProtocolCreateView(CreateView):
                 **date_filter
             ).exists()
 
-            all_passed = not has_failed and (
+            all_passed = (
                     learner.exam_results.filter(
                         exam__program__in=program_ids,
                         is_passed=True,
                         **date_filter
                     ).values('exam__program_id').distinct().count() == len(program_ids)
             )
-
-            ProtocolResult.objects.create(
-                protocol=protocol,
-                learner=learner,
-                passed=all_passed
-
-            )
-
+            if all_passed:
+                ProtocolResult.objects.create(
+                    protocol=protocol,
+                    learner=learner,
+                    passed=True
+                )
+            elif has_failed and not all_passed:
+                ProtocolResult.objects.create(
+                    protocol=protocol,
+                    learner=learner,
+                    passed=False
+                )
         for direction in directions:
             for learner in learners:
                 knowledge_date = KnowledgeDate.objects.create_or_update_active(kn_date=protocol.prot_date, protocol=protocol, direction=direction, learner=learner)

@@ -5,9 +5,10 @@ from django.views.generic import (
     UpdateView,
     ListView,
 )
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import Http404
-from learning.forms import ProgramBriefingForm, ProgramBriefingNotActive, BriefingDayForm
+from learning.forms import ProgramBriefingForm, ProgramBriefingNotActive, BriefingDayForm, BulkBriefingDayForm
 from learning.models import ProgramBriefing, Exam, Test, BriefingDay, Learner
 from django.http import HttpResponseNotFound
 
@@ -128,4 +129,16 @@ class BriefingDayDeleteView(DeleteView):
             return reverse("learning:briefing_day_list", args=[self.kwargs['worker_pk']])
         else:
             return reverse("organization:worker_detail", args=[self.kwargs['worker_pk']])
+
+
+def create_bulk_briefing_day(request):
+    """Массовое проведение инструктажа работникам"""
+    if request.method == 'POST':
+        form = BulkBriefingDayForm(request.POST)
+        if form.is_valid():
+            briefing_day = form.save()
+            return redirect('organization:district_detail', args=[request.user.worker.district.pk])
+    else:
+        form = BulkBriefingDayForm()
+    return render(request, 'learning/bulk_briefing_day_form.html', {'form': form})
 

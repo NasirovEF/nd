@@ -1,5 +1,7 @@
 from django.core.exceptions import ValidationError
-from learning.models import ExamAssignment, ExamResult, Question, Learner, Answer
+from django.views.generic import UpdateView, DeleteView
+from learning.forms import BulkExamAssignmentForm, ExamAssignmentForm
+from learning.models import ExamAssignment, ExamResult, Question, Learner, Answer, Exam
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -8,9 +10,10 @@ from django.contrib import messages
 import json
 from django.http import HttpResponseNotFound
 import logging
-from django.db import transaction
-
-from organization.models import Worker
+from django.db import transaction, IntegrityError
+from django.urls import reverse, reverse_lazy
+from learning.services import get_current_date
+from organization.models import Worker, Division
 
 logger = logging.getLogger(__name__)
 
@@ -36,15 +39,16 @@ def start_exam_attempt(assignment):
     if assignment.status == 'completed':
         raise ValidationError("Экзамен уже завершён.")
 
+    attempt_number = assignment.total_attempts - assignment.attempts_left + 1
+
     assignment.status = 'in_progress'
     assignment.attempts_left -= 1
     assignment.save()
 
-    # Создаём запись о результате
     result = ExamResult.objects.create(
         learner=assignment.learner,
         exam=assignment.exam,
-        attempt_number=assignment.attempts_left + 1
+        attempt_number=attempt_number
     )
     return result
 
@@ -79,7 +83,11 @@ def calculate_exam_result(result, user_answers):
 
 def complete_exam_assignment(assignment, result):
     """Обновить статус назначения после завершения попытки"""
-    assignment.status = 'completed'
+
+    if assignment.attempts_left > 0 and not result.is_passed:
+        assignment.status = 'assigned'
+    else:
+        assignment.status = 'completed'
     assignment.save()
     return assignment
 
@@ -187,7 +195,6 @@ def all_exam_results(request):
 
     content['search_params'] = {
         'division': request.GET.get('division', ''),
-        'direction': request.GET.get('direction', ''),
         'date_from': request.GET.get('date_from', ''),
         'date_to': request.GET.get('date_to', ''),
         'has_program': request.GET.get('has_program', ''),
@@ -198,6 +205,8 @@ def all_exam_results(request):
         'name': request.GET.get('name', ''),
         'patronymic': request.GET.get('patronymic', ''),
     }
+    divisions = Division.objects.all()
+    content['divisions'] = divisions
     division = request.GET.get("division")
     date_from = request.GET.get("date_from")
     date_to = request.GET.get("date_to")
@@ -258,6 +267,11 @@ def detail_exam_results(request, result_id):
     else:
         all_results = False
 
+    if request.GET.get("all_assignments") == "1":
+        all_assignments = True
+    else:
+        all_assignments = False
+
     if result.answered_questions:
         for answer in result.answered_questions:
             content = {}
@@ -295,6 +309,137 @@ def detail_exam_results(request, result_id):
     return render(request, 'learning/detail_exam_result.html', {
         'content_list': content_list,
         'result': result,
-        'all_results': all_results}
+        'all_results': all_results,
+        'all_assignments': all_assignments}
                   )
 
+
+def all_exam_assignment(request):
+    assignments = ExamAssignment.objects.all()
+    content = {}
+
+    content['search_params'] = {
+        'division': request.GET.get('division', ''),
+        'date_from': request.GET.get('date_from', ''),
+        'date_to': request.GET.get('date_to', ''),
+        'has_program': request.GET.get('has_program', ''),
+        'has_briefing_program': request.GET.get('has_briefing_program', ''),
+        'status': request.GET.get('status', ''),
+        'surname': request.GET.get('surname', ''),
+        'name': request.GET.get('name', ''),
+        'patronymic': request.GET.get('patronymic', ''),
+    }
+    divisions = Division.objects.all()
+    content['divisions'] = divisions
+    division = request.GET.get("division")
+    date_from = request.GET.get("date_from")
+    date_to = request.GET.get("date_to")
+    has_program = request.GET.get("has_program")
+    has_briefing_program = request.GET.get("has_briefing_program")
+    status = request.GET.get("status")
+    surname = request.GET.get("surname")
+    name = request.GET.get("name")
+    patronymic = request.GET.get("patronymic")
+    if division:
+        assignments = assignments.filter(learner__worker__district__division__name__icontains=division)
+    if date_from:
+        assignments = assignments.filter(assigned_date__gte=date_from)
+    if date_to:
+        assignments = assignments.filter(assigned_date__lte=date_to)
+
+    if has_program == "1" and has_briefing_program != "0":
+        assignments = assignments.filter(exam__program__isnull=False)
+    elif has_program != "1" and has_briefing_program == "0":
+        assignments = assignments.filter(exam__briefing_program__isnull=False)
+    elif has_program == "1" and has_briefing_program == "0":
+        assignments = assignments.filter()
+
+    if status:
+        assignments = assignments.filter(status=status)
+
+    if surname:
+        worker = Worker.objects.filter(surname__icontains=surname)
+        learner = Learner.objects.filter(worker__in=worker)
+        assignments = assignments.filter(learner__in=learner)
+    if name:
+        worker = Worker.objects.filter(name__icontains=name)
+        learner = Learner.objects.filter(worker__in=worker)
+        assignments = assignments.filter(learner__in=learner)
+    if patronymic:
+        worker = Worker.objects.filter(patronymic__icontains=patronymic)
+        learner = Learner.objects.filter(worker__in=worker)
+        assignments = assignments.filter(learner__in=learner)
+    return render(request,
+                  'learning/all_exam_assignment.html',
+                  {'assignments': assignments, 'content': content}
+                  )
+
+
+def create_bulk_exam_assignment(request):
+    """Назначения экзамена работникам"""
+    if request.method == 'POST':
+        form = BulkExamAssignmentForm(request.POST)
+        if form.is_valid():
+            try:
+                assignments = form.save()
+                return redirect('learning:all_exam_assignment')
+            except IntegrityError as e:
+                cleaned_data = form.cleaned_data
+                exam = cleaned_data['exam']
+                learners = cleaned_data['learners']
+
+                existing = []
+                for learner in learners:
+                    if ExamAssignment.objects.filter(
+                            learner=learner,
+                            exam=exam,
+                            assigned_date=get_current_date()
+                    ).exists():
+                        existing.append(f"{learner}")
+
+                if existing:
+                    msg = (
+                            "Не удалось назначить тест следующим работникам: "
+                            + ", ".join(existing)
+                            + ". У них уже есть это назначение."
+                    )
+                else:
+                    msg = "Ошибка целостности данных. Возможно, дублируются записи."
+
+                messages.error(request, msg)
+        else:
+            messages.error(request, "Ошибка при заполнении формы. Проверьте поля ниже.")
+    else:
+        form = BulkExamAssignmentForm()
+
+    return render(request, 'learning/exam_assignment_form.html', {'form': form})
+
+
+def all_results_for_exam(request, exam_id, learner_id):
+    results = ExamResult.objects.filter(exam__pk=exam_id, learner__pk=learner_id)
+    learner = Learner.objects.filter(pk=learner_id).first()
+    exam = Exam.objects.filter(pk=exam_id).first()
+    return render(
+        request,
+        'learning/results_for_exam.html',
+        {
+            'results': results,
+            'learner': learner,
+            'exam': exam,
+        }
+    )
+
+
+class ExamAssignmentUpdateView(UpdateView):
+    """Редактирование назначенного экзамена работнику"""
+    model = ExamAssignment
+    form_class = ExamAssignmentForm
+
+    def get_success_url(self):
+        return reverse("learning:all_exam_assignment")
+
+
+class ExamAssignmentDeleteView(DeleteView):
+    """Удаление назначенного экзамена работнику"""
+    model = ExamAssignment
+    success_url = reverse_lazy("learning:all_exam_assignment")

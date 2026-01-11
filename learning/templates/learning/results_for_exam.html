@@ -1,0 +1,54 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1">
+     <a href="{% url 'learning:all_exam_assignment' %}" class="btn btn-sm btn-outline-secondary m-2">Назад</a></div>
+    <div class="col-10">
+
+        <h4 class="my-2">Результаты тестирования по {{ exam }}:</h4>
+        <h6 class="my-2">Работника: {{ learner }}</h6>
+
+        {% if results %}
+        <table class="table table-hover text-center">
+            <thead>
+            <tr>
+                <th>Тип тестирования</th>
+                <th>Дата</th>
+                <th>Балл (%)</th>
+                <th>Статус</th>
+                <th>Попытка</th>
+                <th>Оценочный лист</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{% if result.exam.program %}
+                    Обучение
+                    {% elif result.exam.briefing_program %}
+                    Инструктаж
+                    {% endif %}</td>
+                <td>{{ result.test_date|date:"d.m.Y" }}</td>
+                <td>{{ result.score }}</td>
+                <td>
+                    {% if result.is_passed %}
+                    <span class="text-success">Сдан</span>
+                    {% else %}
+                    <span class="text-danger">Не сдан</span>
+                    {% endif %}
+                </td>
+                <td>{{ result.attempt_number }}</td>
+                 <td><a class="btn btn-outline-primary btn-sm" href="{% url 'learning:detail_exam_results' result.pk %}?all_assignments=1">подробнее</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>У вас нет результатов экзаменов.</p>
+        {% endif %}
+
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}

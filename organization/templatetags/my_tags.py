@@ -1,6 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
-from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult, ExamAssignment, BriefingDay
+from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult, ExamAssignment, BriefingDay, \
+    ExamResult
 from datetime import date
 from django.utils import  timezone
 
@@ -168,3 +169,20 @@ def get_nearest_briefing_date(worker):
         return mark_safe('<span class="text">Данные не найдены</span>')
 
 
+@register.filter()
+def get_last_test_for_briefing(briefing):
+    briefing_program = briefing.briefing_program
+    result = ExamResult.objects.filter(
+        learner=briefing.learner,
+        exam__briefing_program=briefing_program,
+    ).order_by("-test_date").first()
+    return result
+
+
+@register.filter()
+def get_exam_result(assignment):
+    result = assignment.exam.results.filter(
+        learner=assignment.learner,
+        exam=assignment.exam
+    ).exists()
+    return result

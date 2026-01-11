@@ -3,7 +3,7 @@ from learning.models import (
     Protocol,
     Direction,
     Learner,
-    Program, ProtocolResult, Question, Answer, Test, ProgramBriefing, BriefingDay
+    Program, ProtocolResult, Question, Answer, Test, ProgramBriefing, BriefingDay, ExamAssignment, Exam, Briefing
 )
 from datetime import timedelta
 from django.forms import BaseInlineFormSet
@@ -134,53 +134,48 @@ class ProtocolResultForm(StileFormMixin, forms.ModelForm):
         program_ids = [p.id for p in programs]
         start_date = protocol.prot_date - timedelta(days=60)
 
-        # 1. Ищем несданные экзамены
-        failed_exams = learner.exam_results.filter(
-            exam__program__in=program_ids,
-            is_passed=False,
-            test_date__gte=start_date,
-            test_date__lte=protocol.prot_date
-        )
+        # 1. Агрегируем результаты по программам
+        program_statuses = {}
+        for result in learner.exam_results.filter(
+                exam__program__in=program_ids,
+                test_date__gte=start_date,
+                test_date__lte=protocol.prot_date
+        ):
+            program_id = result.exam.program.id
+            if program_id not in program_statuses:
+                program_statuses[program_id] = {'has_any_passed': False, 'has_any_failed': False}
+            if result.is_passed:
+                program_statuses[program_id]['has_any_passed'] = True
+            else:
+                program_statuses[program_id]['has_any_failed'] = True
 
-        # 2. Ищем сданные экзамены
-        passed_exams = learner.exam_results.filter(
-            exam__program__in=program_ids,
-            is_passed=True,
-            test_date__gte=start_date,
-            test_date__lte=protocol.prot_date
-        )
+        # 2. Собираем ID программ с результатами
+        covered_program_ids = set(program_statuses.keys())
 
-        # 3. Собираем ID программ, по которым есть результаты
-        covered_program_ids = set(passed_exams.values_list('exam__program_id', flat=True))
-        covered_program_ids.update(
-            failed_exams.values_list('exam__program_id', flat=True)
-        )
+        # 3. Программы с "не сдал" без "сдал"
+        failed_without_pass = []
+        programs_dict = {p.id: p for p in programs}
+        for program_id, status in program_statuses.items():
+            if status['has_any_failed'] and not status['has_any_passed']:
+                program = programs_dict.get(program_id)
+                if program:
+                    failed_without_pass.append(program.name)
 
-        # 4. Проверяем, все ли программы покрыты
-        missing_programs = [
-            p for p in programs
-            if p.id not in covered_program_ids
-        ]
+        # 4. Пропущенные программы
+        missing_programs = [p for p in programs if p.id not in covered_program_ids]
 
         # 5. Формируем ошибки
         errors = []
-
-        if failed_exams.exists():
-            failed_programs = failed_exams.values_list(
-                'exam__program__name', flat=True
-            ).distinct()
+        if failed_without_pass:
             errors.append(
-                f'Работник не сдал тест по программам: {", ".join(failed_programs)}.'
+                f'Работник не сдал тест по программам (нет успешного результата): {", ".join(sorted(failed_without_pass))}.'
             )
-
         if missing_programs:
             missing_names = [p.name for p in missing_programs]
             errors.append(
                 f'Нет результатов тестирования по программам: {", ".join(missing_names)}.'
             )
-
         if errors:
-            # Объединяем все ошибки
             raise ValidationError('. '.join(errors) + ' Отметка "Сдал" невозможна.')
 
         return cleaned_data
@@ -424,3 +419,125 @@ class BriefingDayForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = BriefingDay
         exclude = ["learner", "next_briefing_day", "is_active"]
+
+
+class BulkBriefingDayForm(forms.Form):
+    briefing_day = forms.DateField(
+        required=False,
+        label="Дата инструктажа",
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    briefing_type = forms.ModelChoiceField(
+        queryset=Briefing.objects.all(),
+        label="Вид инструктажа",
+        widget=forms.Select(attrs={'class': 'form-control',
+                   'title': 'Выберите вид инструктажа'})
+    )
+    learners = forms.ModelMultipleChoiceField(
+        queryset=Learner.objects.filter(is_active=True),
+        label="Работники",
+        widget=forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
+                   'title': 'Выберите работников...', 'size': 10})
+    )
+    briefing_program = forms.ModelChoiceField(
+        queryset=ProgramBriefing.objects.filter(is_active=True),
+        label="Программа инструктажа",
+        widget=forms.Select(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
+                                   'title': 'Выберите программу инструктажа'})
+    )
+    other_briefing_doc = forms.CharField(
+        label="Документ, в объёме которого проведён инструктаж",
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Введите текст документа...',
+            'title': 'Указывается в случае отсутствия программы инструктажа'
+        }),
+        required=False,  # если поле nullable (blank=True в модели)
+        help_text="В случае отсутствия программы инструктажа"
+    )
+    briefing_reason = forms.CharField(
+        label="Причина проведения инструктажа",
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 4,
+            'placeholder': 'Укажите причину проведения инструктажа...',
+            'title': 'Указывается только для внепланового инструктажа'
+        }),
+        required=False,  # если поле nullable (blank=True в модели)
+        help_text="В случае отсутствия программы инструктажа"
+    )
+
+    def save(self):
+        cleaned_data = self.cleaned_data
+        briefing_day = cleaned_data.get('briefing_day')
+        briefing_type = cleaned_data['briefing_type']
+        learners = cleaned_data['learners']
+        briefing_program = cleaned_data['briefing_program']
+        other_briefing_doc = cleaned_data['other_briefing_doc']
+        briefing_reason = cleaned_data['briefing_reason']
+
+        briefings = []
+        for learner in learners:
+            briefing = BriefingDay.objects.create(
+                learner=learner,
+                briefing_day=briefing_day,
+                briefing_type=briefing_type,
+                briefing_program=briefing_program,
+                other_briefing_doc=other_briefing_doc,
+                briefing_reason=briefing_reason
+            )
+            briefings.append(briefing)
+        return briefings
+
+
+class ExamAssignmentForm(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = ExamAssignment
+        exclude = ["learner", "exam", "assigned_date"]
+
+
+class BulkExamAssignmentForm(forms.Form):
+    exam = forms.ModelChoiceField(
+        queryset=Exam.objects.all(),
+        label="Экзамен",
+        widget=forms.Select(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
+                   'title': 'Выберите тип теста'})
+    )
+    learners = forms.ModelMultipleChoiceField(
+        queryset=Learner.objects.filter(is_active=True),
+        label="Работники",
+        widget=forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
+                   'title': 'Выберите работников...', 'size':10})
+    )
+    deadline = forms.DateField(
+        required=False,
+        label="Срок выполнения",
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    total_attempts = forms.IntegerField(
+        min_value=1,
+        initial=1,
+        label="Максимальное количество попыток",
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+
+    def save(self):
+        cleaned_data = self.cleaned_data
+        exam = cleaned_data['exam']
+        learners = cleaned_data['learners']
+        deadline = cleaned_data.get('deadline')
+        total_attempts = cleaned_data['total_attempts']
+
+        assignments = []
+        for learner in learners:
+            assignment = ExamAssignment.objects.create(
+                learner=learner,
+                exam=exam,
+                deadline=deadline,
+                total_attempts=total_attempts,
+                attempts_left=total_attempts
+            )
+            assignments.append(assignment)
+        return assignments
+

@@ -3,11 +3,13 @@ from django.urls import path
 from learning.apps import LearningConfig
 from learning.models import Program, ProgramBriefing
 from learning.views.briefing import ProgramBriefingCreateView, ProgramBriefingDetailView, ProgramBriefingUpdateView, \
-    ProgramBriefingDeleteView, BriefingDayCreateView, BriefingDayListView, BriefingDayUpdateView, BriefingDayDeleteView
+    ProgramBriefingDeleteView, BriefingDayCreateView, BriefingDayListView, BriefingDayUpdateView, BriefingDayDeleteView, \
+    create_bulk_briefing_day
 from learning.views.direction import DirectionListView
 from learning.views.direction_test import QuestionDeleteView, QuestionListView, QuestionCreateView, QuestionUpdateView
 from learning.views.exam import start_exam, take_exam, submit_answers, exam_results, detail_exam_results, \
-    all_exam_results
+    all_exam_results, all_exam_assignment, create_bulk_exam_assignment, all_results_for_exam, ExamAssignmentUpdateView, \
+    ExamAssignmentDeleteView
 from learning.views.learner import LearnerUpdateView, LearnerListView
 from learning.views.learning_doc_poster import LearningDocUpdateView, LearningPosterUpdateView
 from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView, ProgramDetailView
@@ -62,14 +64,19 @@ urlpatterns = [
     path('submit-answers/<int:learner_id>/<int:result_id>/', submit_answers, name='submit_answers'),
     path('results/<int:learner_id>/', exam_results, name='exam_results'),
     path('all_results/', all_exam_results, name='all_exam_results'),
-
+    path('all_results/<int:exam_id>/<int:learner_id>/', all_results_for_exam, name='all_results_for_exam'),
+    path('all_assignment/', all_exam_assignment, name='all_exam_assignment'),
     path('detail_exam_results/<int:result_id>/', detail_exam_results, name='detail_exam_results'),
+    path('create_bulk_exam_assignment/', create_bulk_exam_assignment, name='create_bulk_exam_assignment'),
+    path('exam_assignment_update/<int:pk>', ExamAssignmentUpdateView.as_view(), name='exam_assignment_update'),
+    path('exam_assignment_delete/<int:pk>', ExamAssignmentDeleteView.as_view(), name='exam_assignment_delete'),
 
     path("briefing_program_create/", ProgramBriefingCreateView.as_view(), name="briefing_program_create"),
     path("briefing_program_detail/<int:pk>", ProgramBriefingDetailView.as_view(), name="briefing_program_detail"),
     path("briefing_program_update/<int:pk>", ProgramBriefingUpdateView.as_view(), name="briefing_program_update"),
     path("briefing_program_delete/<int:pk>", ProgramBriefingDeleteView.as_view(), name="briefing_program_delete"),
 
+    path("briefing_day_bulk_create/", create_bulk_briefing_day,  name="briefing_day_bulk_create"),
     path("briefing_day_create/<int:learner_pk>", BriefingDayCreateView.as_view(), name="briefing_day_create"),
     path("briefing_day_list/<int:worker_pk>", BriefingDayListView.as_view(), name="briefing_day_list"),
     path("briefing_day_update/<int:pk>", BriefingDayUpdateView.as_view(), name="briefing_day_update"),

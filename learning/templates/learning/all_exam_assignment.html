@@ -1,0 +1,161 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+<div class="row">
+    <div class="col-1">
+        <button class="btn btn-outline-primary btn-sm m-2 ms-4" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#staticBackdrop"
+                aria-controls="staticBackdrop">
+            Поиск
+        </button>
+
+        <div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
+             aria-labelledby="staticBackdropLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="staticBackdropLabel">Параметры поиска</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+
+            <p class="mx-3">Показано # из # протоколов</p>
+            <div class="offcanvas-body">
+                <form method="get">
+                    <div class="card">
+                        <div class="card-body">
+                            <p>Дата c <input name="date_from" class="form-control text-center" type="date"
+                                             placeholder="Дата с"
+                                             aria-label="Search" value="{{content.search_params.date_from}}"></p>
+                            <p>Дата по <input name="date_to" class="form-control text-center" type="date"
+                                              placeholder="Дата по"
+                                              aria-label="Search" value="{{ content.search_params.date_to }}"></p>
+                            <input name="division" class="form-control my-2 text-center" list="divisionOptions"
+                                   id="divisionDataList" value="{{content.search_params.division}}"
+                                   placeholder="Введите название структурного подразделения">
+                            <datalist id="divisionOptions">
+                                {% for division in content.divisions %}
+                                <option value="{{ division }}">
+                                    {% endfor %}
+                            </datalist>
+                            <div class="row align-items-center g-3 mb-3">
+                                <div class="col-auto">
+                                    <label class="form-label mb-0">Тест по</label>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="1" id="is_learning"
+                                               name="has_program"
+                                               {% if content.search_params.has_program == '1' %}checked {% endif %}>
+                                        <label class="form-check-label" for="is_learning">Обучению</label>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="0" id="is_briefing"
+                                               name="has_briefing_program"
+                                               {% if content.search_params.has_briefing_program == '0' %}
+                                        checked
+                                        {% endif %}>
+                                        <label class="form-check-label" for="is_briefing">Инструктажу</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 d-flex align-items-center">
+                                <label for="statusSelect" class="form-label me-2" style="white-space: nowrap;">Статус
+                                    теста</label>
+                                <select name="status" id="statusSelect" class="form-control text-center" style="flex: 1;">
+                                    <option value="" {% if content.search_params.status == "" %}selected{% endif %}>-----</option>
+                                    <option value="assigned" {% if content.search_params.status == "assigned" %}selected{% endif %}>Назначен</option>
+                                    <option value="in_progress" {% if content.search_params.status == "in_progress" %}selected{% endif %}>В процессе</option>
+                                    <option value="completed" {% if content.search_params.status == "completed" %}selected{% endif %}>Завершён</option>
+                                    <option value="expired" {% if content.search_params.status == "expired" %}selected{% endif %}>Просрочен</option>
+                                </select>
+                            </div>
+
+                            <input name="surname" class="form-control my-2 text-center" type="search"
+                                   placeholder="Введите Фамилию работника"
+                                   aria-label="Search" value="{{content.search_params.surname}}">
+                            <input name="name" class="form-control my-2 text-center" type="search"
+                                   placeholder="Введите Имя работника"
+                                   aria-label="Search" value="{{content.search_params.name}}">
+                            <input name="patronymic" class="form-control my-2 text-center" type="search"
+                                   placeholder="Введите Отчество работника"
+                                   aria-label="Search" value="{{content.search_params.patronymic}}">
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 my-2">
+                        <button type="submit" class="btn btn-outline-primary">
+                            Поиск
+                        </button>
+                        <a href="{% url 'learning:all_exam_assignment' %}" class="btn btn-outline-secondary">Очистить</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-10">
+
+        <a href="{% url 'learning:create_bulk_exam_assignment' %}" class="btn btn-outline-primary btn-sm my-2">
+            Назначить тест</a>
+
+        <h4 class="my-2">Список тестов</h4>
+
+        <table class="table table-hover text-center">
+            <thead>
+            <tr>
+                <th class="col-1">№<br>п/п</th>
+                <th>Работник</th>
+                <th>Тип тестирования</th>
+                <th>Статус</th>
+                <th>Срок прохождения</th>
+                <th class="col-1">Количество попыток</th>
+                <th>Результаты</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if assignments %}
+            {% for assignment in assignments %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ assignment.learner }}</td>
+                <td>
+                    {% if assignment.exam.program %}
+                    Обучение
+                    {% elif assignment.exam.briefing_program %}
+                    Инструктаж
+                    {% endif %}
+                </td>
+                <td>{{ assignment.get_status_display }}</td>
+                <td>{{ assignment.deadline|date:"d.m.Y" }}</td>
+                <td>{{ assignment.attempts_left }}</td>
+                <td>{% if assignment|get_exam_result  %}
+                    <a href="{% url 'learning:all_results_for_exam' assignment.exam.pk assignment.learner.pk %}"
+                       class="btn btn-outline-primary btn-sm">
+                    Подробнее</a>
+                    {% endif %}
+                </td>
+                <td><button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item"
+                                   href="{% url 'learning:exam_assignment_update' assignment.pk %}">
+                                Редактировать</a></li>
+                            <li><a class="dropdown-item"
+                                   href="{% url 'learning:exam_assignment_delete' assignment.pk %}">Удалить</a></li>
+                        </ul></td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="9">Тесты отсутствуют</td>
+            </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}

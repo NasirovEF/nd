@@ -120,13 +120,13 @@ class ExamResult(models.Model):
         verbose_name="Ответы пользователя",
         null=True,
         blank=True
-    )  # для истории ответов
+    )
 
     class Meta:
         verbose_name = "Результат экзамена"
         verbose_name_plural = "Результаты экзаменов"
         unique_together = ('exam', 'learner', 'attempt_number')
-        ordering = ['-test_date']
+        ordering = ['-test_date', '-id']
 
 
 class ExamAssignment(models.Model):
@@ -156,12 +156,18 @@ class ExamAssignment(models.Model):
         ],
         default='assigned'
     )
+    total_attempts = models.PositiveIntegerField(verbose_name="Максимальное количество попыток", default=1)
     attempts_left = models.PositiveIntegerField(verbose_name="Осталось попыток", default=1)
+
+    def clean(self):
+        if self.attempts_left > self.total_attempts:
+            raise ValidationError("Оставшееся количество попыток не может быть больше максимального количества попыток")
 
     class Meta:
         verbose_name = "Назначение экзамена"
         verbose_name_plural = "Назначения экзаменов"
-        unique_together = ('learner', 'exam')
+        unique_together = ('learner', 'exam', 'assigned_date')
+        ordering = ['-assigned_date', '-id']
 
     def __str__(self):
         return f"{self.learner} — {self.exam}"
