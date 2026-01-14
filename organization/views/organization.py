@@ -8,7 +8,7 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from organization.forms import OrganizationForm
 from organization.models import Organization, Branch
 
@@ -30,26 +30,29 @@ class OrganizationDetailView(DetailView):
     model = Organization
 
 
-class OrganizationCreateView(CreateView):
+class OrganizationCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """Создание ОСТа"""
 
     model = Organization
     form_class = OrganizationForm
+    permission_required = 'organization.add_organization'
 
     def get_success_url(self):
         return reverse("organization:organization_list")
 
 
-class OrganizationUpdateView(UpdateView):
+class OrganizationUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Редактирование ОСТа"""
 
     model = Organization
     form_class = OrganizationForm
+    permission_required = 'organization.change_organization'
 
     def get_success_url(self):
         return reverse("organization:organization_list")
 
 
-class OrganizationDeleteView(DeleteView):
+class OrganizationDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Organization
+    permission_required = 'organization.delete_organization'
     success_url = reverse_lazy("organization:organization_list")

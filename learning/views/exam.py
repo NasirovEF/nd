@@ -3,17 +3,18 @@ from django.views.generic import UpdateView, DeleteView
 from learning.forms import BulkExamAssignmentForm, ExamAssignmentForm
 from learning.models import ExamAssignment, ExamResult, Question, Learner, Answer, Exam
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 import json
-from django.http import HttpResponseNotFound
 import logging
 from django.db import transaction, IntegrityError
 from django.urls import reverse, reverse_lazy
 from learning.services import get_current_date
 from organization.models import Worker, Division
+from django.http import HttpResponseNotFound, HttpResponseForbidden
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 logger = logging.getLogger(__name__)
 
@@ -189,6 +190,8 @@ def exam_results(request, learner_id):
     return render(request, 'learning/exam_results.html', {'results': results, 'learner': learner})
 
 
+@login_required
+@permission_required('learning.view_examresult', raise_exception=True)
 def all_exam_results(request):
     results = ExamResult.objects.all()
     content = {}
@@ -260,6 +263,9 @@ def detail_exam_results(request, result_id):
     except ExamResult.DoesNotExist:
         return HttpResponseNotFound("Ошибка, результат не найден")
 
+    if request.user.worker.learner != result.learner or not request.user.has_perm('learning.view_examresult'):
+        return HttpResponseForbidden("У вас нет доступа к этому результату экзамена.")
+
     content_list = []
 
     if request.GET.get("all_results") == "1":
@@ -313,7 +319,8 @@ def detail_exam_results(request, result_id):
         'all_assignments': all_assignments}
                   )
 
-
+@login_required
+@permission_required('learning.view_examassignment', raise_exception=True)
 def all_exam_assignment(request):
     assignments = ExamAssignment.objects.all()
     content = {}
@@ -375,6 +382,8 @@ def all_exam_assignment(request):
                   )
 
 
+@login_required
+@permission_required('learning.add_examassignment')
 def create_bulk_exam_assignment(request):
     """Назначения экзамена работникам"""
     if request.method == 'POST':
@@ -415,6 +424,8 @@ def create_bulk_exam_assignment(request):
     return render(request, 'learning/exam_assignment_form.html', {'form': form})
 
 
+@login_required
+@permission_required('learning.view_examresult')
 def all_results_for_exam(request, exam_id, learner_id):
     results = ExamResult.objects.filter(exam__pk=exam_id, learner__pk=learner_id)
     learner = Learner.objects.filter(pk=learner_id).first()
@@ -430,16 +441,18 @@ def all_results_for_exam(request, exam_id, learner_id):
     )
 
 
-class ExamAssignmentUpdateView(UpdateView):
+class ExamAssignmentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Редактирование назначенного экзамена работнику"""
     model = ExamAssignment
     form_class = ExamAssignmentForm
+    permission_required = 'learning.change_examassignment'
 
     def get_success_url(self):
         return reverse("learning:all_exam_assignment")
 
 
-class ExamAssignmentDeleteView(DeleteView):
+class ExamAssignmentDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление назначенного экзамена работнику"""
     model = ExamAssignment
+    permission_required = 'learning.delete_examassignment'
     success_url = reverse_lazy("learning:all_exam_assignment")

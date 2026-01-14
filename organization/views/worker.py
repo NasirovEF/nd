@@ -10,7 +10,7 @@ from django.views.generic import (
 )
 from learning.models import Learner, KnowledgeDate, Briefing
 from django.utils.datastructures import MultiValueDictKeyError
-
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from learning.models.learner_direction import StaffDirection, Direction
 from organization.forms import WorkerCreateForm, WorkerUpdateForm, PositionForm, PositionFormSet
 from organization.models import Worker, District, Group, Organization, Branch, Division, Position
@@ -36,9 +36,11 @@ class WorkerDetailView(DetailView):
         return context
 
 
-class WorkerCreateView(CreateView):
+class WorkerCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    """Создание работника"""
     model = Worker
     form_class = WorkerCreateForm
+    permission_required = 'organization.add_worker'
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.object.district.pk])
@@ -129,9 +131,10 @@ class WorkerCreateView(CreateView):
             return self.form_invalid(form)
 
 
-class WorkerUpdateView(UpdateView):
+class WorkerUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Worker
     form_class = WorkerUpdateForm
+    permission_required = 'organization.change_worker'
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.object.district.pk])
@@ -197,10 +200,11 @@ class WorkerUpdateView(UpdateView):
                     KnowledgeDate.objects.create_or_update_active(learner=learner, direction=direction)
 
 
-class WorkerDeleteView(DeleteView):
+class WorkerDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление работника"""
 
     model = Worker
+    permission_required = 'organization.delete_worker'
 
     def get_success_url(self):
         district_pk = self.request.GET["district"]

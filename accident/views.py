@@ -7,6 +7,7 @@ from accident.forms import AccidentForm
 from accident.models import Accident, AccidentСategory, Organization
 from config.settings import EMAIL_HOST_USER
 from datetime import date
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 
 class AccidentListView(ListView):
@@ -68,9 +69,10 @@ class AccidentDetailView(DetailView):
     model = Accident
 
 
-class AccidentCreateView(CreateView):
+class AccidentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Accident
     form_class = AccidentForm
+    permission_required = 'accident.add_accident'
 
     def get_success_url(self):
         return reverse("accident:accident_detail", args=[self.object.pk])
@@ -88,15 +90,17 @@ class AccidentCreateView(CreateView):
         return super().form_valid(form)
 
 
-class AccidentUpdateView(UpdateView):
+class AccidentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Accident
     form_class = AccidentForm
+    permission_required = 'accident.change_accident'
 
     def get_success_url(self):
         return reverse("accident:accident_detail", args=[self.object.pk])
 
 
-class AccidentDeleteView(DeleteView):
+class AccidentDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Accident
+    permission_required = 'accident:delete_accident'
     success_url = reverse_lazy("accident:search", args=[1])
 

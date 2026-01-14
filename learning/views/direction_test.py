@@ -1,14 +1,16 @@
 from django.views.generic import CreateView, UpdateView, ListView, DeleteView
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from learning.forms import QuestionForm, AnswerFormSets
 from learning.models import Question, Answer, Test
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 
-class QuestionListView(ListView):
+class QuestionListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     """Просмотр списка вопросов"""
     model = Question
+    permission_required = 'learning.view_question'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -29,18 +31,20 @@ class QuestionListView(ListView):
         return queryset
 
 
-class QuestionDeleteView(DeleteView):
+class QuestionDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление вопроса"""
 
     model = Question
+    permission_required = 'learning.delete_question'
 
     def get_success_url(self):
         return reverse("learning:question_list", args=[self.request.GET.get("test_pk")])
 
 
-class QuestionCreateView(CreateView):
+class QuestionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     model = Question
     form_class = QuestionForm
+    permission_required = 'learning.add_question'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -106,10 +110,11 @@ class QuestionCreateView(CreateView):
             )
 
 
-class QuestionUpdateView(UpdateView):
+class QuestionUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Обновление вопроса"""
     model = Question
     form_class = QuestionForm
+    permission_required = 'larning.change_question'
 
     def get_object(self, queryset=None):
         self.object = get_object_or_404(Question, pk=self.kwargs['pk'])

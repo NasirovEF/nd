@@ -6,11 +6,13 @@ from django.forms import modelformset_factory
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 from django.http import Http404
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 
-class LearningDocUpdateView(UpdateView):
-    fields = []  # Не используем поля модели напрямую
+class LearningDocUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    fields = []
     template_name = "learning/learning_doc.html"
+    permission_required = 'learning.change_learningdoc'
 
     def dispatch(self, request, *args, **kwargs):
         # Сначала проверяем kwargs (из URL)
@@ -88,9 +90,10 @@ class LearningDocUpdateView(UpdateView):
             return reverse('learning:briefing_docs', kwargs={'pk': self.object.pk})
 
 
-class LearningPosterUpdateView(UpdateView):
-    fields = []  # Не используем поля модели напрямую
+class LearningPosterUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    fields = []
     template_name = "learning/learning_poster.html"
+    permission_required = 'learning.change_learningposter'
 
     def dispatch(self, request, *args, **kwargs):
         # Сначала проверяем kwargs (из URL)

@@ -5,19 +5,24 @@ from django.views.generic import (
     UpdateView,
     ListView,
 )
+from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.http import Http404
 from learning.forms import ProgramBriefingForm, ProgramBriefingNotActive, BriefingDayForm, BulkBriefingDayForm
 from learning.models import ProgramBriefing, Exam, Test, BriefingDay, Learner
 from django.http import HttpResponseNotFound
+from django.db import transaction
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 
-class ProgramBriefingCreateView(CreateView):
+class ProgramBriefingCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """Создание программы инструктажа"""
 
     model = ProgramBriefing
     form_class = ProgramBriefingForm
+    permission_required = 'learning.add_programbriefing'
 
     def form_valid(self, form):
         briefing_program = form.save()
@@ -34,10 +39,11 @@ class ProgramBriefingDetailView(DetailView):
     model = ProgramBriefing
 
 
-class ProgramBriefingUpdateView(UpdateView):
+class ProgramBriefingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Редактирование программы инструктажа"""
 
     model = ProgramBriefing
+    permission_required = 'learning.change_programbriefing'
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -54,19 +60,21 @@ class ProgramBriefingUpdateView(UpdateView):
         return reverse("learning:briefing_program_detail", args=[self.object.pk])
 
 
-class ProgramBriefingDeleteView(DeleteView):
+class ProgramBriefingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление программы инструктажа"""
 
     model = ProgramBriefing
+    permission_required = 'learning.delete_programbriefing'
     template_name = "learning/program_confirm_delete.html"
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.request.GET["district"]])
 
 
-class BriefingDayCreateView(CreateView):
+class BriefingDayCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """Создание инструктажа"""
     model = BriefingDay
+    permission_required = 'learning.add_briefingday'
     form_class = BriefingDayForm
 
     def form_valid(self, form):
@@ -83,10 +91,11 @@ class BriefingDayCreateView(CreateView):
         return reverse("organization:worker_detail", args=[self.object.learner.worker.pk])
 
 
-class BriefingDayUpdateView(UpdateView):
+class BriefingDayUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Редактирование инструктажа"""
     model = BriefingDay
     form_class = BriefingDayForm
+    permission_required = 'learning.change_briefingday'
 
     def get_success_url(self):
         if self.request.GET.get("archive") == "1":
@@ -111,10 +120,11 @@ class BriefingDayListView(ListView):
         return context
 
 
-class BriefingDayDeleteView(DeleteView):
+class BriefingDayDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление инструктажа"""
 
     model = BriefingDay
+    permission_required = 'learning.delete_briefingday'
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -131,13 +141,24 @@ class BriefingDayDeleteView(DeleteView):
             return reverse("organization:worker_detail", args=[self.kwargs['worker_pk']])
 
 
+@login_required
+@permission_required('learning.add_programbriefing', raise_exception=True)
 def create_bulk_briefing_day(request):
     """Массовое проведение инструктажа работникам"""
     if request.method == 'POST':
         form = BulkBriefingDayForm(request.POST)
-        if form.is_valid():
-            briefing_day = form.save()
-            return redirect('organization:district_detail', args=[request.user.worker.district.pk])
+        try:
+            with transaction.atomic():
+                if form.is_valid():
+                    briefings = form.save()
+                    return redirect(
+                        'organization:district_detail',
+                        pk=request.user.worker.district.pk
+                    )
+        except ValidationError:
+            pass
+        except Exception as e:
+            form.add_error(None, f"Ошибка при сохранении данных {e}.")
     else:
         form = BulkBriefingDayForm()
     return render(request, 'learning/bulk_briefing_day_form.html', {'form': form})

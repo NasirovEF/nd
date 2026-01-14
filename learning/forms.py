@@ -423,11 +423,12 @@ class BriefingDayForm(StileFormMixin, forms.ModelForm):
 
 class BulkBriefingDayForm(forms.Form):
     briefing_day = forms.DateField(
-        required=False,
+        required=True,
         label="Дата инструктажа",
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
     )
     briefing_type = forms.ModelChoiceField(
+        required=True,
         queryset=Briefing.objects.all(),
         label="Вид инструктажа",
         widget=forms.Select(attrs={'class': 'form-control',
@@ -435,6 +436,7 @@ class BulkBriefingDayForm(forms.Form):
     )
     learners = forms.ModelMultipleChoiceField(
         queryset=Learner.objects.filter(is_active=True),
+        required=True,
         label="Работники",
         widget=forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
                    'title': 'Выберите работников...', 'size': 10})
@@ -464,18 +466,32 @@ class BulkBriefingDayForm(forms.Form):
             'placeholder': 'Укажите причину проведения инструктажа...',
             'title': 'Указывается только для внепланового инструктажа'
         }),
-        required=False,  # если поле nullable (blank=True в модели)
+        required=False,
         help_text="В случае отсутствия программы инструктажа"
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        briefing_type = cleaned_data.get('briefing_type')
+        briefing_program = cleaned_data.get('briefing_program')
+        other_briefing_doc = cleaned_data.get('other_briefing_doc')
+        briefing_reason = cleaned_data.get('briefing_reason')
+
+        if not briefing_program and not other_briefing_doc:
+            raise ValidationError("Укажите программу инструктажа "
+                                  "или иной документ в объёме которого проведён инструктаж")
+
+        if briefing_type.briefing_type == 'unscheduled' and not briefing_reason:
+            raise ValidationError("Укажите причину проведения внепланового инструктажа")
 
     def save(self):
         cleaned_data = self.cleaned_data
         briefing_day = cleaned_data.get('briefing_day')
-        briefing_type = cleaned_data['briefing_type']
-        learners = cleaned_data['learners']
-        briefing_program = cleaned_data['briefing_program']
-        other_briefing_doc = cleaned_data['other_briefing_doc']
-        briefing_reason = cleaned_data['briefing_reason']
+        briefing_type = cleaned_data.get('briefing_type')
+        learners = cleaned_data.get('learners')
+        briefing_program = cleaned_data.get('briefing_program')
+        other_briefing_doc = cleaned_data.get('other_briefing_doc')
+        briefing_reason = cleaned_data.get('briefing_reason')
 
         briefings = []
         for learner in learners:

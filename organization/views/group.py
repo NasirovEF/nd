@@ -8,7 +8,7 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from organization.forms import GroupForm
 from organization.models import Group, District
 
@@ -25,11 +25,12 @@ class GroupDetailView(DetailView):
     model = Group
 
 
-class GroupCreateView(CreateView):
+class GroupCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """Создание групп"""
 
     model = Group
     form_class = GroupForm
+    permission_required = 'organization.add_group'
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.object.district.pk])
@@ -43,20 +44,22 @@ class GroupCreateView(CreateView):
         return super().form_valid(form)
 
 
-class GroupUpdateView(UpdateView):
+class GroupUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Редактирование групп"""
 
     model = Group
     form_class = GroupForm
+    permission_required = 'organization.change_group'
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.object.district.pk])
 
 
-class GroupDeleteView(DeleteView):
+class GroupDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление групп"""
 
     model = Group
+    permission_required = 'organization.delete_group'
 
     def get_success_url(self):
         district_pk = self.request.GET["district"]

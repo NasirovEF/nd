@@ -8,6 +8,7 @@ from django.views.generic import (
     UpdateView,
     View,
 )
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.forms import inlineformset_factory
 from learning.forms import LearnerForm
 from learning.models import Learner, Direction, KnowledgeDate
@@ -15,9 +16,10 @@ from organization.models import Worker, Division
 
 
 class LearnerListView(ListView):
-    """Просмотр списка филиалов"""
+    """Просмотр графика проверки знаний"""
 
     model = Learner
+
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -76,28 +78,31 @@ class LearnerListView(ListView):
         return queryset
 
 
-class LearnerDetailView(DetailView):
-    """Просмотр одного из филиалов"""
+class LearnerDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
+    """Просмотр одного из обучаемых"""
 
     model = Learner
+    permission_required = 'learning.view_learner'
 
 
-class LearnerCreateView(CreateView):
-    """Создание филиалов"""
+class LearnerCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    """Создание обучаемого"""
 
     model = Learner
     form_class = LearnerForm
+    permission_required = 'learning.add_learner'
 
     def get_success_url(self):
         return reverse("organization:worker_detail", args=[self.object.worker.pk])
 
 
-class LearnerUpdateView(UpdateView):
-    """Редактирование филиалов"""
+class LearnerUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    """Редактирование обучаемого"""
 
     model = Worker
     fields = []
     template_name = "learning/learner_form.html"
+    permission_required = 'learning.change_learner'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -155,8 +160,9 @@ class LearnerUpdateView(UpdateView):
         return reverse("organization:worker_detail", args=[self.object.pk])
 
 
-class LearnerDeleteView(DeleteView):
+class LearnerDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление филиала"""
 
     model = Learner
+    permission_required = 'learning.delete_learner'
     success_url = reverse_lazy("organization:organization_list")
