@@ -8,7 +8,7 @@ from django.views.generic import (
     UpdateView,
     View,
 )
-
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from learning.forms import ProgramForm, ProgramFormNotActive
 from learning.models import Program, Exam
 
@@ -59,10 +59,11 @@ class ProgramCreateView(CreateView):
         return reverse("learning:program_detail", args=[self.object.pk])
 
 
-class ProgramUpdateView(UpdateView):
+class ProgramUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Редактирование филиалов"""
 
     model = Program
+    permission_required = 'learning.change_program'
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -79,10 +80,11 @@ class ProgramUpdateView(UpdateView):
         return reverse("learning:program_detail", args=[self.object.pk])
 
 
-class ProgramDeleteView(DeleteView):
+class ProgramDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление филиала"""
 
     model = Program
+    permission_required = 'learning.delete_program'
 
     def get_success_url(self):
         return reverse("organization:district_detail", args=[self.request.GET["district"]])

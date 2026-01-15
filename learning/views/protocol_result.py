@@ -3,11 +3,13 @@ from learning.models import Protocol, ProtocolResult, KnowledgeDate
 from django.shortcuts import get_object_or_404, redirect
 from django.forms import modelformset_factory
 from django.views.generic import UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
 
-class ProtocolResultsUpdateView(UpdateView):
+class ProtocolResultsUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Protocol
     fields = []
+    permission_required = 'learning.change_protocolresult'
     template_name = 'learning/results_edit.html'
 
     def get_formset_class(self):

@@ -8,6 +8,7 @@ from django.views.generic import (
     UpdateView,
     View,
 )
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from datetime import timedelta
 from learning.forms import ProtocolCreateForm, ProtocolUpdateForm
 from learning.models import Protocol, KnowledgeDate, ProtocolResult, Direction, Learner
@@ -94,11 +95,12 @@ class ProtocolDetailView(DetailView):
         return context
 
 
-class ProtocolCreateView(CreateView):
+class ProtocolCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """Создание протокола"""
 
     model = Protocol
     form_class = ProtocolCreateForm
+    permission_required = 'learning.add_protocol'
 
     def get_success_url(self):
         return reverse("learning:protocol_list")
@@ -152,11 +154,12 @@ class ProtocolCreateView(CreateView):
         return super().form_valid(form)
 
 
-class ProtocolUpdateView(UpdateView):
+class ProtocolUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Редактирование протокола"""
 
     model = Protocol
     form_class = ProtocolUpdateForm
+    permission_required = 'learning.change_protocol'
 
     def get_success_url(self):
         return reverse("learning:protocol_list")
@@ -210,8 +213,9 @@ class ProtocolUpdateView(UpdateView):
         return super().form_valid(form)
 
 
-class ProtocolDeleteView(DeleteView):
+class ProtocolDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление филиала"""
 
     model = Protocol
+    permission_required = 'learning.delete_protocol'
     success_url = reverse_lazy("learning:protocol_list")
