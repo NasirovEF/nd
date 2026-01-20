@@ -72,7 +72,8 @@ class BaseProgram(models.Model):
     """Базовая модель программы обучения/инструктажа"""
     name = models.CharField(max_length=150, verbose_name="Наименование программы")
     duration = models.PositiveIntegerField(verbose_name="Продолжительность обучения (часов)")
-    position = models.ForeignKey(Position, on_delete=models.SET_NULL, verbose_name="Наименование профессии", **NULLABLE)
+    staffunit = models.ForeignKey(StaffUnit, on_delete=models.SET_NULL, verbose_name="Наименование профессии", **NULLABLE)
+    position_group = models.ForeignKey("organization.PositionGroup", on_delete=models.SET_NULL, verbose_name="Наименование группы работников", **NULLABLE)
     approve = models.CharField(max_length=150, verbose_name="Программа утверждена", help_text="Введите должность, И.О. Фамилию лица утвердившего программу")
     approval_date = models.DateField(verbose_name="Дата утверждения программы", default=get_current_date, help_text="Введите дату в формате ДД.ММ.ГГГГ")
     organization = models.ForeignKey(Organization, verbose_name="ОСТ", on_delete=models.SET_NULL, **NULLABLE)
