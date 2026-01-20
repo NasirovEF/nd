@@ -70,19 +70,6 @@
                         {% endif %}
                     </div>
 
-                    <!-- Поле "other_briefing_doc" -->
-                    <div class="mb-3">
-                        <label for="{{ form.other_briefing_doc.id_for_label }}" class="form-label">{{ form.other_briefing_doc.label }}</label>
-                        {{ form.other_briefing_doc }}
-                        {% if form.other_briefing_doc.errors %}
-                        <div class="invalid-feedback">
-                            {% for error in form.other_briefing_doc.errors %}
-                            {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
                     <!-- Поле "briefing_reason" -->
                     <div class="mb-3">
                         <label for="{{ form.briefing_reason.id_for_label }}" class="form-label">{{ form.briefing_reason.label }}</label>

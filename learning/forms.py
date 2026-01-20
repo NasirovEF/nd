@@ -420,6 +420,17 @@ class BriefingDayForm(StileFormMixin, forms.ModelForm):
         model = BriefingDay
         exclude = ["learner", "next_briefing_day", "is_active"]
 
+    def clean(self):
+        cleaned_data = super().clean()
+        briefing_type = cleaned_data.get('briefing_type')
+        briefing_program = cleaned_data.get('briefing_program')
+        briefing_reason = cleaned_data.get('briefing_reason')
+        learner = cleaned_data.get('learner')
+        briefing_day = cleaned_data.get('briefing_day')
+
+        if briefing_type.briefing_type == 'unscheduled' and not briefing_reason:
+            raise ValidationError("Укажите причину проведения внепланового инструктажа")
+
 
 class BulkBriefingDayForm(forms.Form):
     briefing_day = forms.DateField(
@@ -443,20 +454,10 @@ class BulkBriefingDayForm(forms.Form):
     )
     briefing_program = forms.ModelChoiceField(
         queryset=ProgramBriefing.objects.filter(is_active=True),
-        label="Программа инструктажа",
+        required=True,
+        label="Программа инструктажа или документ в объеме которого проведен инструктаж",
         widget=forms.Select(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
                                    'title': 'Выберите программу инструктажа'})
-    )
-    other_briefing_doc = forms.CharField(
-        label="Документ, в объёме которого проведён инструктаж",
-        widget=forms.Textarea(attrs={
-            'class': 'form-control',
-            'rows': 4,
-            'placeholder': 'Введите текст документа...',
-            'title': 'Указывается в случае отсутствия программы инструктажа'
-        }),
-        required=False,  # если поле nullable (blank=True в модели)
-        help_text="В случае отсутствия программы инструктажа"
     )
     briefing_reason = forms.CharField(
         label="Причина проведения инструктажа",
@@ -474,12 +475,22 @@ class BulkBriefingDayForm(forms.Form):
         cleaned_data = super().clean()
         briefing_type = cleaned_data.get('briefing_type')
         briefing_program = cleaned_data.get('briefing_program')
-        other_briefing_doc = cleaned_data.get('other_briefing_doc')
         briefing_reason = cleaned_data.get('briefing_reason')
-
-        if not briefing_program and not other_briefing_doc:
-            raise ValidationError("Укажите программу инструктажа "
-                                  "или иной документ в объёме которого проведён инструктаж")
+        learners = cleaned_data.get('learners')
+        briefing_day = cleaned_data.get('briefing_day')
+        start_date = briefing_day - timedelta(days=30)
+        learners_not_result = []
+        for learner in learners:
+            if not learner.exam_results.filter(
+                exam__briefing_program=briefing_program,
+                test_date__gte=start_date,
+                test_date__lte=briefing_day,
+                is_passed=True
+            ).exists():
+                learners_not_result.append(str(learner))
+        if len(learners_not_result) > 0:
+            raise ValidationError(f'Работники: {", ".join(learners_not_result)} '
+                                  f'не сдали тестирование по программе {briefing_program}')
 
         if briefing_type.briefing_type == 'unscheduled' and not briefing_reason:
             raise ValidationError("Укажите причину проведения внепланового инструктажа")
@@ -490,7 +501,6 @@ class BulkBriefingDayForm(forms.Form):
         briefing_type = cleaned_data.get('briefing_type')
         learners = cleaned_data.get('learners')
         briefing_program = cleaned_data.get('briefing_program')
-        other_briefing_doc = cleaned_data.get('other_briefing_doc')
         briefing_reason = cleaned_data.get('briefing_reason')
 
         briefings = []
@@ -500,7 +510,6 @@ class BulkBriefingDayForm(forms.Form):
                 briefing_day=briefing_day,
                 briefing_type=briefing_type,
                 briefing_program=briefing_program,
-                other_briefing_doc=other_briefing_doc,
                 briefing_reason=briefing_reason
             )
             briefings.append(briefing)

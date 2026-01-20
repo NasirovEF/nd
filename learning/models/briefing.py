@@ -55,14 +55,10 @@ class BriefingDay(models.Model):
     briefing_program = models.ForeignKey(
         "ProgramBriefing",
         on_delete=models.SET_NULL,
-        verbose_name="Программа инструктажа",
+        verbose_name="Программа инструктажа или документ в объеме которого проведен инструктаж",
         related_name="briefing_day",
-        **NULLABLE
+        null=True
     )
-    other_briefing_doc = models.TextField(
-        verbose_name="Документ в объеме которого проведен инструктаж "
-                     "(в случае отсутствия программы инструктажа)",
-        **NULLABLE)
     briefing_reason = models.TextField(verbose_name="Причина проведения инструктажа", **NULLABLE)
     is_active = models.BooleanField(verbose_name="Актуальность", default=True)
 

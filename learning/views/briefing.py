@@ -5,6 +5,7 @@ from django.views.generic import (
     UpdateView,
     ListView,
 )
+from datetime import timedelta
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
@@ -80,9 +81,22 @@ class BriefingDayCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateV
     def form_valid(self, form):
         briefing_day = form.save(commit=False)
         learner = self.kwargs['learner_pk']
+        start_date = briefing_day.briefing_day - timedelta(days=30)
         try:
             briefing_day.learner = Learner.objects.get(pk=learner)
-            briefing_day.save()
+            if not briefing_day.learner.exam_results.filter(
+                    exam__briefing_program=briefing_day.briefing_program,
+                    test_date__gte=start_date,
+                    test_date__lte=briefing_day.briefing_day,
+                    is_passed=True
+            ).exists():
+                form.add_error(
+                    None,
+                    f'{briefing_day.learner} не сдал тестирование по программе {briefing_day.briefing_program}'
+                )
+                return self.form_invalid(form)
+            else:
+                briefing_day.save()
             return super().form_valid(form)
         except Learner.DoesNotExist:
             return HttpResponseNotFound("Работник не найден")

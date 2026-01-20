@@ -52,7 +52,7 @@ class GroupUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     permission_required = 'organization.change_group'
 
     def get_success_url(self):
-        return reverse("organization:district_detail", args=[self.object.district.pk])
+        return reverse("organization:organization_list")
 
 
 class GroupDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -62,5 +62,4 @@ class GroupDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     permission_required = 'organization.delete_group'
 
     def get_success_url(self):
-        district_pk = self.request.GET["district"]
-        return reverse("organization:district_detail", args=[district_pk])
+        return reverse("organization:organization_list")

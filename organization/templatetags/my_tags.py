@@ -186,3 +186,15 @@ def get_exam_result(assignment):
         exam=assignment.exam
     ).exists()
     return result
+
+@register.filter
+def model_name(obj):
+    return obj._meta.model_name
+
+
+@register.filter
+def briefing_type_name(names):
+    name_list = []
+    for name in names:
+        name_list.append(str(name))
+    return ", ".join(name_list)

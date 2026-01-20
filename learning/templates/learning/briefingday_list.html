@@ -98,10 +98,10 @@
             <td>{{briefing.learner.position}}</td>
             <td>{{briefing.briefing_type}}</td>
             <td>{{briefing.briefing_day|date:"d.m.Y" }}</td>
-            <td>{% if briefing.briefing_program %}
-                                {{ briefing.briefing_program }}
-                                {% elif briefing.other_briefing_doc %}
-                                {{ briefing.other_briefing_doc }}
+            <td>{% if briefing_obj.briefing_program %}
+                                {{ briefing_obj.briefing_program }}
+                                {% else %}
+                                ------
                                 {% endif %}</td>
             <td>{% if  briefing.briefing_reason %}
                                 {{ briefing.briefing_reason}}

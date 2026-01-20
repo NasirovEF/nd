@@ -52,7 +52,7 @@ class DivisionUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
     permission_required = 'organization.change_division'
 
     def get_success_url(self):
-        return reverse("organization:organization_list", args=[self.object.pk])
+        return reverse("organization:organization_list")
 
 
 class DivisionDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):

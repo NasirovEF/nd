@@ -63,11 +63,11 @@
                 <table class="table table-sm table-hover text-center align-middle no-split-header">
                     <thead>
                     <tr>
-                        <th scope="col" rowspan="2" >ФИО</th>
+                        <th scope="col" rowspan="2">ФИО</th>
                         <th scope="col" rowspan="2">Должность</th>
                         <th scope="col" colspan="2" style="line-height:1.2; padding:0.25rem;">Предстоящая дата</th>
-                        <th scope="col" rowspan="2"></th>
-                        <th scope="col" rowspan="2"></th>
+                        <th scope="col" class="col-1" rowspan="2"></th>
+                        <th scope="col" class="col-1" rowspan="2"></th>
                     </tr>
                     <tr>
                         <th scope="col" style="line-height:1.2; padding:0.25rem;">Обучения</th>
@@ -75,7 +75,39 @@
                     </tr>
                     </thead>
                     <tbody class="table-group-divider">
-                    {% for worker in object.worker.all %}
+                    <form method="get">
+                        <tr>
+                            <td><input name="surname" class="form-control my-2 text-center" type="search"
+                                       placeholder="Введите Фамилию"
+                                       aria-label="Search" value="{{search_params.surname}}"></td>
+                            <td><input name="position" class="form-control my-2 text-center" type="search"
+                                       placeholder="Введите должность"
+                                       aria-label="Search" value="{{search_params.position}}"></td>
+                            <td>
+                                <input name="date_learning" class="form-control text-center" type="date"
+                                       placeholder="Дата"
+                                       aria-label="Search" value="{{search_params.date_learning}}">
+                            </td>
+
+                            <td>
+                                <input name="date_briefing" class="form-control text-center" type="date"
+                                       placeholder="Дата с"
+                                       aria-label="Search" value="{{search_params.date_briefing}}">
+                            </td>
+                            <td>
+                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                    Поиск
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="window.location.href='?';">
+                                    Сбросить
+                                </button>
+                            </td>
+                        </tr>
+                    </form>
+                    {% for worker in worker_page.object_list %}
                     {% if not worker.group %}
                     <tr>
                         <td>{{ worker }}</td>
@@ -110,560 +142,294 @@
                     {% endfor %}
                     </tbody>
                 </table>
+
+                <!-- Навигация для работников -->
+                <nav aria-label="Пагинация списка работников">
+                    <ul class="pagination pagination-sm">
+                        <!-- Кнопка "Предыдущая" -->
+                        {% if worker_page.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ worker_page.previous_page_number }}
+                           {% for key, value in worker_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">
+                                &laquo;
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                        {% endif %}
+
+                        <!-- Первая страница + разделитель -->
+                        {% if worker_page.number > 3 %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page=1
+                           {% for key, value in worker_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">1</a>
+                        </li>
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+
+                        <!-- Страницы до текущей (2–3 штуки) -->
+                        {% for page_num in worker_page.paginator.page_range %}
+                        {% if page_num >= worker_page.number|add:-2 and page_num < worker_page.number %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ page_num }}
+                             {% for key, value in worker_page.params.items %}
+                               {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                             {% endfor %}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- Текущая страница -->
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ worker_page.number }}</span>
+                        </li>
+
+                        <!-- Страницы после текущей (2–3 штуки) -->
+                        {% for page_num in worker_page.paginator.page_range %}
+                        {% if page_num > worker_page.number and page_num <= worker_page.number|add:2 %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ page_num }}
+                             {% for key, value in worker_page.params.items %}
+                               {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                             {% endfor %}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- Последняя страница + разделитель -->
+                        {% if worker_page.number < worker_page.paginator.num_pages|add:-2 %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ worker_page.paginator.num_pages }}
+                           {% for key, value in worker_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">{{ worker_page.paginator.num_pages }}</a>
+                        </li>
+                        {% endif %}
+
+                        <!-- Кнопка "Следующая" -->
+                        {% if worker_page.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ worker_page.next_page_number }}
+                           {% for key, value in worker_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">&raquo;</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
+
             </div>
             <div class="tab-pane fade" id="briefing-tab-pane" role="tabpanel" aria-labelledby="briefing-tab"
                  tabindex="0">
-                <div class="d-flex align-items-start m-2 w-100">
-                    <div class="nav flex-column nav-pills me-3" id="v-pills-tab-briefing" role="tablist"
-                         aria-orientation="vertical">
-                        <button class="nav-link active" id="v-pills-program-tab-briefing" data-bs-toggle="pill"
-                                data-bs-target="#v-pills-program-briefing" type="button" role="tab"
-                                aria-controls="v-pills-program-briefing"
-                                aria-selected="true">Список программ
-                        </button>
-                        <button class="nav-link btn-secondary btn-sm" id="v-pills-archive-tab-briefing" data-bs-toggle="pill"
-                                data-bs-target="#v-pills-archive-briefing" type="button" role="tab"
-                                aria-controls="v-pills-archive-briefing" aria-selected="false">Архив программ
-                        </button>
-                    </div>
-                    <div class="tab-content flex-fill" id="v-pills-tabContent-briefing">
-                        <div class="tab-pane fade show active" id="v-pills-program-briefing" role="tabpanel"
-                             aria-labelledby="v-pills-program-tab-briefing" tabindex="0">
-                            <table class="table table-hover text-center">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Наименование программы</th>
-                                    <th scope="col">Дата утверждения</th>
-                                    <th scope="col">Скан-копия программы</th>
-                                    <th scope="col"></th>
-                                    <th scope="col"></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for program in object.programbriefing_set.all %}
-                                {% if program.is_active %}
-                                {% if not program.group %}
-                                <tr>
-                                    <td>{{program.name}}</td>
-                                    <td>{{program.approval_date}}</td>
-                                    <td>{% if program.doc_scan %}
-                                        <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
-                                        {% else %}
-                                        <div class="text-danger">отсутствует</div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a class="btn btn-outline-primary btn-sm" type="button"
-                                           href="{% url 'learning:briefing_program_detail' program.pk %}">Подробнее</a>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group dropdown">
-                                            <button type="button"
-                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
 
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'learning:briefing_program_update' program.pk %}">Изменить
-                                                </a></li>
-                                                <hr>
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'learning:briefing_program_delete' program.pk %}?district={{object.pk}}">Удалить
-                                                </a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                                {% endif %}
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="tab-pane fade" id="v-pills-archive-briefing" role="tabpanel"
-                             aria-labelledby="v-pills-archive-tab-briefing" tabindex="0">
+                <table class="table table-sm table-hover text-center align-middle">
+                    <thead>
+                    <tr>
+                        <th scope="col">Уровень программы</th>
+                        <th scope="col">Наименование программы</th>
+                        <th scope="col">Вид инструктажа</th>
+                        <th scope="col">Дата утверждения</th>
+                        <th scope="col">Скан-копия программы</th>
+                        <th scope="col">Статус программы</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <form method="get">
+                        <td>
+                            <div>
+                                <select name="level_briefing_program" id="organizationSelect" class="form-control text-center w-100">
+                                    <option value="" {% if content.search_params.level_briefing_program == "" %}selected{% endif %}>-----</option>
+                                    <option value="organization" {% if content.search_params.level_briefing_program == "organization" %}selected{% endif %}>ОСТ</option>
+                                    <option value="branch" {% if content.search_params.level_briefing_program == "branch" %}selected{% endif %}>Филиал</option>
+                                    <option value="division" {% if content.search_params.level_briefing_program == "division" %}selected{% endif %}>СП</option>
+                                    <option value="district" {% if content.search_params.level_briefing_program == "district" %}selected{% endif %}>Участок</option>
+                                    <option value="group" {% if content.search_params.level_briefing_program == "group" %}selected{% endif %}>Группа</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <input name="brief_prog_name" class="form-control text-center" type="search"
+                                   placeholder="Введите название" aria-label="Search"
+                                   value="{{search_params.brief_prog_name}}">
+                        </td>
+                        <td>
+                            <div>
+                                <select name="briefing_type" id="statusSelect" class="form-control text-center w-100">
+                                    <option value="" {% if content.search_params.briefing_type == "" %}selected{% endif %}>-----</option>
+                                    <option value="introductory" {% if content.search_params.briefing_type == "introductory" %}selected{% endif %}>Вводный</option>
+                                    <option value="primary" {% if content.search_params.briefing_type == "primary" %}selected{% endif %}>Первичный</option>
+                                    <option value="repeated" {% if content.search_params.briefing_type == "repeated" %}selected{% endif %}>Повторный</option>
+                                    <option value="unscheduled" {% if content.search_params.briefing_type == "unscheduled" %}selected{% endif %}>Внеплановый</option>
+                                    <option value="purposeful" {% if content.search_params.briefing_type == "purposeful" %}selected{% endif %}>Целевой</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <input name="date_briefing_program" class="form-control text-center" type="date"
+                                       placeholder="Дата с"
+                                       aria-label="Search" value="{{search_params.date_briefing_program}}">
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="hasFile"
+                                           name="has_file"
+                                           {% if search_params.has_file == '1' %}checked{% endif %}>
+                                    <label class="form-check-label" for="hasFile">Да</label>
+                                </div>
+                                <span class="text-muted">/</span>
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="checkbox" value="0" id="hasNotFile"
+                                           name="has_not_file"
+                                           {% if search_params.has_not_file == '0' %}checked{% endif %}>
+                                    <label class="form-check-label" for="hasNotFile">Нет</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                              <div>
+                                <select name="is_active" class="form-control text-center w-100" aria-label="Выбор статуса">
+                                  <option value="" {% if content.search_params.is_active == "" %}selected{% endif %}>
+                                    -----
+                                  </option>
+                                  <option value="True" {% if content.search_params.is_active == "True" %}selected{% endif %}>
+                                    Действующая
+                                  </option>
+                                  <option value="False" {% if content.search_params.is_active == "False" %}selected{% endif %}>
+                                    В архиве
+                                  </option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                    Поиск
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="window.location.href='?';">
+                                    Сбросить
+                                </button>
+                            </td>
+                        </form>
+                    </tr>
+                    {% for program in object.programbriefing_set.all %}
+                    <tr>
+                        <td></td>
+                        <td>{{program.name}}</td>
+                        <td></td>
+                        <td>{{program.approval_date}}</td>
+                        <td>
+                            {% if program.doc_scan %}
+                            <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
+                            {% else %}
+                            <div class="text-danger">отсутствует</div>
+                            {% endif %}
+                        </td>
+                        <td></td>
+                        <td>
+                            <a class="btn btn-outline-primary btn-sm" type="button"
+                               href="{% url 'learning:briefing_program_detail' program.pk %}">Подробнее</a>
+                        </td>
+                        <td>
+                            <div class="btn-group dropdown">
+                                <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false"></button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'learning:briefing_program_update' program.pk %}">Изменить</a>
+                                    </li>
+                                    <hr>
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'learning:briefing_program_delete' program.pk %}?district={{object.pk}}">Удалить</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
 
-                            <table class="table table-hover text-center">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Наименование программы</th>
-                                    <th scope="col">Дата утверждения</th>
-                                    <th scope="col">Скан-копия программы</th>
-                                    <th scope="col"></th>
-                                    <th scope="col"></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for program in object.programbriefing_set.all %}
-                                {% if not program.is_active %}
-                                {% if not program.group %}
-                                <tr>
-                                    <td>{{program.name}}</td>
-                                    <td>{{program.approval_date}}</td>
-                                    <td>{% if program.doc_scan %}
-                                        <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
-                                        {% else %}
-                                        <div class="text-danger">отсутствует</div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a class="btn btn-outline-primary btn-sm" type="button"
-                                           href="{% url 'learning:briefing_program_detail' program.pk %}">Подробнее</a>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group dropdown">
-                                            <button type="button"
-                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
 
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'learning:briefing_program_update' program.pk %}">Изменить
-                                                </a></li>
-                                                <hr>
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'learning:briefing_program_delete' program.pk %}?district={{object.pk}}">Удалить
-                                                </a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                                {% endif %}
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-                </div>
             </div>
+
             <div class="tab-pane fade" id="learning-tab-pane" role="tabpanel" aria-labelledby="learning-tab"
                  tabindex="0">
 
-                <div class="d-flex align-items-start m-2 w-100">
-                    <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist"
-                         aria-orientation="vertical">
-                        <button class="nav-link active" id="v-pills-program-tab" data-bs-toggle="pill"
-                                data-bs-target="#v-pills-program" type="button" role="tab"
-                                aria-controls="v-pills-program"
-                                aria-selected="true">Список программ
-                        </button>
-                        <button class="nav-link btn-secondary btn-sm" id="v-pills-archive-tab" data-bs-toggle="pill"
-                                data-bs-target="#v-pills-archive" type="button" role="tab"
-                                aria-controls="v-pills-archive" aria-selected="false">Архив программ
-                        </button>
-                    </div>
-                    <div class="tab-content flex-fill" id="v-pills-tabContent">
-                        <div class="tab-pane fade show active" id="v-pills-program" role="tabpanel"
-                             aria-labelledby="v-pills-program-tab" tabindex="0">
-                            <table class="table table-hover text-center">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Наименование программы</th>
-                                    <th scope="col">Дата утверждения</th>
-                                    <th scope="col">Скан-копия программы</th>
-                                    <th scope="col"></th>
-                                    <th scope="col"></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for program in object.program_set.all %}
-                                {% if program.is_active %}
-                                {% if not program.group %}
-                                <tr>
-                                    <td>{{program.name}}</td>
-                                    <td>{{program.approval_date}}</td>
-                                    <td>{% if program.doc_scan %}
-                                        <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
-                                        {% else %}
-                                        <div class="text-danger">отсутствует</div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a class="btn btn-outline-primary btn-sm" type="button"
-                                           href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group dropdown">
-                                            <button type="button"
-                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
 
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'learning:program_update' program.pk %}">Изменить
-                                                </a></li>
-                                                <hr>
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
-                                                </a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                                {% endif %}
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="tab-pane fade" id="v-pills-archive" role="tabpanel"
-                             aria-labelledby="v-pills-archive-tab" tabindex="0">
+                <table class="table table-hover text-center">
+                    <thead>
+                    <tr>
+                        <th scope="col">Наименование программы</th>
+                        <th scope="col">Дата утверждения</th>
+                        <th scope="col">Скан-копия программы</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for program in object.program_set.all %}
+                    <tr>
+                        <td>{{program.name}}</td>
+                        <td>{{program.approval_date}}</td>
+                        <td>{% if program.doc_scan %}
+                            <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
+                            {% else %}
+                            <div class="text-danger">отсутствует</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a class="btn btn-outline-primary btn-sm" type="button"
+                               href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
+                        </td>
+                        <td>
+                            <div class="btn-group dropdown">
+                                <button type="button"
+                                        class="btn btn-outline-primary btn-sm dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
 
-                            <table class="table table-hover text-center">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Наименование программы</th>
-                                    <th scope="col">Дата утверждения</th>
-                                    <th scope="col">Скан-копия программы</th>
-                                    <th scope="col"></th>
-                                    <th scope="col"></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for program in object.program_set.all %}
-                                {% if not program.is_active %}
-                                {% if not program.group %}
-                                <tr>
-                                    <td>{{program.name}}</td>
-                                    <td>{{program.approval_date}}</td>
-                                    <td>{% if program.doc_scan %}
-                                        <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
-                                        {% else %}
-                                        <div class="text-danger">отсутствует</div>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <a class="btn btn-outline-primary btn-sm" type="button"
-                                           href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group dropdown">
-                                            <button type="button"
-                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'learning:program_update' program.pk %}">Изменить
-                                                </a></li>
-                                                <hr>
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
-                                                </a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endif %}
-                                {% endif %}
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <div class="accordion" id="accordionPanelsStayOpenExample">
-        {% for group in object.group.all %}
-        <div class="accordion-item">
-            <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#Group-{{ group.pk }}" aria-expanded="false"
-                        aria-controls="Group-{{ group.pk }}">
-                    {{ group.name }}
-                </button>
-            </h2>
-            <div id="Group-{{ group.pk }}" class="accordion-collapse collapse">
-                <div class="accordion-body">
-                    <div class="btn-group dropend">
-                        <button type="button my-4" class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                            Редактировать
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item"
-                                   href="{% url 'organization:worker_create' %}?district={{ object.pk }}&group={{ group.pk }}">Добавить
-                                работника
-                            </a></li>
-                            <li><a class="dropdown-item"
-                                   href="{% url 'learning:program_create' %}?district={{object.pk}}">Добавить
-                                программу обучения
-                            </a></li>
-                            <li><a class="dropdown-item"
-                                   href="{% url 'learning:test_create' %}">Создать тест
-                            </a></li>
-                            <li><a class="dropdown-item"
-                                   href="{% url 'organization:group_update' group.pk %}">Изменить
-                                группу участка
-                            </a></li>
-                            <hr>
-                            <li><a class="dropdown-item"
-                                   href="{% url 'organization:group_delete' group.pk %}?district={{object.pk}}">Удалить
-                                группу участка
-                            </a></li>
-                        </ul>
-                    </div>
-                    <ul class="nav nav-tabs" id="myTab-forGroup" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="worker-tab-forGroup" data-bs-toggle="tab"
-                                    data-bs-target="#worker-tab-pane-forGroup"
-                                    type="button" role="tab" aria-controls="worker-tab-pane-forGroup"
-                                    aria-selected="true">
-                                Работники
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="briefing-tab-forGroup" data-bs-toggle="tab"
-                                    data-bs-target="#briefing-tab-pane-forGroup"
-                                    type="button" role="tab" aria-controls="briefing-tab-pane-forGroup"
-                                    aria-selected="false">Инструктаж
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="learning-tab-forGroup" data-bs-toggle="tab"
-                                    data-bs-target="#learning-tab-pane-forGroup"
-                                    type="button" role="tab" aria-controls="learning-tab-pane-forGroup"
-                                    aria-selected="false">Обучение
-                            </button>
-                        </li>
-                    </ul>
-                    <div class="tab-content" id="myTabContent-forGroup">
-                        <div class="tab-pane fade show active" id="worker-tab-pane-forGroup" role="tabpanel"
-                             aria-labelledby="worker-tab-forGroup"
-                             tabindex="0">
-                            <table class="table table-hover text-center">
-                                <thead>
-                                <tr>
-                                    <th scope="col">ФИО</th>
-                                    <th scope="col">Должность</th>
-                                    <th scope="col"></th>
-                                    <th scope="col"></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for worker in group.worker.all %}
-                                <tr>
-                                    <td>{{ worker }}</td>
-                                    <td>{{ worker|get_main_position }}</td>
-                                    <td><a class="btn btn-primary btn-sm" type="button"
-                                           href="{% url 'organization:worker_detail' worker.pk %}">
-                                        Подробнее
-                                    </a></td>
-                                    <td>
-                                        <div class="btn-group dropdown">
-                                            <button type="button"
-                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'organization:worker_update' worker.pk %}">Изменить
-                                                </a></li>
-                                                <hr>
-                                                <li><a class="dropdown-item"
-                                                       href="{% url 'organization:worker_delete' worker.pk %}?district={{object.pk}}">Удалить
-                                                </a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="tab-pane fade" id="briefing-tab-pane-forGroup" role="tabpanel"
-                             aria-labelledby="briefing-tab-forGroup"
-                             tabindex="0">
-                            <table class="table table-hover text-center">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Наименование программы</th>
-                                    <th scope="col">Дата утверждения</th>
-                                    <th scope="col">Скан-копия программы</th>
-                                    <th scope="col"></th>
-                                    <th scope="col"></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td>
-                                        <div class="btn-group dropdown">
-                                            <button type="button"
-                                                    class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item"
-                                                       href="#">Изменить
-                                                </a></li>
-                                                <hr>
-                                                <li><a class="dropdown-item"
-                                                       href="#">Удалить
-                                                </a></li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="tab-pane fade" id="learning-tab-pane-forGroup" role="tabpanel"
-                             aria-labelledby="learning-tab-forGroup"
-                             tabindex="0">
-                            <div class="d-flex align-items-start m-2 w-100">
-                                <div class="nav flex-column nav-pills me-3" id="v-pills-tab-forGroup" role="tablist"
-                                     aria-orientation="vertical">
-                                    <button class="nav-link active" id="v-pills-program-tab-forGroup"
-                                            data-bs-toggle="pill"
-                                            data-bs-target="#v-pills-program-forGroup" type="button" role="tab"
-                                            aria-controls="v-pills-program-forGroup"
-                                            aria-selected="true">Список программ
-                                    </button>
-                                    <button class="nav-link btn-secondary btn-sm" id="v-pills-archive-tab-forGroup"
-                                            data-bs-toggle="pill"
-                                            data-bs-target="#v-pills-archive-forGroup" type="button" role="tab"
-                                            aria-controls="v-pills-archive-forGroup" aria-selected="false">Архив
-                                        программ
-                                    </button>
-                                </div>
-                                <div class="tab-content flex-fill" id="v-pills-tabContent-forGroup">
-                                    <div class="tab-pane fade show active" id="v-pills-program-forGroup"
-                                         role="tabpanel"
-                                         aria-labelledby="v-pills-program-tab-forGroup" tabindex="0">
-                                        <table class="table table-hover text-center">
-                                            <thead>
-                                            <tr>
-                                                <th scope="col">Наименование программы</th>
-                                                <th scope="col">Дата утверждения</th>
-                                                <th scope="col">Скан-копия программы</th>
-                                                <th scope="col"></th>
-                                                <th scope="col"></th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for program in group.program_set.all %}
-                                            {% if program.is_active %}
-                                            <tr>
-                                                <td>{{program.name}}</td>
-                                                <td>{{program.approval_date}}</td>
-                                                <td>{% if program.doc_scan %}
-                                                    <a class="btn btn-link-secondary btn-sm"
-                                                       href="{{program.doc_scan.url}}">Скан-файл</a>
-                                                    {% else %}
-                                                    <div class="text-danger">отсутствует</div>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    <a type="button" class="btn-outline-primary btn-sm"
-                                                       href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
-                                                </td>
-
-                                                <td>
-                                                    <div class="btn-group dropdown">
-                                                        <button type="button"
-                                                                class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                                                data-bs-toggle="dropdown" aria-expanded="false">
-
-                                                        </button>
-                                                        <ul class="dropdown-menu">
-                                                            <li><a class="dropdown-item"
-                                                                   href="{% url 'learning:program_update' program.pk %}">Изменить
-                                                            </a></li>
-                                                            <hr>
-                                                            <li><a class="dropdown-item"
-                                                                   href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
-                                                            </a></li>
-                                                        </ul>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="tab-pane fade" id="v-pills-archive-forGroup" role="tabpanel"
-                                         aria-labelledby="v-pills-archive-tab" tabindex="0">
-                                        <table class="table table-hover text-center">
-                                            <thead>
-                                            <tr>
-                                                <th scope="col">Наименование программы</th>
-                                                <th scope="col">Дата утверждения</th>
-                                                <th scope="col">Скан-копия программы</th>
-                                                <th scope="col"></th>
-                                                <th scope="col"></th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for program in group.program_set.all %}
-                                            {% if not program.is_active %}
-                                            <tr>
-                                                <td>{{program.name}}</td>
-                                                <td>{{program.approval_date}}</td>
-                                                <td>{% if program.doc_scan %}
-                                                    <a class="btn btn-link-secondary btn-sm"
-                                                       href="{{program.doc_scan.url}}">Скан-файл</a>
-                                                    {% else %}
-                                                    <div class="text-danger">отсутствует</div>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    <a type="button" class="btn-outline-primary btn-sm"
-                                                       href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
-                                                </td>
-
-                                                <td>
-                                                    <div class="btn-group dropdown">
-                                                        <button type="button"
-                                                                class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                                                data-bs-toggle="dropdown" aria-expanded="false">
-
-                                                        </button>
-                                                        <ul class="dropdown-menu">
-                                                            <li><a class="dropdown-item"
-                                                                   href="{% url 'learning:program_update' program.pk %}">Изменить
-                                                            </a></li>
-                                                            <hr>
-                                                            <li><a class="dropdown-item"
-                                                                   href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
-                                                            </a></li>
-                                                        </ul>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            {% endif %}
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'learning:program_update' program.pk %}">Изменить
+                                    </a></li>
+                                    <hr>
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'learning:program_delete' program.pk %}?district={{object.pk}}">Удалить
+                                    </a></li>
+                                </ul>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
-        {% endfor %}
     </div>
-
-</div>
 </div>
 
 {% endblock %}

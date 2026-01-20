@@ -1,9 +1,9 @@
 {% extends 'organization/base.html' %}
 {% load my_tags %}
 {% block content %}
-<button class="btn btn-outline-primary m-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop"
+<button class="btn btn-outline-primary m-2 ms-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop"
         aria-controls="staticBackdrop">
-    Параметры поиска
+    <i class="bi bi-search"></i>
 </button>
 <a class="btn btn-outline-primary my-4" href="{% url 'learning:protocol_create' %}">Создать протокол проверки
     знаний</a>

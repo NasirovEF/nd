@@ -263,7 +263,11 @@ def detail_exam_results(request, result_id):
     except ExamResult.DoesNotExist:
         return HttpResponseNotFound("Ошибка, результат не найден")
 
-    if request.user.worker.learner != result.learner or not request.user.has_perm('learning.view_examresult'):
+    if (
+            request.user.worker != result.learner.worker or
+            not request.user.has_perm('learning.view_examresult') or
+            not request.user.is_superuser
+    ):
         return HttpResponseForbidden("У вас нет доступа к этому результату экзамена.")
 
     content_list = []
