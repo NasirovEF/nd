@@ -85,6 +85,14 @@ def get_direction_name(programs):
 
 
 @register.filter()
+def get_direction_name_for_one_program(program):
+    directions_name = set()
+    for direction in program.direction.all():
+        directions_name.add(direction.name)
+    return ", ".join(sorted(directions_name))
+
+
+@register.filter()
 def get_learner_direction(direction, learner):
     try:
         learner_direction = Learner.objects.get(pk=learner.pk).direction.all()

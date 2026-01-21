@@ -24,10 +24,7 @@
                        href="{% url 'organization:worker_create' %}?district={{object.pk}}">Добавить
                     работника
                 </a></li>
-                <li><a class="dropdown-item"
-                       href="{% url 'organization:group_create' %}?district={{object.pk}}">Добавить группу
-                    участка
-                </a></li>
+
             </ul>
         </div>
         <a href="{% url 'learning:briefing_day_bulk_create' %}" class="btn btn-outline-primary btn-sm mx-2">
@@ -71,15 +68,21 @@
                                        placeholder="Введите должность"
                                        aria-label="Search" value="{{search_params.position}}"></td>
                             <td>
-                                <input name="date_learning" class="form-control text-center" type="date"
-                                       placeholder="Дата"
-                                       aria-label="Search" value="{{search_params.date_learning}}">
+                                <input name="date_learning_from" class="form-control text-center mb-1" type="date"
+                                       placeholder="Дата с"
+                                       aria-label="Search" value="{{search_params.date_learning_from}}">
+                                <input name="date_learning_to" class="form-control text-center" type="date"
+                                       placeholder="Дата по"
+                                       aria-label="Search" value="{{search_params.date_learning_to}}">
                             </td>
 
                             <td>
-                                <input name="date_briefing" class="form-control text-center" type="date"
+                                <input name="date_briefing_from" class="form-control text-center mb-1" type="date"
                                        placeholder="Дата с"
-                                       aria-label="Search" value="{{search_params.date_briefing}}">
+                                       aria-label="Search" value="{{search_params.date_briefing_from}}">
+                                <input name="date_briefing_to" class="form-control text-center" type="date"
+                                       placeholder="Дата по"
+                                       aria-label="Search" value="{{search_params.date_briefing_to}}">
                             </td>
                             <td>
                                 <button type="submit" class="btn btn-outline-primary btn-sm">

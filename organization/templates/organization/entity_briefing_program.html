@@ -6,45 +6,24 @@
     <div class="card-body">
         <h6 class="card-subtitle mb-2 text-body-secondary">{{ object.division }}</h6>
         <h5 class="card-title">{{ object.name }}</h5>
-        <div class="btn-group dropend">
-            <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle my-2"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                Редактировать
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item"
-                       href="{% url 'organization:worker_create' %}?district={{object.pk}}">Добавить
-                    работника
-                </a></li>
-                <li><a class="dropdown-item"
-                       href="{% url 'organization:group_create' %}?district={{object.pk}}">Добавить группу
-                    участка
-                </a></li>
-                <li><a class="dropdown-item"
-                       href="{% url 'learning:program_create' %}?district={{object.pk}}">Добавить программу обучения
-                </a></li>
-                <li><a class="dropdown-item"
-                       href="{% url 'learning:briefing_program_create' %}?district={{object.pk}}">Добавить программу
-                    инструктажа
-                </a></li>
-            </ul>
-        </div>
-        <a href="{% url 'learning:briefing_day_bulk_create' %}" class="btn btn-outline-primary btn-sm mx-2">
-            Провести инструктаж
+         <a href="{% url 'organization:entity_detail' object|model_name object.pk %}" class="btn btn-outline-secondary btn-sm m-2">
+        Назад
         </a>
-
-
+        <a href="{% url 'learning:program_create' %}" class="btn btn-outline-primary btn-sm m-2">
+            Добавить программу
+        </a>
+            <div class="text-center"><h3>Программы инструктажа</h3></div>
                 <table class="table table-sm table-hover text-center align-middle">
                     <thead>
                     <tr>
-                        <th scope="col">Уровень программы</th>
-                        <th scope="col">Наименование программы</th>
-                        <th scope="col">Вид инструктажа</th>
-                        <th scope="col">Дата утверждения</th>
-                        <th scope="col">Скан-копия программы</th>
-                        <th scope="col">Статус программы</th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
+                        <th scope="col" class="w-10">Уровень программы</th>
+                        <th scope="col" class="w-25">Наименование программы</th>
+                        <th scope="col" class="w-15">Вид инструктажа</th>
+                        <th scope="col" class="w-15">Дата утверждения</th>
+                        <th scope="col" class="w-15">Скан-копия программы</th>
+                        <th scope="col" class="w-15">Статус программы</th>
+                        <th scope="col" class="w-5"></th>
+                        <th scope="col" class="w-5"></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -80,9 +59,12 @@
                             </div>
                         </td>
                         <td>
-                            <input name="approval_date" class="form-control text-center" type="date"
+                            <input name="approval_date_from" class="form-control text-center mb-1" type="date"
                                        placeholder="Дата с"
-                                       aria-label="Search" value="{{search_params.approval_date}}">
+                                       aria-label="Search" value="{{search_params.approval_date_from}}">
+                            <input name="approval_date_to" class="form-control text-center" type="date"
+                                       placeholder="Дата по"
+                                       aria-label="Search" value="{{search_params.approval_date_to}}">
                         </td>
                         <td>
                             <div class="d-flex justify-content-center align-items-center gap-2 my-2">
@@ -142,7 +124,11 @@
                             <div class="text-danger">отсутствует</div>
                             {% endif %}
                         </td>
-                        <td></td>
+                        <td>
+                            {% if not program.is_active %}
+                            <div class="text-secondary">архив</div>
+                            {% endif %}
+                        </td>
                         <td>
                             <a class="btn btn-outline-primary btn-sm" type="button"
                                href="{% url 'learning:briefing_program_detail' program.pk %}">Подробнее</a>

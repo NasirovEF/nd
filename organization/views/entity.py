@@ -1,7 +1,7 @@
 from django.views.generic import DetailView
 from django.http import Http404
 from django.core.paginator import Paginator
-from learning.models import KnowledgeDate, ProgramBriefing, Program
+from learning.models import KnowledgeDate, ProgramBriefing, Program, Direction, BriefingDay
 from organization.models import Organization, Branch, Group, District, Division, Worker
 from django.db.models import Q
 
@@ -30,12 +30,13 @@ def get_program_filter_q(obj, level=None):
         elif level == '1':  # ОСТ (но не филиал)
             q &= Q(organization=obj.district.division.branch.organization) & Q(branch__isnull=True)
         else:  # Все уровни (без дополнительного фильтра по уровню)
-            q = Q()
-            q |= Q(group=obj)
-            q |= Q(district=obj.district) & Q(group__isnull=True)
-            q |= Q(division=obj.district.division) & Q(district__isnull=True)
-            q |= Q(branch=obj.district.division.branch) & Q(division__isnull=True)
-            q |= Q(organization=obj.district.division.branch.organization) & Q(branch__isnull=True)
+            q = (
+                Q(group=obj) |
+                Q(district=obj.district, group__isnull=True) |
+                Q(division=obj.district.division, district__isnull=True) |
+                Q(branch=obj.district.division.branch, division__isnull=True) |
+                Q(organization=obj.district.division.branch.organization, branch__isnull=True)
+            )
 
     elif isinstance(obj, District):
         if level == '5':
@@ -49,31 +50,33 @@ def get_program_filter_q(obj, level=None):
         elif level == '1':
             q &= Q(organization=obj.division.branch.organization) & Q(branch__isnull=True)
         else:
-            q = Q()
-            q |= Q(group__district=obj)
-            q |= Q(district=obj)
-            q |= Q(division=obj.division) & Q(district__isnull=True)
-            q |= Q(branch=obj.division.branch) & Q(division__isnull=True)
-            q |= Q(organization=obj.division.branch.organization) & Q(branch__isnull=True)
+            q = (
+                Q(group__district=obj) |
+                Q(district=obj) |
+                Q(division=obj.division) & Q(district__isnull=True) |
+                Q(branch=obj.division.branch) & Q(division__isnull=True) |
+                Q(organization=obj.division.branch.organization) & Q(branch__isnull=True)
+            )
 
     elif isinstance(obj, Division):
         if level == '5':
             q &= Q(group__district__division=obj)
         elif level == '4':
-            q &= Q(district__division=obj)
+            q &= Q(district__division=obj) & Q(group__isnull=True)
         elif level == '3':
-            q &= Q(division=obj)
+            q &= Q(division=obj) & Q(district__isnull=True)
         elif level == '2':
             q &= Q(branch=obj.branch) & Q(division__isnull=True)
         elif level == '1':
             q &= Q(organization=obj.branch.organization) & Q(branch__isnull=True)
         else:
-            q = Q()
-            q |= Q(group__district__division=obj)
-            q |= Q(district__division=obj)
-            q |= Q(division=obj)
-            q |= Q(branch=obj.branch) & Q(division__isnull=True)
-            q |= Q(organization=obj.branch.organization) & Q(branch__isnull=True)
+            q = (
+                Q(group__district__division=obj) |
+                Q(district__division=obj) & Q(group__isnull=True) |
+                Q(division=obj) & Q(district__isnull=True) |
+                Q(branch=obj.branch) & Q(division__isnull=True) |
+                Q(organization=obj.branch.organization) & Q(branch__isnull=True)
+            )
 
     elif isinstance(obj, Branch):
         if level == '5':
@@ -85,13 +88,15 @@ def get_program_filter_q(obj, level=None):
         elif level == '2':
             q &= Q(branch=obj) & Q(division__isnull=True)
         elif level == '1':
-            q &= Q(organization=obj.organization)
+            q &= Q(organization=obj.organization) & Q(branch__isnull=True)
         else:
-            q |= Q(group__district__division__branch=obj)
-            q |= Q(district__division__branch=obj)
-            q |= Q(division__branch=obj)
-            q |= Q(branch=obj) & Q(division__isnull=True)
-            q |= Q(organization=obj.organization)
+            q = (
+                Q(group__district__division__branch=obj) |
+                Q(district__division__branch=obj) |
+                Q(division__branch=obj) |
+                Q(branch=obj) & Q(division__isnull=True) |
+                Q(organization=obj.organization) & Q(branch__isnull=True)
+            )
 
     elif isinstance(obj, Organization):
         if level == '5':
@@ -103,14 +108,15 @@ def get_program_filter_q(obj, level=None):
         elif level == '2':
             q &= Q(branch__organization=obj) & Q(division__isnull=True)
         elif level == '1':
-            q &= Q(organization=obj)
+            q &= Q(organization=obj) & Q(branch__isnull=True)
         else:
-            q = Q()
-            q |= Q(organization=obj)
-            q |= Q(division__branch__organization=obj)
-            q |= Q(district__division__branch__organization=obj)
-            q |= Q(group__district__division__branch__organization=obj)
-            q |= Q(branch__isnull=True)
+            q = (
+                Q(organization=obj) |
+                Q(branch__organization=obj) |
+                Q(division__branch__organization=obj) |
+                Q(district__division__branch__organization=obj) |
+                Q(group__district__division__branch__organization=obj)
+            )
 
     return q
 
@@ -140,8 +146,10 @@ class EntityDetailView(DetailView):
         search_params = {
             'surname': self.request.GET.get('surname', ''),
             'position': self.request.GET.get('position', ''),
-            'date_learning': self.request.GET.get('date_learning', ''),
-            'date_briefing': self.request.GET.get('date_briefing', ''),
+            'date_learning_from': self.request.GET.get('date_learning_from', ''),
+            'date_learning_to': self.request.GET.get('date_learning_to', ''),
+            'date_briefing_from': self.request.GET.get('date_briefing_from', ''),
+            'date_briefing_to': self.request.GET.get('date_briefing_to', ''),
         }
         context['search_params'] = search_params
 
@@ -162,15 +170,27 @@ class EntityDetailView(DetailView):
             worker_list = worker_list.filter(surname__icontains=search_params['surname'])
         if search_params['position']:
             worker_list = worker_list.filter(position__name__full_name__icontains=search_params['position'])
-        if search_params['date_learning']:
+        if search_params['date_learning_from']:
             valid_learner_ids = KnowledgeDate.objects.filter(
-                next_date=search_params['date_learning'],
+                next_date__gte=search_params['date_learning_from'],
                 is_active=True
             ).values_list('learner_id', flat=True)
             worker_list = worker_list.filter(learner__id__in=valid_learner_ids)
-        if search_params['date_briefing']:
+        if search_params['date_learning_to']:
             valid_learner_ids = KnowledgeDate.objects.filter(
-                next_date=search_params['date_briefing'],
+                next_date__lte=search_params['date_learning_to'],
+                is_active=True
+            ).values_list('learner_id', flat=True)
+            worker_list = worker_list.filter(learner__id__in=valid_learner_ids)
+        if search_params['date_briefing_from']:
+            valid_learner_ids = BriefingDay.objects.filter(
+                next_briefing_day__gte=search_params['date_briefing_from'],
+                is_active=True,
+            ).values_list('learner_id', flat=True)
+            worker_list = worker_list.filter(learner__id__in=valid_learner_ids)
+        if search_params['date_briefing_to']:
+            valid_learner_ids = BriefingDay.objects.filter(
+                next_briefing_day__lte=search_params['date_briefing_to'],
                 is_active=True,
             ).values_list('learner_id', flat=True)
             worker_list = worker_list.filter(learner__id__in=valid_learner_ids)
@@ -195,7 +215,8 @@ class EntityBriefingProgramView(EntityDetailView):
             'level_briefing_program': self.request.GET.get('level_briefing_program', ''),
             'brief_prog_name': self.request.GET.get('brief_prog_name', ''),
             'briefing_type': self.request.GET.get('briefing_type', ''),
-            'approval_date': self.request.GET.get('approval_date', ''),
+            'approval_date_from': self.request.GET.get('approval_date_from', ''),
+            'approval_date_to': self.request.GET.get('approval_date_to', ''),
             'has_file': self.request.GET.get('has_file', ''),
             'has_not_file': self.request.GET.get('has_not_file', ''),
             'is_active': self.request.GET.get('is_active', ''),
@@ -226,8 +247,10 @@ class EntityBriefingProgramView(EntityDetailView):
             briefing_program_list = briefing_program_list.filter(doc_scan='')
         elif search_params['has_file'] == "1" and search_params['has_not_file'] == "0":
             briefing_program_list = briefing_program_list.filter()
-        if search_params['approval_date']:
-            briefing_program_list = briefing_program_list.filter(approval_date=search_params['approval_date'])
+        if search_params['approval_date_from']:
+            briefing_program_list = briefing_program_list.filter(approval_date__gte=search_params['approval_date_from'])
+        if search_params['approval_date_to']:
+            briefing_program_list = briefing_program_list.filter(approval_date__lte=search_params['approval_date_to'])
 
         briefing_program_list = briefing_program_list.order_by('-approval_date')
 
@@ -249,13 +272,14 @@ class EntityLearningProgramView(EntityDetailView):
             'level_learning_program': self.request.GET.get('level_learning_program', ''),
             'learning_prog_name': self.request.GET.get('learning_prog_name', ''),
             'direction': self.request.GET.get('direction', ''),
-            'approval_date': self.request.GET.get('approval_date', ''),
+            'approval_date_from': self.request.GET.get('approval_date_from', ''),
+            'approval_date_to': self.request.GET.get('approval_date_to', ''),
             'has_file': self.request.GET.get('has_file', ''),
             'has_not_file': self.request.GET.get('has_not_file', ''),
             'is_active': self.request.GET.get('is_active', ''),
         }
         context['search_params'] = search_params
-
+        context['directions'] = Direction.objects.all()
         level = search_params.get('level_learning_program')
         program_q = get_program_filter_q(self.object, level=level)
 
@@ -273,15 +297,17 @@ class EntityLearningProgramView(EntityDetailView):
         if search_params['learning_prog_name']:
             learning_program_list = learning_program_list.filter(name__icontains=search_params['learning_prog_name'])
         if search_params['direction']:
-            learning_program_list = learning_program_list.filter(direction=search_params['direction'])
+            learning_program_list = learning_program_list.filter(direction__name__icontains=search_params['direction'])
         if search_params['has_file'] == "1" and search_params['has_not_file'] != "0":
             learning_program_list = learning_program_list.exclude(doc_scan='').filter(doc_scan__isnull=False)
         elif search_params['has_file'] != "1" and search_params['has_not_file'] == "0":
             learning_program_list = learning_program_list.filter(doc_scan='')
         elif search_params['has_file'] == "1" and search_params['has_not_file'] == "0":
             learning_program_list = learning_program_list.filter()
-        if search_params['approval_date']:
-            learning_program_list = learning_program_list.filter(approval_date=search_params['approval_date'])
+        if search_params['approval_date_from']:
+            learning_program_list = learning_program_list.filter(approval_date__gte=search_params['approval_date_from'])
+        if search_params['approval_date_to']:
+            learning_program_list = learning_program_list.filter(approval_date__lte=search_params['approval_date_to'])
 
         learning_program_list = learning_program_list.order_by('-approval_date')
 
