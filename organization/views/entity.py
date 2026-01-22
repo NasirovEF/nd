@@ -121,29 +121,37 @@ def get_program_filter_q(obj, level=None):
     return q
 
 
-class EntityDetailView(DetailView):
-    template_name = 'organization/entity_detail.html'
+class HierarchicalEntityView(DetailView):
+    """
+    Базовый класс для представлений, работающих с иерархическими сущностями
+    (организация → филиал → подразделение → и т.д.).
+    """
+    model_mapping = {
+        'organization': Organization,
+        'branch': Branch,
+        'group': Group,
+        'district': District,
+        'division': Division,
+    }
+    template_name = None
+    paginate_by = 20
 
-    def get_queryset(self):
+    def get_model(self):
+        """Получаем модель по имени из URL."""
         model_name = self.kwargs['model_name']
-        pk = self.kwargs['pk']
-
-        model = {
-            'organization': Organization,
-            'branch': Branch,
-            'group': Group,
-            'district': District,
-            'division': Division,
-        }.get(model_name)
-
+        model = self.model_mapping.get(model_name)
         if not model:
             raise Http404("Модель не найдена")
+        return model
 
+    def get_queryset(self):
+        model = self.get_model()
+        pk = self.kwargs['pk']
         return model.objects.filter(pk=pk)
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        search_params = {
+    def get_search_params(self):
+        """Собираем параметры поиска из GET."""
+        return {
             'surname': self.request.GET.get('surname', ''),
             'position': self.request.GET.get('position', ''),
             'date_learning_from': self.request.GET.get('date_learning_from', ''),
@@ -151,170 +159,218 @@ class EntityDetailView(DetailView):
             'date_briefing_from': self.request.GET.get('date_briefing_from', ''),
             'date_briefing_to': self.request.GET.get('date_briefing_to', ''),
         }
+
+    def apply_filters(self, queryset, search_params):
+        """Применяем фильтры к QuerySet работников."""
+
+        # 1. Текстовые фильтры
+        if search_params.get('surname'):
+            queryset = queryset.filter(surname__icontains=search_params['surname'])
+
+        if search_params.get('position'):
+            queryset = queryset.filter(
+                position__name__full_name__icontains=search_params['position']
+            )
+
+        # 2. Группируем параметры дат для единообразной обработки
+        date_filters = [
+            # Обучение
+            ('date_learning_from', KnowledgeDate, 'next_date__gte'),
+            ('date_learning_to', KnowledgeDate, 'next_date__lte'),
+            # Инструктаж
+            ('date_briefing_from', BriefingDay, 'next_briefing_day__gte'),
+            ('date_briefing_to', BriefingDay, 'next_briefing_day__lte'),
+        ]
+
+        for param_name, model, lookup in date_filters:
+            if not search_params.get(param_name):
+                continue
+
+            # Формируем подзапрос без values_list(flat=True) — эффективнее
+            valid_ids = model.objects.filter(
+                **{lookup: search_params[param_name]},
+                is_active=True
+            ).values('learner')  # Возвращает QuerySet с полем learner
+
+            queryset = queryset.filter(learner__in=valid_ids)
+
+        return queryset
+
+    def get_paginated_page(self, queryset, page_param):
+        """Пагинируем QuerySet и добавляем параметры поиска."""
+        paginator = Paginator(queryset, self.paginate_by)
+        page_number = self.request.GET.get(page_param)
+        page = paginator.get_page(page_number)
+        page.params = self.get_search_params().copy()
+        return page
+
+
+
+class EntityDetailView(HierarchicalEntityView):
+    template_name = 'organization/entity_detail.html'
+
+    def get_worker_queryset(self, entity_obj):
+        """Определяем QuerySet работников в зависимости от типа сущности."""
+        model_name = self.kwargs['model_name']
+
+        if model_name == 'organization':
+            return Worker.objects.filter(district__division__branch__organization=entity_obj)
+        elif model_name == 'branch':
+            return Worker.objects.filter(district__division__branch=entity_obj)
+        elif model_name == 'division':
+            return Worker.objects.filter(district__division=entity_obj)
+        elif model_name == 'district':
+            return Worker.objects.filter(district=entity_obj)
+        elif model_name == 'group':
+            return Worker.objects.filter(group=entity_obj)
+
+        return Worker.objects.none()  # если тип не распознан
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_params = self.get_search_params()
         context['search_params'] = search_params
 
-        worker_list = Worker.objects.all()
+        # Проверяем, что объект существует
+        if not self.object:
+            return context
 
-        if self.kwargs['model_name'] == 'organization':
-            worker_list = Worker.objects.filter(district__division__branch__organization=self.object)
-        elif self.kwargs['model_name'] == 'branch':
-            worker_list = Worker.objects.filter(district__division__branch=self.object)
-        elif self.kwargs['model_name'] == 'division':
-            worker_list = Worker.objects.filter(district__division=self.object)
-        elif self.kwargs['model_name'] == 'district':
-            worker_list = Worker.objects.filter(district=self.object)
-        elif self.kwargs['model_name'] == 'group':
-            worker_list = Worker.objects.filter(group=self.object)
+        # Получаем работников для текущей сущности
+        worker_list = self.get_worker_queryset(self.object)
 
-        if search_params['surname']:
-            worker_list = worker_list.filter(surname__icontains=search_params['surname'])
-        if search_params['position']:
-            worker_list = worker_list.filter(position__name__full_name__icontains=search_params['position'])
-        if search_params['date_learning_from']:
-            valid_learner_ids = KnowledgeDate.objects.filter(
-                next_date__gte=search_params['date_learning_from'],
-                is_active=True
-            ).values_list('learner_id', flat=True)
-            worker_list = worker_list.filter(learner__id__in=valid_learner_ids)
-        if search_params['date_learning_to']:
-            valid_learner_ids = KnowledgeDate.objects.filter(
-                next_date__lte=search_params['date_learning_to'],
-                is_active=True
-            ).values_list('learner_id', flat=True)
-            worker_list = worker_list.filter(learner__id__in=valid_learner_ids)
-        if search_params['date_briefing_from']:
-            valid_learner_ids = BriefingDay.objects.filter(
-                next_briefing_day__gte=search_params['date_briefing_from'],
-                is_active=True,
-            ).values_list('learner_id', flat=True)
-            worker_list = worker_list.filter(learner__id__in=valid_learner_ids)
-        if search_params['date_briefing_to']:
-            valid_learner_ids = BriefingDay.objects.filter(
-                next_briefing_day__lte=search_params['date_briefing_to'],
-                is_active=True,
-            ).values_list('learner_id', flat=True)
-            worker_list = worker_list.filter(learner__id__in=valid_learner_ids)
-
+        # Применяем фильтры
+        worker_list = self.apply_filters(worker_list, search_params)
+        # Сортируем
         worker_list = worker_list.order_by('surname', 'name')
 
-        worker_paginator = Paginator(worker_list, 20)
-        worker_page_number = self.request.GET.get('worker_page')
-        worker_page = worker_paginator.get_page(worker_page_number)
-
-        worker_page.params = search_params.copy()
+        # Пагинируем
+        worker_page = self.get_paginated_page(worker_list, 'worker_page')
         context['worker_page'] = worker_page
+
         return context
 
 
-class EntityBriefingProgramView(EntityDetailView):
+class ProgramListView(HierarchicalEntityView):
+    """
+    Базовый класс для отображения списков программ (инструктажей/обучения).
+    Должен быть унаследован и настроен.
+    """
+    # Обязательные атрибуты (должны быть заданы в подклассе)
+    program_model = None  # Модель программы (ProgramBriefing/Program)
+    template_name = None
+    search_fields = {}  # Поля для поиска: {'param_name': 'lookup'}
+    extra_context = {}  # Дополнительные данные для контекста
+
+    paginate_by = 20
+
+    def get_search_params(self):
+        """Собираем все параметры поиска из GET."""
+        params = super().get_search_params()
+        params.update({
+            'level_program': self.request.GET.get('level_program', ''),
+            'program_name': self.request.GET.get('program_name', ''),
+            'approval_date_from': self.request.GET.get('approval_date_from', ''),
+            'approval_date_to': self.request.GET.get('approval_date_to', ''),
+            'has_file': self.request.GET.get('has_file', ''),
+            'has_not_file': self.request.GET.get('has_not_file', ''),
+            'is_active': self.request.GET.get('is_active', ''),
+        })
+        # Добавляем специфические поля из search_fields
+        for key in self.search_fields.keys():
+            params[key] = self.request.GET.get(key, '')
+        return params
+
+    def get_base_filter(self):
+        """Возвращает базовый фильтр для программ (может быть переопределён)."""
+        level = self.get_search_params().get('level_program')
+        return get_program_filter_q(self.object, level=level)
+
+    def apply_active_filter(self, queryset, search_params):
+        """Фильтрация по is_active."""
+        if search_params['is_active'] == "1":
+            return queryset.filter(is_active=False)
+        elif not search_params['is_active']:
+            return queryset.filter(is_active=True)
+        return queryset
+
+    def apply_file_filter(self, queryset, search_params):
+        """Фильтрация по наличию/отсутствию файла."""
+        has_file = search_params['has_file'] == "1"
+        has_not_file = search_params['has_not_file'] == "0"
+
+        if has_file and has_not_file:
+            return queryset  # игнорируем оба
+        elif has_file:
+            return queryset.exclude(doc_scan='').filter(doc_scan__isnull=False)
+        elif has_not_file:
+            return queryset.filter(doc_scan='')
+        return queryset
+
+    def apply_search_filters(self, queryset, search_params):
+        """Применяем все поисковые фильтры через Q-объекты."""
+        q_filters = Q()
+
+        for param, lookup in self.search_fields.items():
+            if search_params.get(param):
+                q_filters &= Q(**{lookup: search_params[param]})
+
+        if search_params['program_name']:
+            q_filters &= Q(name__icontains=search_params['program_name'])
+        if search_params['approval_date_from']:
+            q_filters &= Q(approval_date__gte=search_params['approval_date_from'])
+        if search_params['approval_date_to']:
+            q_filters &= Q(approval_date__lte=search_params['approval_date_to'])
+
+        return queryset.filter(q_filters)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_params = self.get_search_params()
+        context['search_params'] = search_params
+
+        # Базовый фильтр
+        program_q = self.get_base_filter()
+
+        # Исходный QuerySet
+        program_list = self.program_model.objects \
+            .select_related('group', 'district', 'division', 'branch', 'organization') \
+            .filter(program_q)
+
+        # Применяем фильтры
+        program_list = self.apply_active_filter(program_list, search_params)
+        program_list = self.apply_file_filter(program_list, search_params)
+        program_list = self.apply_search_filters(program_list, search_params)
+
+        # Сортировка
+        program_list = program_list.order_by('-approval_date')
+
+        # Пагинация
+        program_page = self.get_paginated_page(program_list, 'program_page')
+        context['program_page'] = program_page
+
+        # Добавляем дополнительный контекст
+        context.update(self.extra_context)
+
+        return context
+
+
+class EntityBriefingProgramView(ProgramListView):
     template_name = 'organization/entity_briefing_program.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        search_params = {
-            'level_briefing_program': self.request.GET.get('level_briefing_program', ''),
-            'brief_prog_name': self.request.GET.get('brief_prog_name', ''),
-            'briefing_type': self.request.GET.get('briefing_type', ''),
-            'approval_date_from': self.request.GET.get('approval_date_from', ''),
-            'approval_date_to': self.request.GET.get('approval_date_to', ''),
-            'has_file': self.request.GET.get('has_file', ''),
-            'has_not_file': self.request.GET.get('has_not_file', ''),
-            'is_active': self.request.GET.get('is_active', ''),
-        }
-        context['search_params'] = search_params
-
-        level = search_params.get('level_briefing_program')
-        program_q = get_program_filter_q(self.object, level=level)
-
-        briefing_program_list = ProgramBriefing.objects \
-            .select_related('group', 'district', 'division', 'branch', 'organization') \
-            .filter(program_q)
-
-        if search_params['is_active'] == "0":
-            briefing_program_list = briefing_program_list.filter()
-        elif search_params['is_active'] == "1":
-            briefing_program_list = briefing_program_list.filter(is_active=False)
-        else:
-            briefing_program_list = briefing_program_list.filter(is_active=True)
-
-        if search_params['brief_prog_name']:
-            briefing_program_list = briefing_program_list.filter(name__icontains=search_params['brief_prog_name'])
-        if search_params['briefing_type']:
-            briefing_program_list = briefing_program_list.filter(briefing__briefing_type=search_params['briefing_type'])
-        if search_params['has_file'] == "1" and search_params['has_not_file'] != "0":
-            briefing_program_list = briefing_program_list.exclude(doc_scan='').filter(doc_scan__isnull=False)
-        elif search_params['has_file'] != "1" and search_params['has_not_file'] == "0":
-            briefing_program_list = briefing_program_list.filter(doc_scan='')
-        elif search_params['has_file'] == "1" and search_params['has_not_file'] == "0":
-            briefing_program_list = briefing_program_list.filter()
-        if search_params['approval_date_from']:
-            briefing_program_list = briefing_program_list.filter(approval_date__gte=search_params['approval_date_from'])
-        if search_params['approval_date_to']:
-            briefing_program_list = briefing_program_list.filter(approval_date__lte=search_params['approval_date_to'])
-
-        briefing_program_list = briefing_program_list.order_by('-approval_date')
-
-        briefing_program_paginator = Paginator(briefing_program_list, 20)
-        briefing_program_page_number = self.request.GET.get('briefing_program_page')
-        briefing_program_page = briefing_program_paginator.get_page(briefing_program_page_number)
-
-        briefing_program_page.params = search_params.copy()
-        context['briefing_program_page'] = briefing_program_page
-        return context
+    program_model = ProgramBriefing
+    search_fields = {
+        'briefing_type': 'briefing__briefing_type',
+    }
 
 
-class EntityLearningProgramView(EntityDetailView):
+class EntityLearningProgramView(ProgramListView):
     template_name = 'organization/entity_learning_program.html'
+    program_model = Program
+    search_fields = {
+        'direction': 'direction__name',
+    }
+    extra_context = {
+        'directions': Direction.objects.all(),
+    }
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        search_params = {
-            'level_learning_program': self.request.GET.get('level_learning_program', ''),
-            'learning_prog_name': self.request.GET.get('learning_prog_name', ''),
-            'direction': self.request.GET.get('direction', ''),
-            'approval_date_from': self.request.GET.get('approval_date_from', ''),
-            'approval_date_to': self.request.GET.get('approval_date_to', ''),
-            'has_file': self.request.GET.get('has_file', ''),
-            'has_not_file': self.request.GET.get('has_not_file', ''),
-            'is_active': self.request.GET.get('is_active', ''),
-        }
-        context['search_params'] = search_params
-        context['directions'] = Direction.objects.all()
-        level = search_params.get('level_learning_program')
-        program_q = get_program_filter_q(self.object, level=level)
 
-        learning_program_list = Program.objects \
-            .select_related('group', 'district', 'division', 'branch', 'organization') \
-            .filter(program_q)
 
-        if search_params['is_active'] == "0":
-            learning_program_list = learning_program_list.filter()
-        elif search_params['is_active'] == "1":
-            learning_program_list = learning_program_list.filter(is_active=False)
-        else:
-            learning_program_list = learning_program_list.filter(is_active=True)
-
-        if search_params['learning_prog_name']:
-            learning_program_list = learning_program_list.filter(name__icontains=search_params['learning_prog_name'])
-        if search_params['direction']:
-            learning_program_list = learning_program_list.filter(direction__name__icontains=search_params['direction'])
-        if search_params['has_file'] == "1" and search_params['has_not_file'] != "0":
-            learning_program_list = learning_program_list.exclude(doc_scan='').filter(doc_scan__isnull=False)
-        elif search_params['has_file'] != "1" and search_params['has_not_file'] == "0":
-            learning_program_list = learning_program_list.filter(doc_scan='')
-        elif search_params['has_file'] == "1" and search_params['has_not_file'] == "0":
-            learning_program_list = learning_program_list.filter()
-        if search_params['approval_date_from']:
-            learning_program_list = learning_program_list.filter(approval_date__gte=search_params['approval_date_from'])
-        if search_params['approval_date_to']:
-            learning_program_list = learning_program_list.filter(approval_date__lte=search_params['approval_date_to'])
-
-        learning_program_list = learning_program_list.order_by('-approval_date')
-
-        learning_program_paginator = Paginator(learning_program_list, 20)
-        learning_program_page_number = self.request.GET.get('learning_program_page')
-        learning_program_page = learning_program_paginator.get_page(learning_program_page_number)
-
-        learning_program_page.params = search_params.copy()
-        context['learning_program_page'] = learning_program_page
-        return context

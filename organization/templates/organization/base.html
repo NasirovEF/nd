@@ -25,6 +25,17 @@
         <p class="mb-0"></p>
     </div>
 </footer>
+<script>
+            $(function() {
+                $.fn.selectpicker.Constructor.DEFAULTS.noneSelectedText = 'Ничего не выбрано';
+                $.fn.selectpicker.Constructor.DEFAULTS.countSelectedText = '{0} выбрано';
+
+                $('.selectpicker').selectpicker({
+                    liveSearch: true,
+                    actionsBox: true
+                });
+            });
+</script>
 
 <script src="{% static 'js/jquery.min.js' %}"></script>
 <script src="{% static 'js/bootstrap.bundle.min.js' %}" crossorigin="anonymous"></script>

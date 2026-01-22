@@ -31,20 +31,20 @@
                         <form method="get">
                         <td>
                             <div>
-                                <select name="level_briefing_program" id="organizationSelect" class="form-control text-center w-100">
-                                    <option value="{{object|model_name}}" {% if search_params.level_briefing_program == "" %}selected{% endif %}>-----</option>
-                                    <option value="1" {% if search_params.level_briefing_program == "1" %}selected{% endif %}>ОСТ</option>
-                                    <option value="2" {% if search_params.level_briefing_program == "2" %}selected{% endif %}>Филиал</option>
-                                    <option value="3" {% if search_params.level_briefing_program == "3" %}selected{% endif %}>СП</option>
-                                    <option value="4" {% if search_params.level_briefing_program == "4" %}selected{% endif %}>Участок</option>
-                                    <option value="5" {% if search_params.level_briefing_program == "5" %}selected{% endif %}>Группа</option>
+                                <select name="level_program" id="organizationSelect" class="form-control text-center w-100">
+                                    <option value="{{object|model_name}}" {% if search_params.level_program == "" %}selected{% endif %}>-----</option>
+                                    <option value="1" {% if search_params.level_program == "1" %}selected{% endif %}>ОСТ</option>
+                                    <option value="2" {% if search_params.level_program == "2" %}selected{% endif %}>Филиал</option>
+                                    <option value="3" {% if search_params.level_program == "3" %}selected{% endif %}>СП</option>
+                                    <option value="4" {% if search_params.level_program == "4" %}selected{% endif %}>Участок</option>
+                                    <option value="5" {% if search_params.level_program == "5" %}selected{% endif %}>Группа</option>
                                 </select>
                             </div>
                         </td>
                         <td>
-                            <input name="brief_prog_name" class="form-control text-center" type="search"
+                            <input name="program_name" class="form-control text-center" type="search"
                                    placeholder="Введите название" aria-label="Search"
-                                   value="{{search_params.brief_prog_name}}">
+                                   value="{{search_params.program_name}}">
                         </td>
                         <td>
                             <div>
@@ -111,7 +111,7 @@
                             </td>
                         </form>
                     </tr>
-                    {% for program in briefing_program_page.object_list %}
+                    {% for program in program_page.object_list %}
                     <tr>
                         <td></td>
                         <td>{{program.name}}</td>
@@ -157,11 +157,11 @@
                 <nav aria-label="Пагинация списка работников">
                     <ul class="pagination pagination-sm">
                         <!-- Кнопка "Предыдущая" -->
-                        {% if briefing_program_page.has_previous %}
+                        {% if program_page.has_previous %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?briefing_program_page={{ briefing_program_page.previous_page_number }}
-                           {% for key, value in briefing_program_page.params.items %}
+                               href="?program_page={{ program_page.previous_page_number }}
+                           {% for key, value in program_page.params.items %}
                              {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
                            {% endfor %}">
                                 &laquo;
@@ -174,11 +174,11 @@
                         {% endif %}
 
                         <!-- Первая страница + разделитель -->
-                        {% if briefing_program_page.number > 3 %}
+                        {% if program_page.number > 3 %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?briefing_program_page=1
-                           {% for key, value in briefing_program_page.params.items %}
+                               href="?program_page=1
+                           {% for key, value in program_page.params.items %}
                              {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
                            {% endfor %}">1</a>
                         </li>
@@ -186,12 +186,12 @@
                         {% endif %}
 
                         <!-- Страницы до текущей (2–3 штуки) -->
-                        {% for page_num in briefing_program_page.paginator.page_range %}
-                        {% if page_num >= briefing_program_page.number|add:-2 and page_num < briefing_program_page.number %}
+                        {% for page_num in program_page.paginator.page_range %}
+                        {% if page_num >= program_page.number|add:-2 and page_num < program_page.number %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?briefing_program_page={{ page_num }}
-                             {% for key, value in briefing_program_page.params.items %}
+                               href="?program_page={{ page_num }}
+                             {% for key, value in program_page.params.items %}
                                {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
                              {% endfor %}">{{ page_num }}</a>
                         </li>
@@ -200,16 +200,16 @@
 
                         <!-- Текущая страница -->
                         <li class="page-item active" aria-current="page">
-                            <span class="page-link">{{ briefing_program_page.number }}</span>
+                            <span class="page-link">{{ program_page.number }}</span>
                         </li>
 
                         <!-- Страницы после текущей (2–3 штуки) -->
-                        {% for page_num in briefing_program_page.paginator.page_range %}
-                        {% if page_num > briefing_program_page.number and page_num <= briefing_program_page.number|add:2 %}
+                        {% for page_num in program_page.paginator.page_range %}
+                        {% if page_num > program_page.number and page_num <= program_page.number|add:2 %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?briefing_program_page={{ page_num }}
-                             {% for key, value in briefing_program_page.params.items %}
+                               href="?program_page={{ page_num }}
+                             {% for key, value in program_page.params.items %}
                                {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
                              {% endfor %}">{{ page_num }}</a>
                         </li>
@@ -217,23 +217,23 @@
                         {% endfor %}
 
                         <!-- Последняя страница + разделитель -->
-                        {% if briefing_program_page.number < briefing_program_page.paginator.num_pages|add:-2 %}
+                        {% if program_page.number < program_page.paginator.num_pages|add:-2 %}
                         <li class="page-item disabled"><span class="page-link">…</span></li>
                         <li class="page-item">
                             <a class="page-link"
-                               href="?briefing_program_page={{ briefing_program_page.paginator.num_pages }}
-                           {% for key, value in briefing_program_page.params.items %}
+                               href="?program_page={{ program_page.paginator.num_pages }}
+                           {% for key, value in program_page.params.items %}
                              {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
-                           {% endfor %}">{{ briefing_program_page.paginator.num_pages }}</a>
+                           {% endfor %}">{{ program_page.paginator.num_pages }}</a>
                         </li>
                         {% endif %}
 
                         <!-- Кнопка "Следующая" -->
-                        {% if briefing_program_page.has_next %}
+                        {% if program_page.has_next %}
                         <li class="page-item">
                             <a class="page-link"
-                               href="?briefing_program_page={{ briefing_program_page.next_page_number }}
-                           {% for key, value in briefing_program_page.params.items %}
+                               href="?program_page={{ program_page.next_page_number }}
+                           {% for key, value in program_page.params.items %}
                              {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
                            {% endfor %}">&raquo;</a>
                         </li>
