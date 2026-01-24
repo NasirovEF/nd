@@ -10,6 +10,7 @@ from django.forms import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from learning.models.learner_direction import LearningDoc, LearningPoster
 from organization.forms import StileFormMixin
+from organization.models import Organization, Branch, Division
 
 
 class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
@@ -20,17 +21,7 @@ class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Protocol
         fields = "__all__"
-        widgets = {
-            'division': forms.Select(
-                attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
-                       'title': 'Выберите структурное подразделение...'}),
-            'chairman': forms.Select(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true', 'title': 'Выберите председателя комиссии...'}),
-            'members': forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true', 'title': 'Выберите членов комиссии...'}),
-            'prot_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'program': forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true', 'title': 'Выберите программы обучения...'}),
-            'learner': forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true', 'title': 'Выберите работников...'}),
-            'doc_scan': forms.ClearableFileInput(attrs={'class': 'form-control', 'aria-label': 'Загрузка файла'}),
-        }
+
 
     def clean(self):
         errors = []

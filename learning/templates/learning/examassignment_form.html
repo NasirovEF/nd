@@ -83,19 +83,6 @@
                 </div>
             </div>
         </form>
-
-        <!-- Инициализация selectpicker (если используется) -->
-        <script>
-            $(function() {
-                $.fn.selectpicker.Constructor.DEFAULTS.noneSelectedText = 'Ничего не выбрано';
-                $.fn.selectpicker.Constructor.DEFAULTS.countSelectedText = '{0} выбрано';
-
-                $('.selectpicker').selectpicker({
-                    liveSearch: true,
-                    actionsBox: true
-                });
-            });
-        </script>
     </div>
 </div>
 {% endblock %}

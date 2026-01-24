@@ -1,7 +1,64 @@
 from django.db import models
-from django.core.exceptions import ValidationError
 from organization.models import Organization, Branch, Division, District, Group
 from organization.services import NULLABLE
+from smart_selects.db_fields import ChainedForeignKey
+
+
+class Affiliation(models.Model):
+    organization = models.ForeignKey(Organization, verbose_name="ОСТ", on_delete=models.SET_NULL, **NULLABLE)
+    branch = ChainedForeignKey(
+        Branch,
+        chained_field="organization",
+        chained_model_field="organization",
+        show_all=False,
+        auto_choose=False,
+        sort=True,
+        verbose_name="Филиал",
+        on_delete=models.SET_NULL,
+        **NULLABLE
+    )
+
+    division = ChainedForeignKey(
+        Division,
+        chained_field="branch",
+        chained_model_field="branch",
+        show_all=False,
+        auto_choose=False,
+        sort=True,
+        verbose_name="Структурное подразделение",
+        on_delete=models.SET_NULL,
+        **NULLABLE
+    )
+    district = ChainedForeignKey(
+        District,
+        chained_field="division",
+        chained_model_field="division",
+        show_all=False,
+        auto_choose=False,
+        sort=True,
+        verbose_name="Участок",
+        on_delete=models.SET_NULL,
+        **NULLABLE)
+    group = ChainedForeignKey(
+        Group,
+        chained_field="district",
+        chained_model_field="district",
+        show_all=False,
+        auto_choose=False,
+        sort=True,
+        verbose_name="Группа",
+        on_delete=models.SET_NULL,
+        **NULLABLE)
+
+    @property
+    def return_str_affiliation(self):
+        fields = [self.organization, self.branch, self.division, self.district, self.group]
+        return " ".join(str(field) for field in fields if field)
+
+    class Meta:
+        verbose_name = "Организационная принадлежность"
+        verbose_name_plural = "Организационные принадлежности"
+        abstract = True
 
 
 class StaffUnit(models.Model):
@@ -52,7 +109,7 @@ class Position(models.Model):
         return f'{self.name}'
 
 
-class Worker(models.Model):
+class Worker(Affiliation):
     """Класс работника"""
 
     surname = models.CharField(max_length=50, verbose_name="Фамилия")
@@ -61,33 +118,6 @@ class Worker(models.Model):
     image = models.ImageField(upload_to="organization/worker/", verbose_name="Фотография работника",  **NULLABLE)
     service_number = models.CharField(max_length=30, verbose_name="Табельный номер", unique=True)
     dismissed = models.BooleanField(verbose_name="Уволен", default=False)
-
-    district = models.ForeignKey(
-        District,
-        on_delete=models.SET_NULL,
-        **NULLABLE,
-        verbose_name="Участок",
-        related_name="worker"
-    )
-    group = models.ForeignKey(
-        Group,
-        on_delete=models.SET_NULL,
-        **NULLABLE,
-        verbose_name="Группа участка",
-        related_name="worker"
-    )
-
-    @property
-    def organization(self):
-        return self.district.division.branch.organization if self.district else None
-
-    @property
-    def branch(self):
-        return self.district.division.branch if self.district else None
-
-    @property
-    def division(self):
-        return self.district.division if self.district else None
 
     class Meta:
         verbose_name = "Работник"

@@ -18,10 +18,10 @@ from organization.views import (
     DivisionUpdateView,
     DivisionCreateView,
     DivisionDeleteView,
-    EntityDetailView, EntityBriefingProgramView
+    EntityDetailView,
+    EntityBriefingProgramView,
+    EntityLearningProgramView
 )
-from organization.views.district import DistrictDetailView
-from organization.views.entity import EntityLearningProgramView
 
 app_name = OrganizationConfig.name
 
@@ -32,7 +32,6 @@ urlpatterns = [
     path("branch_update/<int:pk>", BranchUpdateView.as_view(), name="branch_update"),
     path("branch_delete/<int:pk>", BranchDeleteView.as_view(), name="branch_delete"),
     path("district_create/", DistrictCreateView.as_view(), name="district_create"),
-    path("district_detail/<int:pk>/", DistrictDetailView.as_view(), name="district_detail"),
     path("district_update/<int:pk>", DistrictUpdateView.as_view(), name="district_update"),
     path(
         "district_delete/<int:pk>", DistrictDeleteView.as_view(), name="district_delete"

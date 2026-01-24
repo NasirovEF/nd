@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from learning.services import add_doc_url, get_current_date
 from organization.models import Position, Worker, Organization, Branch, Division, District, Group, StaffUnit
+from organization.models.staff_unit import Affiliation
 from organization.services import NULLABLE
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -68,7 +69,7 @@ class SubDirection(models.Model):
                 )
 
 
-class BaseProgram(models.Model):
+class BaseProgram(Affiliation):
     """Базовая модель программы обучения/инструктажа"""
     name = models.CharField(max_length=150, verbose_name="Наименование программы")
     duration = models.PositiveIntegerField(verbose_name="Продолжительность обучения (часов)")
@@ -76,11 +77,6 @@ class BaseProgram(models.Model):
     position_group = models.ForeignKey("organization.PositionGroup", on_delete=models.SET_NULL, verbose_name="Наименование группы работников", **NULLABLE)
     approve = models.CharField(max_length=150, verbose_name="Программа утверждена", help_text="Введите должность, И.О. Фамилию лица утвердившего программу")
     approval_date = models.DateField(verbose_name="Дата утверждения программы", default=get_current_date, help_text="Введите дату в формате ДД.ММ.ГГГГ")
-    organization = models.ForeignKey(Organization, verbose_name="ОСТ", on_delete=models.SET_NULL, **NULLABLE)
-    branch = models.ForeignKey(Branch, verbose_name="Филиал", on_delete=models.SET_NULL, **NULLABLE)
-    division = models.ForeignKey(Division, verbose_name="Структурное подразделение", on_delete=models.SET_NULL, **NULLABLE)
-    district = models.ForeignKey(District, verbose_name="Участок", on_delete=models.SET_NULL, **NULLABLE)
-    group = models.ForeignKey(Group, verbose_name="Группа", on_delete=models.SET_NULL, **NULLABLE)
     replacement = models.ForeignKey("self", on_delete=models.SET_NULL, verbose_name="Замена программы", help_text="Выберите программу, которую эта программа заменяет (не может быть самой собой)", **NULLABLE)
     is_active = models.BooleanField(verbose_name="Актуальность", default=True)
     doc_scan = models.FileField(verbose_name="Скан-копия программы обучения",

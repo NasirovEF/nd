@@ -15,6 +15,7 @@
                 </div>
                 <div class="card-body">
                     {% csrf_token %}
+                    {{ form.media.js }}
                     {{ form.as_p }}
                 </div>
                 <div class="card-footer">
@@ -34,4 +35,5 @@
         </div>
         </div>
     </form>
+
 {% endblock %}

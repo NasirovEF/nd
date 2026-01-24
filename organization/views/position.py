@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -6,23 +5,10 @@ from django.views.generic import (
     DetailView,
     ListView,
     UpdateView,
-    View,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from organization.forms import PositionForm
 from organization.models import Position
-
-
-class PositionListView(ListView):
-    """Просмотр списка профессий/должностей"""
-
-    model = Position
-
-
-class PositionDetailView(DetailView):
-    """Просмотр одной профессии/должности"""
-
-    model = Position
 
 
 class PositionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):

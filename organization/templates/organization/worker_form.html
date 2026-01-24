@@ -15,6 +15,7 @@
                 </div>
                 <div class="card-body">
                     {% csrf_token %}
+                    {{ form.media.js }}
                     {{ form.as_p }}
                     {% if position_formset.non_form_errors %}
                     <div class="text-danger">{{ position_formset.non_form_errors }}</div>
@@ -37,6 +38,9 @@
                             Создать
                             {% endif %}
                         </button>
+                        <a href="{% url 'organization:entity_detail' model_name pk %}" class="btn btn-outline-secondary mx-2">
+                        Отмена
+                    </a>
                     </div>
                 </div>
             </div>

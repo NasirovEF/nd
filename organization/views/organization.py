@@ -1,16 +1,13 @@
-from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
     DeleteView,
-    DetailView,
     ListView,
     UpdateView,
-    View,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from organization.forms import OrganizationForm
-from organization.models import Organization, Branch
+from organization.models import Organization
 
 
 class OrganizationListView(ListView):
@@ -22,12 +19,6 @@ class OrganizationListView(ListView):
         queryset = super().get_queryset(*args, **kwargs)
         queryset = queryset.filter(is_main=True)
         return queryset
-
-
-class OrganizationDetailView(DetailView):
-    """Просмотр одного из ОСТов"""
-
-    model = Organization
 
 
 class OrganizationCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):

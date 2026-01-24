@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -6,23 +5,10 @@ from django.views.generic import (
     DetailView,
     ListView,
     UpdateView,
-    View,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from organization.forms import GroupForm
 from organization.models import Group, District
-
-
-class GroupListView(ListView):
-    """Просмотр списка групп"""
-
-    model = Group
-
-
-class GroupDetailView(DetailView):
-    """Просмотр одной из групп"""
-
-    model = Group
 
 
 class GroupCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -33,7 +19,7 @@ class GroupCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'organization.add_group'
 
     def get_success_url(self):
-        return reverse("organization:district_detail", args=[self.object.district.pk])
+        return reverse("organization:organization_list")
 
     def form_valid(self, form):
         group = form.save()
@@ -60,6 +46,4 @@ class GroupDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
 
     model = Group
     permission_required = 'organization.delete_group'
-
-    def get_success_url(self):
-        return reverse("organization:organization_list")
+    success_url = reverse_lazy("organization:organization_list")

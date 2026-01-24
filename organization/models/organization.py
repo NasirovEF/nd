@@ -31,7 +31,7 @@ class BaseNamedEntity(models.Model):
         ordering = ['name']
 
     def __str__(self):
-        return self.name
+        return f'{self.abbreviation}' if self.abbreviation else f'{self.name}'
 
     def clean(self):
         """Базовая валидация именованных сущностей."""
@@ -47,9 +47,6 @@ class Organization(BaseNamedEntity):
     class Meta:
         verbose_name = "ОСТ"
         verbose_name_plural = "ОСТы"
-
-    def __str__(self):
-        return f"{self.name}"
 
 
 class Branch(BaseNamedEntity):

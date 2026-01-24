@@ -1,28 +1,12 @@
-from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
     DeleteView,
-    DetailView,
-    ListView,
     UpdateView,
-    View,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from organization.forms import DivisionForm
-from organization.models import Division, Organization, Branch
-
-
-class DivisionListView(ListView):
-    """Просмотр списка структурных подразделений"""
-
-    model = Division
-
-
-class DivisionDetailView(DetailView):
-    """Просмотр одной из структурных подразделений"""
-
-    model = Division
+from organization.models import Division, Branch
 
 
 class DivisionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):

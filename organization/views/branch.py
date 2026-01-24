@@ -3,26 +3,11 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
     DeleteView,
-    DetailView,
-    ListView,
     UpdateView,
-    View,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from organization.forms import BranchForm
 from organization.models import Branch, Organization
-
-
-class BranchListView(ListView):
-    """Просмотр списка филиалов"""
-
-    model = Branch
-
-
-class BranchDetailView(DetailView):
-    """Просмотр одного из филиалов"""
-
-    model = Branch
 
 
 class BranchCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):

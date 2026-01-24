@@ -1,4 +1,4 @@
-{% extends 'organization/base.html' %}
+{% extends "organization/base.html" %}
 {% block content %}
 <div class="row">
     <div class="col-8 offset-2">
@@ -118,17 +118,6 @@
                 </div>
             </div>
         </form>
-        <script>
-            $(function() {
-                $.fn.selectpicker.Constructor.DEFAULTS.noneSelectedText = 'Ничего не выбрано';
-                $.fn.selectpicker.Constructor.DEFAULTS.countSelectedText = '{0} выбрано';
-
-                $('.selectpicker').selectpicker({
-                    liveSearch: true,
-                    actionsBox: true
-                });
-            });
-        </script>
     </div>
 </div>
 {% endblock %}

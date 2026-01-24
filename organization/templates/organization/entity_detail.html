@@ -14,24 +14,19 @@
     <div class="card-body">
         <h6 class="card-subtitle mb-2 text-body-secondary">{{ object.division }}</h6>
         <h5 class="card-title">{{ object.name }}</h5>
-        <div class="btn-group dropend">
-            <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle my-2"
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                Редактировать
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item"
-                       href="{% url 'organization:worker_create' %}?district={{object.pk}}">Добавить
+            <a class="btn btn-outline-primary btn-sm my-2"
+                       href="{% url 'organization:worker_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Добавить
                     работника
-                </a></li>
+                </a>
 
-            </ul>
-        </div>
-        <a href="{% url 'learning:briefing_day_bulk_create' %}" class="btn btn-outline-primary btn-sm mx-2">
+        <a href="{% url 'learning:briefing_day_bulk_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm mx-2">
             Провести инструктаж
         </a>
 
-        <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle my-2"
+        <a href="{% url 'learning:create_bulk_exam_assignment' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm">
+            Назначить тест</a>
+
+        <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle mx-2"
                     data-bs-toggle="dropdown" aria-expanded="false">
                 Программы
             </button>
@@ -47,6 +42,7 @@
                 <table class="table table-sm table-hover text-center align-middle no-split-header">
                     <thead>
                     <tr>
+                        <th scope="col" rowspan="2">Подразделение</th>
                         <th scope="col" rowspan="2">ФИО</th>
                         <th scope="col" rowspan="2">Должность</th>
                         <th scope="col" colspan="2" style="line-height:1.2; padding:0.25rem;">Предстоящая дата</th>
@@ -61,6 +57,7 @@
                     <tbody class="table-group-divider">
                     <form method="get">
                         <tr>
+                             <td></td>
                             <td><input name="surname" class="form-control my-2 text-center" type="search"
                                        placeholder="Введите Фамилию"
                                        aria-label="Search" value="{{search_params.surname}}"></td>
@@ -100,13 +97,14 @@
                     {% for worker in worker_page.object_list %}
                     {% if not worker.group %}
                     <tr>
+                        <td>{{ worker.return_str_affiliation }}</td>
                         <td>{{ worker }}</td>
                         <td>{{ worker|get_main_position }}</td>
                         <td>{{ worker|get_nearest_knowledge_date }}</td>
                         <td>{{ worker|get_nearest_briefing_date }}</td>
                         <td>
                             <a class="btn btn-outline-primary btn-sm" type="button"
-                               href="{% url 'organization:worker_detail' worker.pk %}">
+                               href="{% url 'organization:worker_detail' worker.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">
                                 Подробнее
                             </a>
                         </td>
@@ -118,11 +116,11 @@
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item"
-                                           href="{% url 'organization:worker_update' worker.pk %}">Изменить
+                                           href="{% url 'organization:worker_update' worker.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Изменить
                                     </a></li>
                                     <hr>
                                     <li><a class="dropdown-item"
-                                           href="{% url 'organization:worker_delete' worker.pk %}?district={{object.pk}}">Удалить
+                                           href="{% url 'organization:worker_delete' worker.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Удалить
                                     </a></li>
                                 </ul>
                             </div>

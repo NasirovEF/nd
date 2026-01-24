@@ -159,6 +159,20 @@ django-click = "*"
 dev = ["ipython", "pytest-coverage", "ruff"]
 
 [[package]]
+name = "django-smart-selects"
+version = "1.7.2"
+description = "Django application to handle chained model fields."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "django_smart_selects-1.7.2-py3-none-any.whl", hash = "sha256:08c774d96285e6d169043cd548860d74d085be8d349c42437232c42bc43cd79a"},
+    {file = "django_smart_selects-1.7.2.tar.gz", hash = "sha256:c8116718ecf2d0d0fd4cd1e52c26d2dcc586e25319aa65af7af2d51a1012df3a"},
+]
+
+[package.dependencies]
+django = ">=3.2"
+
+[[package]]
 name = "docxcompose"
 version = "1.4.0"
 description = "Compose .docx documents"
@@ -810,4 +824,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "f7aba260dbf6a760ae3488a3da19a2210dbde9855cb5a255dc59a5964e787305"
+content-hash = "d1a82da6852f90ae9a23d52923a6ca5b5b69f8e8e508623b6e53d74237d26575"

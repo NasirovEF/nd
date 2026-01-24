@@ -1,22 +1,18 @@
-from django.shortcuts import render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
     ListView,
     UpdateView,
-    View,
 )
 from learning.models import Learner, KnowledgeDate, Briefing
-from django.utils.datastructures import MultiValueDictKeyError
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from learning.models.learner_direction import StaffDirection, Direction
 from organization.forms import WorkerCreateForm, WorkerUpdateForm, PositionForm, PositionFormSet
-from organization.models import Worker, District, Group, Organization, Branch, Division, Position
+from organization.models import Worker, District, Group, Position
 from django.forms import inlineformset_factory
 from django.db import transaction
-
 from users.models import User
 
 
@@ -33,6 +29,8 @@ class WorkerDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['briefings'] = Briefing.objects.all()
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
         return context
 
 
@@ -43,10 +41,14 @@ class WorkerCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'organization.add_worker'
 
     def get_success_url(self):
-        return reverse("organization:district_detail", args=[self.object.district.pk])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_detail", kwargs={'model_name': model_name, 'pk': pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
 
         # Если формсет ещё не создан (GET-запрос или повторная отрисовка с ошибками)
         if 'position_formset' not in context:
@@ -69,13 +71,7 @@ class WorkerCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     def form_valid(self, form):
         try:
             # 1. Заполняем поля работника
-            worker = form.save(commit=False)
-            worker.district = District.objects.get(pk=self.request.GET.get("district"))
-            worker.group = Group.objects.get(pk=self.request.GET.get("group")) if self.request.GET.get(
-                "group") else None
-
-            # 2. Сохраняем работника (обязательно!)
-            worker.save()
+            worker = form.save()
             self.object = worker  # ← критически важно для контекста
 
             # 3. Создаём формсет с POST-данными и привязанным instance
@@ -137,19 +133,23 @@ class WorkerUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     permission_required = 'organization.change_worker'
 
     def get_success_url(self):
-        return reverse("organization:district_detail", args=[self.object.district.pk])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_detail", kwargs={'model_name': model_name, 'pk': pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
 
         PositionFormSets = inlineformset_factory(
             Worker,
             Position,
             form=PositionForm,
-            formset=PositionFormSet,  # Ваш кастомный формсет с clean()
+            formset=PositionFormSet,
             fields=["name", "is_main"],
             extra=1,
-            can_delete=True,  # Разрешаем удаление позиций
+            can_delete=True,
         )
 
         if self.request.POST:
@@ -206,6 +206,14 @@ class WorkerDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Worker
     permission_required = 'organization.delete_worker'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
+
+        return context
+
     def get_success_url(self):
-        district_pk = self.request.GET["district"]
-        return reverse("organization:district_detail", args=[district_pk])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_detail", kwargs={'model_name': model_name, 'pk': pk})

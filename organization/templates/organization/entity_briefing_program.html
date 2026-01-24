@@ -4,26 +4,26 @@
 
 <div class="card mx-2">
     <div class="card-body">
-        <h6 class="card-subtitle mb-2 text-body-secondary">{{ object.division }}</h6>
-        <h5 class="card-title">{{ object.name }}</h5>
+        <h5 class="card-title">{{ object }}</h5>
          <a href="{% url 'organization:entity_detail' object|model_name object.pk %}" class="btn btn-outline-secondary btn-sm m-2">
         Назад
         </a>
-        <a href="{% url 'learning:program_create' %}" class="btn btn-outline-primary btn-sm m-2">
+        <a href="{% url 'learning:briefing_program_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm m-2">
             Добавить программу
         </a>
             <div class="text-center"><h3>Программы инструктажа</h3></div>
-                <table class="table table-sm table-hover text-center align-middle">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover text-center align-middle">
                     <thead>
                     <tr>
-                        <th scope="col" class="w-10">Уровень программы</th>
-                        <th scope="col" class="w-25">Наименование программы</th>
-                        <th scope="col" class="w-15">Вид инструктажа</th>
-                        <th scope="col" class="w-15">Дата утверждения</th>
-                        <th scope="col" class="w-15">Скан-копия программы</th>
-                        <th scope="col" class="w-15">Статус программы</th>
-                        <th scope="col" class="w-5"></th>
-                        <th scope="col" class="w-5"></th>
+                        <th scope="col" class="col-3">Уровень программы</th>
+                        <th scope="col" class="col-3">Наименование программы</th>
+                        <th scope="col" class="col-2">Вид инструктажа</th>
+                        <th scope="col" class="col-2">Дата утверждения</th>
+                        <th scope="col" class="col-2">Скан-копия программы</th>
+                        <th scope="col" class="col-2">Статус программы</th>
+                        <th scope="col" class="col-auto"></th>
+                        <th scope="col" class="col-auto"></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -113,7 +113,7 @@
                     </tr>
                     {% for program in program_page.object_list %}
                     <tr>
-                        <td></td>
+                        <td>{{program.return_str_affiliation}}</td>
                         <td>{{program.name}}</td>
                         <td>{{program.briefing.all|briefing_type_name}}</td>
                         <td>{{program.approval_date}}</td>
@@ -139,11 +139,11 @@
                                         data-bs-toggle="dropdown" aria-expanded="false"></button>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item"
-                                           href="{% url 'learning:briefing_program_update' program.pk %}">Изменить</a>
+                                           href="{% url 'learning:briefing_program_update' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Изменить</a>
                                     </li>
                                     <hr>
                                     <li><a class="dropdown-item"
-                                           href="{% url 'learning:briefing_program_delete' program.pk %}?district={{object.pk}}">Удалить</a>
+                                           href="{% url 'learning:briefing_program_delete' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Удалить</a>
                                     </li>
                                 </ul>
                             </div>
@@ -152,6 +152,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
+                </div>
 
                 <!-- Навигация  -->
                 <nav aria-label="Пагинация списка работников">
