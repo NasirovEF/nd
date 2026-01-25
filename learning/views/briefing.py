@@ -17,6 +17,9 @@ from django.http import HttpResponseNotFound
 from django.db import transaction
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 
+from organization.models import Worker
+from organization.views import EntityDetailView
+
 
 class ProgramBriefingCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """Создание программы инструктажа"""
@@ -76,7 +79,9 @@ class ProgramBriefingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Upd
         return ProgramBriefingForm if self.object.is_active else ProgramBriefingNotActive
 
     def get_success_url(self):
-        return reverse("learning:briefing_program_detail", args=[self.object.pk])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_briefing_program", kwargs={'model_name': model_name, 'pk': pk})
 
 
 class ProgramBriefingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -85,6 +90,12 @@ class ProgramBriefingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, Del
     model = ProgramBriefing
     permission_required = 'learning.delete_programbriefing'
     template_name = "learning/program_confirm_delete.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
+        return context
 
     def get_success_url(self):
         model_name = self.request.GET.get('model_name')
@@ -122,7 +133,9 @@ class BriefingDayCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateV
             return HttpResponseNotFound("Работник не найден")
 
     def get_success_url(self):
-        return reverse("organization:worker_detail", args=[self.object.learner.worker.pk])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_briefing_program", kwargs={'model_name': model_name, 'pk': pk})
 
 
 class BriefingDayUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -141,6 +154,7 @@ class BriefingDayUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateV
 class BriefingDayListView(ListView):
     """Просмотр архива инструктажей"""
     model = BriefingDay
+    paginate_by = 20
 
     def get_queryset(self, *args, **kwargs):
         queryset = super().get_queryset(*args, **kwargs)
@@ -201,4 +215,92 @@ def create_bulk_briefing_day(request):
                   {'form': form,
                    'model_name': model_name,
                    'pk': pk})
+
+
+class BriefingLogListView(EntityDetailView):
+    """Просмотр журнала инструктажа"""
+    template_name = 'learning/briefing_log.html'
+
+    def get_briefingday_queryset(self, entity_obj):
+        model_name = self.kwargs['model_name']
+
+        if model_name == 'organization':
+            workers = Worker.objects.filter(organization=entity_obj)
+            learners = Learner.objects.filter(worker__in=workers)
+            return BriefingDay.objects.filter(learner__in=learners)
+        elif model_name == 'branch':
+            workers = Worker.objects.filter(branch=entity_obj)
+            learners = Learner.objects.filter(worker__in=workers)
+            return BriefingDay.objects.filter(learner__in=learners)
+        elif model_name == 'division':
+            workers = Worker.objects.filter(division=entity_obj)
+            learners = Learner.objects.filter(worker__in=workers)
+            return BriefingDay.objects.filter(learner__in=learners)
+        elif model_name == 'district':
+            workers = Worker.objects.filter(district=entity_obj)
+            learners = Learner.objects.filter(worker__in=workers)
+            return BriefingDay.objects.filter(learner__in=learners)
+        elif model_name == 'group':
+            workers = Worker.objects.filter(group=entity_obj)
+            learners = Learner.objects.filter(worker__in=workers)
+            return BriefingDay.objects.filter(learner__in=learners)
+        else:
+            return BriefingDay.objects.none()
+
+    def get_search_params(self):
+        """Собираем все параметры поиска из GET."""
+        params = super().get_search_params()
+        params.update({
+            'briefing_type': self.request.GET.get('briefing_type'),
+            'briefing_program': self.request.GET.get('briefing_program'),
+            'briefing_reason': self.request.GET.get('briefing_reason'),
+            'next_date_from': self.request.GET.get('next_date_from'),
+            'next_date_to': self.request.GET.get('next_date_to')
+        })
+        return params
+
+    def get_filter(self, queryset, search_params):
+        filters = {}
+
+        if search_params['surname']:
+            filters['learner__worker__surname__icontains'] = search_params['surname']
+        if search_params['briefing_type']:
+            filters['briefing_type__briefing_type'] = search_params['briefing_type']
+        if search_params['briefing_program']:
+            filters['briefing_program__name__icontains'] = search_params['briefing_program']
+        if search_params['date_briefing_from']:
+            filters['briefing_day__gte'] = search_params['date_briefing_from']
+        if search_params['date_briefing_to']:
+            filters['briefing_day__lte'] = search_params['date_briefing_to']
+        if search_params['briefing_reason']:
+            filters['briefing_reason__icontains'] = search_params['briefing_reason']
+        if search_params['next_date_from']:
+            filters['nextdate_from__gte'] = search_params['next_date_from']
+        if search_params['next_date_to']:
+            filters['nextdate_to__lte'] = search_params['next_date_to']
+
+        return queryset.filter(**filters)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_params = self.get_search_params()
+        context['search_params'] = search_params
+
+        # Проверяем, что объект существует
+        if not self.object:
+            return context
+
+        # Получаем инструктажи для текущей сущности
+        briefing_day_list = self.get_briefingday_queryset(self.object)
+
+        # Применяем фильтры
+        briefing_day_list = self.get_filter(briefing_day_list, search_params)
+        # Сортируем
+        briefing_day_list = briefing_day_list.order_by('learner', '-briefing_day')
+
+        # Пагинируем
+        briefing_day_page = self.get_paginated_page(briefing_day_list, 'worker_page')
+        context['briefing_day_page'] = briefing_day_page
+
+        return context
 

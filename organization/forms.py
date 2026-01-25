@@ -30,12 +30,12 @@ class StileFormMixin:
                 field.widget.attrs.update(attrs)  # обновляем, сохраняя required и др.
 
             elif isinstance(field, forms.DateField):
-                updated_classes = set(current_classes) | {'form-control'}
-                attrs.update({
-                    'class': ' '.join(updated_classes),
-                    'type': 'date'
-                })
-                field.widget.attrs.update(attrs)
+                field.widget = forms.DateInput(
+                    attrs={
+                        'class': 'form-control',
+                        'type': 'date'
+                    }
+                )
 
             elif isinstance(field, forms.ModelChoiceField):
                 if field_name in self.SIMPLE_FIELDS:

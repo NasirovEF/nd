@@ -19,6 +19,7 @@ class ProtocolListView(ListView):
     """Просмотр списка протоколов"""
 
     model = Protocol
+    paginate_by = 20
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)

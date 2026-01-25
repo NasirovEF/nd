@@ -1,0 +1,178 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+<a href="{% url 'organization:entity_detail' object|model_name object.pk %}"
+   class="btn btn-outline-secondary btn-sm ms-4 my-2">Назад</a>
+
+<div class="container-lg">
+    <table class="table table-sm table-hover text-center fixed-columns table align-middle">
+        <thead>
+        <tr>
+            <th class="col-2" scope="col">Подразделение</th>
+            <th class="col-2" scope="col">Инструктируемый</th>
+            <th class="col-1" scope="col">Вид инструктажа</th>
+            <th class="col-2" scope="col">Дата инструктажа</th>
+            <th class="col-3" scope="col">Наименование локального акта (локальных актов), в объёме требований которого проведён инструктаж</th>
+            <th class="col-3" scope="col">Причина проведения</th>
+            <th class="col-1" scope="col">Дата следующего <br>инструктажа</th>
+            <th class="col-1" scope="col"></th>
+        </tr>
+        </thead>
+        <tbody class="table-group-divider">
+        <form method="get">
+        <tr>
+            <th></th>
+            <th><input name="surname" class="form-control my-2 text-center" type="search"
+                                       placeholder="Введите Фамилию"
+                                       aria-label="Search" value="{{search_params.surname}}"></th>
+            <th><div>
+                                <select name="briefing_type" id="statusSelect" class="form-control text-center w-100">
+                                    <option value="" {% if search_params.briefing_type == "" %}selected{% endif %}>-----</option>
+                                    <option value="introductory" {% if search_params.briefing_type == "introductory" %}selected{% endif %}>Вводный</option>
+                                    <option value="primary" {% if search_params.briefing_type == "primary" %}selected{% endif %}>Первичный</option>
+                                    <option value="repeated" {% if search_params.briefing_type == "repeated" %}selected{% endif %}>Повторный</option>
+                                    <option value="unscheduled" {% if search_params.briefing_type == "unscheduled" %}selected{% endif %}>Внеплановый</option>
+                                    <option value="purposeful" {% if search_params.briefing_type == "purposeful" %}selected{% endif %}>Целевой</option>
+                                </select>
+                            </div></th>
+            <th><input name="date_briefing_from" class="form-control text-center mb-1" type="date"
+                                       placeholder="Дата с"
+                                       aria-label="Search" value="{{search_params.date_briefing_from}}">
+                                <input name="date_briefing_to" class="form-control text-center" type="date"
+                                       placeholder="Дата по"
+                                       aria-label="Search" value="{{search_params.date_briefing_to}}"></th>
+            <th><input name="briefing_program" class="form-control my-2 text-center" type="search"
+                                       placeholder="Введите программу"
+                                       aria-label="Search" value="{{search_params.briefing_program}}"></th>
+            <th><input name="briefing_reason" class="form-control my-2 text-center" type="search"
+                                       placeholder="Введите причину"
+                                       aria-label="Search" value="{{search_params.briefing_reason}}"></th>
+            <th><input name="next_date_from" class="form-control text-center mb-1" type="date"
+                                       placeholder="Дата с"
+                                       aria-label="Search" value="{{search_params.next_date_from}}">
+                                <input name="next_date_to" class="form-control text-center" type="date"
+                                       placeholder="Дата по"
+                                       aria-label="Search" value="{{search_params.next_date_to}}"></th>
+            <th><button type="submit" class="btn btn-outline-primary btn-sm mb-1">
+                                    Поиск
+                                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="window.location.href='?';">
+                                    Сбросить
+                                </button>
+            </th>
+        </tr>
+        </form>
+        {% for briefing in briefing_day_page %}
+        <tr>
+            <td>{{object}}</td>
+            <td>{{briefing.learner}}</td>
+            <td>{{briefing.briefing_type}}</td>
+            <td>{{briefing.briefing_day|date:"d.m.Y" }}</td>
+            <td>{% if briefing_obj.briefing_program %}
+                                {{ briefing_obj.briefing_program }}
+                                {% else %}
+                                ------
+                                {% endif %}</td>
+            <td>{% if  briefing.briefing_reason %}
+                                {{ briefing.briefing_reason}}
+                                {% else %}
+                                ------
+                                {% endif %} </td>
+            <td>{% if  briefing.next_briefing_day %}
+                                {{ briefing.next_briefing_day}}
+                                {% else %}
+                                ------
+                                {% endif %}</td>
+            <td><div class="btn-group">
+                <button type="button" class="btn btn-outline-primary  btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item"
+                           href="#">Результат тестирования</a></li>
+                    <li><a class="dropdown-item"
+                           href="{% url 'learning:briefing_day_update'  briefing.pk %}?archive=1">Изменить</a></li>
+                    <li><a class="dropdown-item"
+                           href="{% url 'learning:briefing_day_delete'  briefing.pk briefing.learner.worker.pk %}?archive=1">Удалить</a></li>
+                </ul>
+            </div></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="position-relative m-4">
+       <nav aria-label="Навигация по страницам" class="mt-3">
+          <ul class="pagination justify-content-center pagination-sm">
+            <!-- Кнопка «Предыдущая» -->
+            {% if briefing_day_page.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="{% modify_page_url briefing_day_page.previous_page_number %}"
+                   title="Перейти на страницу {{ briefing_day_page.previous_page_number }}">
+                  &laquo;
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+              </li>
+            {% endif %}
+
+            <!-- Первая страница -->
+            {% if briefing_day_page.number > 3 %}
+              <li class="page-item">
+                <a class="page-link" href="{% modify_page_url 1 %}" title="Первая страница">1</a>
+              </li>
+              {% if briefing_day_page.number > 4 %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+              {% endif %}
+            {% endif %}
+
+            <!-- Страницы вокруг текущей (±2) -->
+            {% for p in briefing_day_page.paginator.page_range %}
+              {% if p >= briefing_day_page.number|add:'-2' and p <= briefing_day_page.number|add:'2' %}
+                {% if p == briefing_day_page.number %}
+                  <li class="page-item active" aria-current="page">
+                    <span class="page-link">{{ p }}</span>
+                  </li>
+                {% else %}
+                  <li class="page-item">
+                    <a class="page-link" href="{% modify_page_url p %}" title="Страница {{ p }}">{{ p }}</a>
+                  </li>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+
+            <!-- Разделитель и последняя страница -->
+            {% with total_pages=briefing_day_page.paginator.num_pages %}
+              {% if briefing_day_page.number < total_pages|add:'-2' %}
+                <!-- Показываем разделитель, только если между текущей и последней страницей > 2 страниц -->
+                {% if briefing_day_page.number <= total_pages|add:'-4' %}
+                  <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                <!-- Ссылка на последнюю страницу -->
+                <li class="page-item">
+                  <a class="page-link" href="{% modify_page_url total_pages %}" title="Последняя страница">{{ total_pages }}</a>
+                </li>
+              {% endif %}
+            {% endwith %}
+
+            <!-- Кнопка «Следующая» -->
+            {% if briefing_day_page.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="{% modify_page_url briefing_day_page.next_page_number %}"
+                   title="Перейти на страницу {{ briefing_day_page.next_page_number }}">
+                  &raquo;
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+
+</div>
+{% endblock %}

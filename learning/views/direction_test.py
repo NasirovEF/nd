@@ -11,6 +11,7 @@ class QuestionListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     """Просмотр списка вопросов"""
     model = Question
     permission_required = 'learning.view_question'
+    paginate_by = 10
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

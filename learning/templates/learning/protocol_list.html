@@ -5,8 +5,7 @@
         aria-controls="staticBackdrop">
     <i class="bi bi-search"></i>
 </button>
-<a class="btn btn-outline-primary my-4" href="{% url 'learning:protocol_create' %}">Создать протокол проверки
-    знаний</a>
+<a class="btn btn-outline-primary my-4" href="{% url 'learning:protocol_create' %}">Создать протокол</a>
 
 <div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
      aria-labelledby="staticBackdropLabel">
@@ -15,7 +14,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
 
-    <p class="mx-3">Показано # из # протоколов</p>
     <div class="offcanvas-body">
         <form method="get">
             <div class="card">
@@ -111,42 +109,78 @@
         </tbody>
     </table>
 </div>
-{% comment %}
+
 <div class="position-relative m-4">
-    <div class="position-absolute top-50 start-50 translate-middle">
-        <nav aria-label="...">
-            <ul class="pagination">
-                {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="{{ page_obj.previous_page_number }}">Предыдущая</a>
-                </li>
+       <nav aria-label="Навигация по страницам" class="mt-3">
+          <ul class="pagination justify-content-center pagination-sm">
+            <!-- Кнопка «Предыдущая» -->
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="{% modify_page_url page_obj.previous_page_number %}"
+                   title="Перейти на страницу {{ page_obj.previous_page_number }}">
+                  &laquo;
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+              </li>
+            {% endif %}
+
+            <!-- Первая страница -->
+            {% if page_obj.number > 3 %}
+              <li class="page-item">
+                <a class="page-link" href="{% modify_page_url 1 %}" title="Первая страница">1</a>
+              </li>
+              {% if page_obj.number > 4 %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+              {% endif %}
+            {% endif %}
+
+            <!-- Страницы вокруг текущей (±2) -->
+            {% for p in page_obj.paginator.page_range %}
+              {% if p >= page_obj.number|add:'-2' and p <= page_obj.number|add:'2' %}
+                {% if p == page_obj.number %}
+                  <li class="page-item active" aria-current="page">
+                    <span class="page-link">{{ p }}</span>
+                  </li>
                 {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">Предыдущая</span>
-                </li>
+                  <li class="page-item">
+                    <a class="page-link" href="{% modify_page_url p %}" title="Страница {{ p }}">{{ p }}</a>
+                  </li>
                 {% endif %}
-                {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="{{ page_obj.previous_page_number }}">{{
-                    page_obj.previous_page_number }}</a></li>
+              {% endif %}
+            {% endfor %}
+
+            <!-- Разделитель и последняя страница -->
+            {% with total_pages=page_obj.paginator.num_pages %}
+              {% if page_obj.number < total_pages|add:'-2' %}
+                <!-- Показываем разделитель, только если между текущей и последней страницей > 2 страниц -->
+                {% if page_obj.number <= total_pages|add:'-4' %}
+                  <li class="page-item disabled"><span class="page-link">...</span></li>
                 {% endif %}
-                <li class="page-item active" aria-current="page">
-                    <span class="page-link">{{ page_obj.number }}</span>
-                </li>
-                {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="{{ page_obj.next_page_number }}">{{
-                    page_obj.next_page_number }}</a></li>
-                {% endif %}
-                {% if page_obj.has_next %}
+                <!-- Ссылка на последнюю страницу -->
                 <li class="page-item">
-                    <a class="page-link" href="{{ page_obj.next_page_number }}">Следующая</a>
+                  <a class="page-link" href="{% modify_page_url total_pages %}" title="Последняя страница">{{ total_pages }}</a>
                 </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">Следующая</span>
-                </li>
-                {% endif %}
-            </ul>
+              {% endif %}
+            {% endwith %}
+
+            <!-- Кнопка «Следующая» -->
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="{% modify_page_url page_obj.next_page_number %}"
+                   title="Перейти на страницу {{ page_obj.next_page_number }}">
+                  &raquo;
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+              </li>
+            {% endif %}
+          </ul>
         </nav>
-    </div>
+
 </div>
-{% endcomment %}
 {% endblock %}

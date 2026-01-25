@@ -206,3 +206,11 @@ def briefing_type_name(names):
     for name in names:
         name_list.append(str(name))
     return ", ".join(name_list)
+
+
+@register.simple_tag(takes_context=True)
+def modify_page_url(context, page_number):
+    request = context['request']
+    get_params = request.GET.copy()  # Копируем GET‑параметры
+    get_params['page'] = page_number   # Устанавливаем новый номер страницы
+    return f"?{get_params.urlencode()}"

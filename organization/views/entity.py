@@ -205,7 +205,6 @@ class HierarchicalEntityView(DetailView):
         return page
 
 
-
 class EntityDetailView(HierarchicalEntityView):
     template_name = 'organization/entity_detail.html'
 

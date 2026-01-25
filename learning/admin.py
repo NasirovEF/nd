@@ -15,6 +15,7 @@ admin.site.register(Exam)
 admin.site.register(ExamAssignment)
 admin.site.register(StaffDirection)
 admin.site.register(Briefing)
+admin.site.register(BriefingDay)
 admin.site.register(ProgramBriefing)
 
 

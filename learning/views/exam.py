@@ -15,7 +15,7 @@ from learning.services import get_current_date
 from organization.models import Worker, Division
 from django.http import HttpResponseNotFound, HttpResponseForbidden
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-
+from django.core.paginator import Paginator
 logger = logging.getLogger(__name__)
 
 
@@ -187,12 +187,16 @@ def exam_results(request, learner_id):
     except Learner.DoesNotExist:
         return HttpResponseNotFound("Learner not found")
     results = ExamResult.objects.filter(learner=learner).select_related('exam')
-    return render(request, 'learning/exam_results.html', {'results': results, 'learner': learner})
+    paginator = Paginator(results, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'learning/exam_results.html', {'page_obj': page_obj, 'learner': learner})
 
 
 @login_required
 @permission_required('learning.view_examresult', raise_exception=True)
 def all_exam_results(request):
+    """Просмотр результатов экзамена всех работников"""
     results = ExamResult.objects.all()
     content = {}
 
@@ -253,11 +257,16 @@ def all_exam_results(request):
         worker = Worker.objects.filter(patronymic__icontains=patronymic)
         learner = Learner.objects.filter(worker__in=worker)
         results = results.filter(learner__in=learner)
-    return render(request, 'learning/all_exam_results.html', {'results': results, 'content': content})
+
+    paginator = Paginator(results, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'learning/all_exam_results.html', {'page_obj': page_obj, 'content': content})
 
 
 @login_required
 def detail_exam_results(request, result_id):
+    """Подробный результат экзамена"""
     try:
         result = ExamResult.objects.get(pk=result_id)
     except ExamResult.DoesNotExist:
@@ -380,9 +389,14 @@ def all_exam_assignment(request):
         worker = Worker.objects.filter(patronymic__icontains=patronymic)
         learner = Learner.objects.filter(worker__in=worker)
         assignments = assignments.filter(learner__in=learner)
+
+    paginator = Paginator(assignments, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     return render(request,
                   'learning/all_exam_assignment.html',
-                  {'assignments': assignments, 'content': content}
+                  {'page_obj': page_obj, 'content': content}
                   )
 
 

@@ -26,10 +26,18 @@
                        href="{% url 'organization:worker_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Добавить
                     работника
                 </a>
-
-        <a href="{% url 'learning:briefing_day_bulk_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm mx-2">
-            Провести инструктаж
-        </a>
+        <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle mx-2"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Инструктаж
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item"
+                       href="{% url 'learning:briefing_day_bulk_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Провести инструктаж
+                </a></li>
+                <li><a class="dropdown-item"
+                       href="{% url 'learning:briefing_log_list' object|model_name object.pk %}">Журнал инструктажа
+                </a></li>
+            </ul>
 
         <a href="{% url 'learning:create_bulk_exam_assignment' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm">
             Назначить тест</a>

@@ -4,7 +4,7 @@ from learning.apps import LearningConfig
 from learning.models import Program, ProgramBriefing
 from learning.views.briefing import ProgramBriefingCreateView, ProgramBriefingDetailView, ProgramBriefingUpdateView, \
     ProgramBriefingDeleteView, BriefingDayCreateView, BriefingDayListView, BriefingDayUpdateView, BriefingDayDeleteView, \
-    create_bulk_briefing_day
+    create_bulk_briefing_day, BriefingLogListView
 from learning.views.direction import DirectionListView
 from learning.views.direction_test import QuestionDeleteView, QuestionListView, QuestionCreateView, QuestionUpdateView
 from learning.views.exam import start_exam, take_exam, submit_answers, exam_results, detail_exam_results, \
@@ -77,6 +77,7 @@ urlpatterns = [
     path("briefing_day_bulk_create/", create_bulk_briefing_day,  name="briefing_day_bulk_create"),
     path("briefing_day_create/<int:learner_pk>", BriefingDayCreateView.as_view(), name="briefing_day_create"),
     path("briefing_day_list/<int:worker_pk>", BriefingDayListView.as_view(), name="briefing_day_list"),
+    path("briefing_log_list/<str:model_name>/<int:pk>/", BriefingLogListView.as_view(), name="briefing_log_list"),
     path("briefing_day_update/<int:pk>", BriefingDayUpdateView.as_view(), name="briefing_day_update"),
     path("briefing_day_delete/<int:pk>/<int:worker_pk>", BriefingDayDeleteView.as_view(), name="briefing_day_delete"),
 

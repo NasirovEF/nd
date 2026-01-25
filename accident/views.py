@@ -12,7 +12,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 
 class AccidentListView(ListView):
     model = Accident
-    paginate_by = 10
+    paginate_by = 20
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -80,13 +80,14 @@ class AccidentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
     def form_valid(self, form):
         object = form.save()
         host = self.request.get_host()
-        send_mail(
-            subject=f"Информация о новом несчастном случае",
-            message=f"Внимание в АСУ НС добавлена информация о новом несчастном случае. "
-            f"Для ознакомления перейдите по ссылке: http://{host}/accident/accident_detail/{object.pk}",
-            from_email=EMAIL_HOST_USER,
-            recipient_list=["i@ef-nasirov.ru",],
-        )
+        # заглушка кода на случай введения уведомления через почту
+        # send_mail(
+        #     subject=f"Информация о новом несчастном случае",
+        #     message=f"Внимание в АСУ НС добавлена информация о новом несчастном случае. "
+        #     f"Для ознакомления перейдите по ссылке: http://{host}/accident/accident_detail/{object.pk}",
+        #     from_email=EMAIL_HOST_USER,
+        #     recipient_list=["i@ef-nasirov.ru",],
+        # )
         return super().form_valid(form)
 
 
@@ -102,5 +103,5 @@ class AccidentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
 class AccidentDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Accident
     permission_required = 'accident:delete_accident'
-    success_url = reverse_lazy("accident:search", args=[1])
+    success_url = reverse_lazy("accident_list")
 
