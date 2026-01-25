@@ -14,9 +14,8 @@
                     Вы действительно хотите удалить <br> <strong>{{ object.name }}</strong> ?
                 </div>
                 <div class="card-footer">
-                    <a href="{% url 'organization:organization_list' %}" class="btn btn-outline-primary">
-                        Отмена
-                    </a>
+                    <a href="{% url 'organization:entity_learning_program' model_name pk %}"
+                       class="btn btn-outline-primary mx-4">Отмена</a>
                     <button type="submit" class="btn btn-outline-danger">
                         Подтвердить
                     </button>

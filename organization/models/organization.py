@@ -48,6 +48,11 @@ class Organization(BaseNamedEntity):
         verbose_name = "ОСТ"
         verbose_name_plural = "ОСТы"
 
+    @staticmethod
+    def return_parent():
+        parent_list = []
+        return parent_list
+
 
 class Branch(BaseNamedEntity):
     """Класс филиала ОСТ"""
@@ -64,6 +69,10 @@ class Branch(BaseNamedEntity):
         verbose_name = "Филиал"
         verbose_name_plural = "Филиалы"
 
+    def return_parent(self):
+        parent_list = [self.organization]
+        return parent_list
+
     def __str__(self):
         return f"{self.name}"
 
@@ -71,11 +80,24 @@ class Branch(BaseNamedEntity):
 class Group(BaseNamedEntity):
     """Класс группы участка"""
 
-    district = models.ForeignKey("District", on_delete=models.CASCADE, verbose_name="Участок", related_name="group", **NULLABLE)
+    district = models.ForeignKey(
+        "District",
+        on_delete=models.CASCADE,
+        verbose_name="Участок",
+        related_name="group",
+        **NULLABLE)
 
     class Meta:
         verbose_name = "Группа"
         verbose_name_plural = "Группы"
+
+    def return_parent(self):
+        parent_list = [self.district.division.branch.organization,
+                       self.district.division.branch,
+                       self.district.division,
+                       self.district,
+                       ]
+        return parent_list
 
     def __str__(self):
         return f"{self.name}"
@@ -96,6 +118,13 @@ class District(BaseNamedEntity):
         verbose_name = "Участок"
         verbose_name_plural = "Участки"
 
+    def return_parent(self):
+        parent_list = [self.division.branch.organization,
+                       self.division.branch,
+                       self.division,
+                       ]
+        return parent_list
+
     def __str__(self):
         return f"{self.name}"
 
@@ -113,3 +142,9 @@ class Division(BaseNamedEntity):
 
     def __str__(self):
         return f"{self.name}"
+
+    def return_parent(self):
+        parent_list = [self.branch.organization,
+                       self.branch,
+                       ]
+        return parent_list

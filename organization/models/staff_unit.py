@@ -2,6 +2,7 @@ from django.db import models
 from organization.models import Organization, Branch, Division, District, Group
 from organization.services import NULLABLE
 from smart_selects.db_fields import ChainedForeignKey
+from django.core.exceptions import ValidationError
 
 
 class Affiliation(models.Model):
@@ -51,6 +52,16 @@ class Affiliation(models.Model):
         **NULLABLE)
 
     @property
+    def return_affiliation(self):
+        list_fields = [self.organization, self.branch, self.division, self.district, self.group]
+        affiliation_list = []
+        for field in list_fields:
+            if field:
+                affiliation_list.append(field)
+        return affiliation_list
+
+
+    @property
     def return_str_affiliation(self):
         fields = [self.organization, self.branch, self.division, self.district, self.group]
         return " ".join(str(field) for field in fields if field)
@@ -58,7 +69,6 @@ class Affiliation(models.Model):
     class Meta:
         verbose_name = "Организационная принадлежность"
         verbose_name_plural = "Организационные принадлежности"
-        abstract = True
 
 
 class StaffUnit(models.Model):
@@ -124,7 +134,10 @@ class Worker(Affiliation):
         verbose_name_plural = "Работники"
 
     def __str__(self):
-        return f'{self.name[:1]}.{self.patronymic[:1]}. {self.surname}'
+        if self.patronymic:
+            return f'{self.name[:1]}.{self.patronymic[:1]}. {self.surname}'
+        else:
+            return f'{self.name[:1]}. {self.surname}'
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -136,3 +149,16 @@ class Worker(Affiliation):
             else:
                 self.user.is_active = True
                 self.user.save(update_fields=['is_active'])
+
+    def clean(self):
+        super().clean()
+        # Проверяем согласованность связей
+        if self.division and self.branch and self.division.branch != self.branch:
+            raise ValidationError("Подразделение не принадлежит указанному филиалу")
+
+        if self.district and self.division and self.district.division != self.division:
+            raise ValidationError("Участок не принадлежит указанному подразделению")
+
+        if self.group and self.district and self.group.district != self.district:
+            raise ValidationError("Группа не принадлежит указанному участку")
+

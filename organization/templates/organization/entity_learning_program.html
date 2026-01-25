@@ -132,7 +132,7 @@
                         </td>
                         <td>
                             <a class="btn btn-outline-primary btn-sm" type="button"
-                               href="{% url 'learning:program_detail' program.pk %}">Подробнее</a>
+                               href="{% url 'learning:program_detail' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Подробнее</a>
                         </td>
                         <td>
                             <div class="btn-group dropdown">

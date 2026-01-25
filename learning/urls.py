@@ -52,8 +52,6 @@ urlpatterns = [
 
     path("protocol_results_edit/<int:pk>", ProtocolResultsUpdateView.as_view(), name="protocol_results_edit"),
 
-    #path("test_update/<int:pk>", TestUpdateView.as_view(), name="test_update"),
-
     path('question_list/<int:test_pk>', QuestionListView.as_view(), name='question_list'),
     path("question_delete/<int:pk>", QuestionDeleteView.as_view(), name="question_delete"),
     path("question_create/<int:test_pk>", QuestionCreateView.as_view(), name="question_create"),

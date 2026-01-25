@@ -210,21 +210,20 @@ class EntityDetailView(HierarchicalEntityView):
     template_name = 'organization/entity_detail.html'
 
     def get_worker_queryset(self, entity_obj):
-        """Определяем QuerySet работников в зависимости от типа сущности."""
         model_name = self.kwargs['model_name']
 
         if model_name == 'organization':
-            return Worker.objects.filter(district__division__branch__organization=entity_obj)
+            return Worker.objects.filter(organization=entity_obj)
         elif model_name == 'branch':
-            return Worker.objects.filter(district__division__branch=entity_obj)
+            return Worker.objects.filter(branch=entity_obj)
         elif model_name == 'division':
-            return Worker.objects.filter(district__division=entity_obj)
+            return Worker.objects.filter(division=entity_obj)
         elif model_name == 'district':
             return Worker.objects.filter(district=entity_obj)
         elif model_name == 'group':
             return Worker.objects.filter(group=entity_obj)
-
-        return Worker.objects.none()  # если тип не распознан
+        else:
+            return Worker.objects.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

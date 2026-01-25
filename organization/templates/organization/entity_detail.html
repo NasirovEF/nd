@@ -12,7 +12,15 @@
 </style>
 <div class="card mx-2">
     <div class="card-body">
-        <h6 class="card-subtitle mb-2 text-body-secondary">{{ object.division }}</h6>
+        {% if object.return_parent %}
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+               {% for field in object.return_parent %}
+            <li class="breadcrumb-item"><a href="{% url 'organization:entity_detail' field|model_name field.pk %}">{{field}}</a></li>
+          {% endfor %}
+          </ol>
+        </nav>
+        {% endif %}
         <h5 class="card-title">{{ object.name }}</h5>
             <a class="btn btn-outline-primary btn-sm my-2"
                        href="{% url 'organization:worker_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Добавить
@@ -42,7 +50,7 @@
                 <table class="table table-sm table-hover text-center align-middle no-split-header">
                     <thead>
                     <tr>
-                        <th scope="col" rowspan="2">Подразделение</th>
+                        <th scope="col" rowspan="2" class="col-2">Подразделение</th>
                         <th scope="col" rowspan="2">ФИО</th>
                         <th scope="col" rowspan="2">Должность</th>
                         <th scope="col" colspan="2" style="line-height:1.2; padding:0.25rem;">Предстоящая дата</th>
@@ -95,7 +103,6 @@
                         </tr>
                     </form>
                     {% for worker in worker_page.object_list %}
-                    {% if not worker.group %}
                     <tr>
                         <td>{{ worker.return_str_affiliation }}</td>
                         <td>{{ worker }}</td>
@@ -126,7 +133,6 @@
                             </div>
                         </td>
                     </tr>
-                    {% endif %}
                     {% endfor %}
                     </tbody>
                 </table>

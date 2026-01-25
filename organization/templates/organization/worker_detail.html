@@ -1,10 +1,13 @@
 {% extends 'organization/base.html' %}
 {% load my_tags %}
 {% block content %}
-<a class="btn btn-outline-secondary btn-sm m-2" type="button"
-   href="{% url 'organization:entity_detail' model_name pk %}">
-    Назад
-</a>
+<nav aria-label="breadcrumb" class="m-4">
+  <ol class="breadcrumb">
+      {% for field in object.return_affiliation %}
+    <li class="breadcrumb-item"><a href="{% url 'organization:entity_detail' field|model_name field.pk %}">{{field}}</a></li>
+      {% endfor %}
+  </ol>
+</nav>
 <div class="card">
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
@@ -28,7 +31,7 @@
              tabindex="0">
             <div class="row g-0">
                 <div class="col-md-2">
-                    <img src="{{object.image|media_filter}}" class="m-2" width="250" height="230"
+                    <img src="{{object.image|media_filter}}" class="img-fluid m-2"
                          alt="...">
                 </div>
                 <div class="col-md-10">

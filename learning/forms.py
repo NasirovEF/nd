@@ -10,7 +10,6 @@ from django.forms import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from learning.models.learner_direction import LearningDoc, LearningPoster
 from organization.forms import StileFormMixin
-from organization.models import Organization, Branch, Division
 
 
 class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):

@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -6,7 +5,6 @@ from django.views.generic import (
     DetailView,
     ListView,
     UpdateView,
-    View,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.forms import inlineformset_factory
@@ -19,7 +17,6 @@ class LearnerListView(ListView):
     """Просмотр графика проверки знаний"""
 
     model = Learner
-
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -76,24 +73,6 @@ class LearnerListView(ListView):
             queryset = queryset.filter(worker__in=worker)
 
         return queryset
-
-
-class LearnerDetailView(LoginRequiredMixin, PermissionRequiredMixin, DetailView):
-    """Просмотр одного из обучаемых"""
-
-    model = Learner
-    permission_required = 'learning.view_learner'
-
-
-class LearnerCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
-    """Создание обучаемого"""
-
-    model = Learner
-    form_class = LearnerForm
-    permission_required = 'learning.add_learner'
-
-    def get_success_url(self):
-        return reverse("organization:worker_detail", args=[self.object.worker.pk])
 
 
 class LearnerUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -159,10 +138,3 @@ class LearnerUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
     def get_success_url(self):
         return reverse("organization:worker_detail", args=[self.object.pk])
 
-
-class LearnerDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
-    """Удаление филиала"""
-
-    model = Learner
-    permission_required = 'learning.delete_learner'
-    success_url = reverse_lazy("organization:organization_list")

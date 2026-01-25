@@ -4,28 +4,22 @@ from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
-    ListView,
     UpdateView,
-    View,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from learning.forms import ProgramForm, ProgramFormNotActive
 from learning.models import Program, Exam
 
 
-class ProgramListView(ListView):
-    """Просмотр списка филиалов"""
-
-    model = Program
-
-
 class ProgramDetailView(DetailView):
-    """Просмотр одного из филиалов"""
+    """Просмотр одной из программы обучения"""
 
     model = Program
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
         tests = []
         questions =[]
         for direction in self.object.direction.all():
@@ -45,10 +39,16 @@ class ProgramDetailView(DetailView):
 
 
 class ProgramCreateView(CreateView):
-    """Создание филиалов"""
+    """Создание программы обучения"""
 
     model = Program
     form_class = ProgramForm
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
+        return context
 
     def form_valid(self, form):
         program = form.save()
@@ -60,10 +60,16 @@ class ProgramCreateView(CreateView):
 
 
 class ProgramUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
-    """Редактирование филиалов"""
+    """Редактирование программы обучения"""
 
     model = Program
     permission_required = 'learning.change_program'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
+        return context
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -81,10 +87,12 @@ class ProgramUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
 
 
 class ProgramDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
-    """Удаление филиала"""
+    """Удаление программы обучения"""
 
     model = Program
     permission_required = 'learning.delete_program'
 
     def get_success_url(self):
-        return reverse("organization:district_detail", args=[self.request.GET["district"]])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name, 'pk': pk})

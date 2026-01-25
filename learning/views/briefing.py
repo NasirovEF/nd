@@ -31,6 +31,12 @@ class ProgramBriefingCreateView(LoginRequiredMixin, PermissionRequiredMixin, Cre
         Exam.objects.create(briefing_program=briefing_program, total_questions=10)
         return super().form_valid(form)
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
+        return context
+
     def get_success_url(self):
         return reverse("learning:briefing_program_detail", args=[self.object.pk])
 
@@ -39,12 +45,24 @@ class ProgramBriefingDetailView(DetailView):
     """Просмотр программы инструктажа"""
     model = ProgramBriefing
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
+        return context
+
 
 class ProgramBriefingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Редактирование программы инструктажа"""
 
     model = ProgramBriefing
     permission_required = 'learning.change_programbriefing'
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
+        return context
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -69,7 +87,9 @@ class ProgramBriefingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, Del
     template_name = "learning/program_confirm_delete.html"
 
     def get_success_url(self):
-        return reverse("organization:district_detail", args=[self.request.GET["district"]])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_briefing_program", kwargs={'model_name':model_name, 'pk': pk})
 
 
 class BriefingDayCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
@@ -159,6 +179,8 @@ class BriefingDayDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteV
 @permission_required('learning.add_programbriefing', raise_exception=True)
 def create_bulk_briefing_day(request):
     """Массовое проведение инструктажа работникам"""
+    model_name = request.GET.get('model_name')
+    pk = request.GET.get('pk')
     if request.method == 'POST':
         form = BulkBriefingDayForm(request.POST)
         try:
@@ -175,5 +197,8 @@ def create_bulk_briefing_day(request):
             form.add_error(None, f"Ошибка при сохранении данных {e}.")
     else:
         form = BulkBriefingDayForm()
-    return render(request, 'learning/bulk_briefing_day_form.html', {'form': form})
+    return render(request, 'learning/bulk_briefing_day_form.html',
+                  {'form': form,
+                   'model_name': model_name,
+                   'pk': pk})
 

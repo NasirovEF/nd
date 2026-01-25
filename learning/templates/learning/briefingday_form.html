@@ -26,6 +26,8 @@
                             Создать
                             {% endif %}
                         </button>
+                        <a class="btn btn-outline-secondary mx-4"
+                           href="{% url 'learning:worker_detail' object.learner.worker.pk">Отмена</a>
                     </div>
                 </div>
             </div>
