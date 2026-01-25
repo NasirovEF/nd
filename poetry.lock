@@ -123,6 +123,56 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-click"
+version = "2.4.1"
+description = "Build Django management commands using the click CLI package."
+optional = false
+python-versions = "*"
+files = [
+    {file = "django_click-2.4.1-py2.py3-none-any.whl", hash = "sha256:80cfa57af0fae29a3d47f20a74d71aecd1f0bf299549cddb97d98a949e130f01"},
+    {file = "django_click-2.4.1.tar.gz", hash = "sha256:5b989ca791689391e6744f8a4dda9bc0aac06670f408c45794d6b83fbe7577ce"},
+]
+
+[package.dependencies]
+click = ">=7.1"
+
+[package.extras]
+a-sdist-g1-tp4b3-django-click-2-4-1-requirements-dev = ["Fabric", "Sphinx", "check-manifest", "flake8", "livereload", "mccabe", "pep8", "pep8-naming", "pyflakes", "sphinx-autobuild", "sphinx_rtd_theme", "wheel"]
+a-sdist-g1-tp4b3-django-click-2-4-1-requirements-test = ["coverage (<5)", "pytest", "pytest-cov", "pytest-django", "pytest-flake8"]
+
+[[package]]
+name = "django-pg-copy"
+version = "1.3.0"
+description = "Django management command to backup and restore PostgreSQL databases using the DATABASES settings."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "django_pg_copy-1.3.0-py3-none-any.whl", hash = "sha256:db66ff95cdc1383e2c63223c35fbe8b56cca7d18f11c7c948b818425a5903b25"},
+    {file = "django_pg_copy-1.3.0.tar.gz", hash = "sha256:a8ff46ba23c126f8c97a6363981c66ca87d1f1554e19b3f6d0ff23d40ddb3404"},
+]
+
+[package.dependencies]
+Django = "*"
+django-click = "*"
+
+[package.extras]
+dev = ["ipython", "pytest-coverage", "ruff"]
+
+[[package]]
+name = "django-smart-selects"
+version = "1.7.2"
+description = "Django application to handle chained model fields."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "django_smart_selects-1.7.2-py3-none-any.whl", hash = "sha256:08c774d96285e6d169043cd548860d74d085be8d349c42437232c42bc43cd79a"},
+    {file = "django_smart_selects-1.7.2.tar.gz", hash = "sha256:c8116718ecf2d0d0fd4cd1e52c26d2dcc586e25319aa65af7af2d51a1012df3a"},
+]
+
+[package.dependencies]
+django = ">=3.2"
+
+[[package]]
 name = "docxcompose"
 version = "1.4.0"
 description = "Compose .docx documents"
@@ -736,6 +786,20 @@ dev = ["build", "hatch"]
 doc = ["sphinx"]
 
 [[package]]
+name = "transliterate"
+version = "1.10.2"
+description = "Bi-directional transliterator for Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "transliterate-1.10.2-py2.py3-none-any.whl", hash = "sha256:010a5021bf6021689c4fade0985f3f7b3db1f2f16a48a09a56797f171c08ed42"},
+    {file = "transliterate-1.10.2.tar.gz", hash = "sha256:bc608e0d48e687db9c2b1d7ea7c381afe0d1849cad216087d8e03d8d06a57c85"},
+]
+
+[package.dependencies]
+six = ">=1.1.0"
+
+[[package]]
 name = "typing-extensions"
 version = "4.15.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
@@ -760,4 +824,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "c9b5fd632e010d48ac73ca83a10d259f3ed9df421165002e455a104c1da4694b"
+content-hash = "d1a82da6852f90ae9a23d52923a6ca5b5b69f8e8e508623b6e53d74237d26575"

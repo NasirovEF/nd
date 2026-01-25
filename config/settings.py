@@ -42,9 +42,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "smart_selects",
     "organization",
     "learning",
-    "accident"
+    "accident",
+    "users",
+    "pg_copy",
 ]
 
 MIDDLEWARE = [
@@ -62,7 +65,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -92,6 +95,7 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = 'users.User'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -130,10 +134,11 @@ DATE_FORMAT = 'd E Y'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = '/static/'  # Обратите внимание на слеш в начале!
 STATICFILES_DIRS = [
     BASE_DIR / "static/",
 ]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
@@ -152,3 +157,7 @@ EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", False) == "True"
 
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+LOGIN_URL = "users:login"
+LOGOUT_REDIRECT_URL = "/"
+

@@ -4,11 +4,14 @@
     <div class="col-1"></div>
     <div class="col-10">
 
-        <form method="post" id="test-form">
+        <form method="post" id="test-form" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <fieldset class="mb-2">
-                <legend class="border-bottom pb-2 mb-3">Основной тест</legend>
+            <fieldset class="mb-4">
+                <legend class="border-bottom pb-2 mb-3">
+                    Вопросы к направлению обучения {{ object.direction }}
+                    {% if object.sub_direction %}({{ object.sub_direction }}){% endif %}
+                </legend>
                 {{ form.as_p }}
             </fieldset>
 
@@ -17,43 +20,49 @@
 
                 <div id="questions-container">
                     {% for q_form in question_formset %}
-                    <div class="question-card card mb-2 p-3 shadow-sm">
+                    <div class="question-card card mb-4 p-3 shadow-sm">
                         <h5 class="text-primary mb-3">Вопрос №{{ forloop.counter }}:</h5>
 
                         {{ q_form.id }}
 
                         <!-- Поле вопроса -->
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label for="{{ q_form.text.id_for_label }}" class="form-label">
                                 Текст вопроса <span class="text-danger">*</span>
                             </label>
                             {{ q_form.text }}
                             {% if q_form.text.errors %}
-                            <div class="invalid-feedback d-block">
+                            <div class="invalid-feedback d-block text-danger mt-1">
                                 {{ q_form.text.errors|safe }}
                             </div>
                             {% endif %}
                         </div>
 
-                        <h6 class="text-primary">Варианты ответа:</h6>
+                        <h6 class="text-primary mb-2">Варианты ответа:</h6>
 
                         <!-- Ответы -->
-                        <div class="answers mt-3">
-
+                        <div class="answers">
                             {{ q_form.answer_formset.management_form }}
 
+                            <!-- Ошибки формсета ответов -->
                             {% if q_form.answer_formset.non_form_errors %}
                             <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                 {{ q_form.answer_formset.non_form_errors|safe }}
                             </div>
                             {% endif %}
 
                             {% for answer_form in q_form.answer_formset %}
-                            <div class="answer-row mb-2 d-flex align-items-center gap-2"
+                            <div class="answer-row mb-3 d-flex align-items-center gap-3"
                                  id="answer-{{ answer_form.auto_id|default:'new' }}-{{ forloop.counter }}">
-                                <span class="fw-bold text-secondary">{{ forloop.counter }}.</span>
+                                <!-- Номер ответа -->
+                                <span class="fw-bold text-secondary" style="min-width: 24px;">
+                                    {{ forloop.counter }}.
+                                </span>
+
                                 {{ answer_form.id }}
+
+                                <!-- Поле текста ответа -->
                                 <div class="flex-grow-1">
                                     <label for="{{ answer_form.text.id_for_label }}"
                                            class="form-label visually-hidden">
@@ -61,11 +70,13 @@
                                     </label>
                                     {{ answer_form.text }}
                                     {% if answer_form.text.errors %}
-                                    <div class="invalid-feedback d-block text-danger">
+                                    <div class="invalid-feedback d-block text-danger mt-1">
                                         {{ answer_form.text.errors|safe }}
                                     </div>
                                     {% endif %}
                                 </div>
+
+                                <!-- Чекбокс "Правильный ответ" -->
                                 <div class="form-check">
                                     {{ answer_form.is_correct }}
                                     <label class="form-check-label"
@@ -74,26 +85,30 @@
                                     </label>
                                 </div>
 
+                                <!-- Ошибки поля -->
                                 {% if answer_form.non_field_errors %}
-                                <div class="text-danger mt-1">
+                                <div class="text-danger mt-2 small">
                                     {{ answer_form.non_field_errors|safe }}
                                 </div>
                                 {% endif %}
                             </div>
                             {% endfor %}
 
+                            <!-- Сообщение, если нет форм -->
                             {% if not q_form.answer_formset.forms %}
-                            <p class="text-muted">Нет вариантов ответа.</p>
+                            <p class="text-muted small mt-2">Нет вариантов ответа.</p>
                             {% endif %}
                         </div> <!-- /answers -->
-
-
                     </div> <!-- /question-card -->
                     {% endfor %}
                 </div> <!-- /questions-container -->
             </fieldset>
 
-            <button type="submit" class="btn btn-outline-primary btn-sm">Сохранить тест</button>
+            <!-- Кнопки -->
+            <div class="mt-4">
+                <button type="submit" class="btn btn-outline-primary btn-sm">Сохранить тест</button>
+                <a href="{% url 'learning:direction_list' %}" class="btn btn-outline-secondary btn-sm ms-2">Выйти</a>
+            </div>
         </form>
     </div>
     <div class="col-1"></div>

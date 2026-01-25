@@ -1,0 +1,88 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-8 offset-2">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="card m-4">
+                <div class="card-header text-center">
+                    Редактирование экзамена ({{object.exam}}) от {{object.assigned_date}}<br>
+                    работнику: {{ object.learner }}
+                </div>
+                <div class="card-body">
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Поле "deadline" -->
+                    <div class="mb-3">
+                        <label for="{{ form.deadline.id_for_label }}" class="form-label">{{ form.deadline.label }}</label>
+                        {{ form.deadline }}
+                        {% if form.deadline.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.deadline.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Поле "status" -->
+                    <div class="mb-3">
+                        <label for="{{ form.status.id_for_label }}" class="form-label">{{ form.status.label }}</label>
+                        {{ form.status }}
+                        {% if form.status.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.status.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Поле "total_attempts" -->
+                    <div class="mb-3">
+                        <label for="{{ form.total_attempts.id_for_label }}" class="form-label">{{ form.total_attempts.label }}</label>
+                        {{ form.total_attempts }}
+                        {% if form.total_attempts.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.total_attempts.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Поле "attempts_left" -->
+                    <div class="mb-3">
+                        <label for="{{ form.attempts_left.id_for_label }}" class="form-label">{{ form.attempts_left.label }}</label>
+                        {{ form.attempts_left }}
+                        {% if form.attempts_left.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.attempts_left.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+                <div class="card-footer">
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-outline-primary">
+                            {% if object %}
+                            Сохранить
+                            {% else %}
+                            Создать
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'learning:all_exam_assignment'%}" class="btn btn-outline-secondary mx-4">Отмена</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

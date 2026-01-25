@@ -1,0 +1,55 @@
+{% extends "admin/change_form.html" %}
+
+
+{% block field_sets %}
+{{ block.super }}
+{% if password_form %}
+<div class="module" id="password-change-section">
+    <h2>
+        <a href="#" class="collapse-toggle" id="toggle-password-form">
+            Смена пароля
+            <span class="collapse-icon"></span>
+        </a>
+    </h2>
+    <div class="collapse-content" id="password-form-container" style="display: none;">
+        <form method="post" action="" class="form-container" autocomplete="off">
+            {% csrf_token %}
+            <div class="form-row">
+                {{ password_form.password1.label_tag }}
+                {{ password_form.password1 }}
+            </div>
+            <div class="form-row">
+                {{ password_form.password2.label_tag }}
+                {{ password_form.password2 }}
+            </div>
+            <input type="hidden" name="_change_password" value="1">
+            <button type="submit" class="button" name="_change_password" value="1">
+                Изменить пароль
+            </button>
+        </form>
+    </div>
+</div>
+{% endif %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButton = document.getElementById('toggle-password-form');
+    const content = document.getElementById('password-form-container');
+    const icon = toggleButton.querySelector('.collapse-icon');
+
+    // Изначально скрываем форму
+    content.style.display = 'none';
+    icon.textContent = '▸'; // Стрелка вниз (свёрнуто)
+
+    toggleButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            icon.textContent = '▾'; // Стрелка вверх (развёрнуто)
+        } else {
+            content.style.display = 'none';
+            icon.textContent = '▸'; // Стрелка вниз (свёрнуто)
+        }
+    });
+});
+</script>
+{% endblock %}

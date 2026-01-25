@@ -2,8 +2,7 @@
 {% block content %}
 <form method="post" enctype="multipart/form-data">
     <div class="row">
-        <div class="col-2">
-        </div>
+        <div class="col-2"></div>
         <div class="col-8">
             <div class="card m-4">
                 <div class="card-header text-center">
@@ -15,15 +14,27 @@
                 </div>
                 <div class="card-body">
                     {% csrf_token %}
+                    {{ form.media.js }}
                     {{ form.as_p }}
+
+                    <!-- Ошибки формсета -->
                     {% if position_formset.non_form_errors %}
                     <div class="text-danger">{{ position_formset.non_form_errors }}</div>
                     {% endif %}
+
+
+                    <!-- Management form обязателен -->
                     {{ position_formset.management_form }}
 
+
+                    <!-- Формы позиций -->
                     {% for form in position_formset %}
-                    {% if form.non_field_errors %}
-                    <div class="text-danger">{{ form.non_field_errors }}</div>
+                    {% if form.errors %}
+                    <div class="text-danger">
+                        {% for field, errors in form.errors.items %}
+                        <strong>{{ field }}:</strong> {{ errors|join:', ' }}
+                        {% endfor %}
+                    </div>
                     {% endif %}
                     {{ form.as_p }}
                     {% endfor %}
@@ -31,17 +42,14 @@
                 <div class="card-footer">
                     <div class="text-center">
                         <button type="submit" class="btn btn-outline-primary">
-                            {% if object %}
-                            Сохранить
-                            {% else %}
-                            Создать
-                            {% endif %}
+                            {% if object %}Сохранить{% else %}Создать{% endif %}
                         </button>
+                        <a href="{% url 'organization:entity_detail' model_name pk %}"
+                           class="btn btn-outline-secondary mx-2">Отмена</a>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-2">
+            <div class="col-2"></div>
         </div>
     </div>
 </form>

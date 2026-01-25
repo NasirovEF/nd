@@ -8,9 +8,9 @@
             <div class="card m-4">
                 <div class="card-header text-center">
                     {% if object %}
-                    Редактирование направления обучения {{object.name}}
+                    Редактирование  {{object.briefing_type}} инструктажа работнику ({{object.learner}})
                     {% else %}
-                    Для добавления направления обучения
+                    Для добавления инструктажа заполните поля
                     {% endif %}
                 </div>
                 <div class="card-body">
@@ -26,6 +26,8 @@
                             Создать
                             {% endif %}
                         </button>
+                        <a class="btn btn-outline-secondary mx-4"
+                           href="{% url 'learning:worker_detail' object.learner.worker.pk">Отмена</a>
                     </div>
                 </div>
             </div>

@@ -1,21 +1,27 @@
 from django.contrib import admin
 
-from .models import Learner, Protocol, ProtocolResult, Program, Direction, KnowledgeDate, Test, Question, Answer, TestResult, StaffDirection
+from .models import Learner, Protocol, ProtocolResult, Program, Direction, KnowledgeDate, Test, Question, Answer, \
+    ExamResult, StaffDirection, SubDirection, Exam, ExamAssignment, BriefingDay, Briefing, ProgramBriefing
 
 admin.site.register(Learner)
 admin.site.register(Protocol)
 admin.site.register(ProtocolResult)
 admin.site.register(Program)
 admin.site.register(Direction)
+admin.site.register(SubDirection)
 admin.site.register(KnowledgeDate)
-admin.site.register(TestResult)
+admin.site.register(ExamResult)
+admin.site.register(Exam)
+admin.site.register(ExamAssignment)
 admin.site.register(StaffDirection)
+admin.site.register(Briefing)
+admin.site.register(ProgramBriefing)
 
 
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'program')
-    search_fields = ('program__name',)
+    list_display = ('__str__', 'direction', 'sub_direction')
+    search_fields = ('direction__name', 'sub_direction__name')
 
 
 class AnswerInline(admin.TabularInline):

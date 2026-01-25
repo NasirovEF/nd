@@ -1,0 +1,104 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-8 offset-2">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="card m-4">
+                <div class="card-header text-center">
+                    Создание инструктажа работникам
+                </div>
+                <div class="card-body">
+                    <!-- Общие ошибки формы -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+
+                    <!-- Поле "briefing_day" -->
+                    <div class="mb-3">
+                        <label for="{{ form.briefing_day.id_for_label }}" class="form-label">{{ form.briefing_day.label }}</label>
+                        {{ form.briefing_day }}
+                        {% if form.briefing_day.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.briefing_day.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Поле "briefing_type" -->
+                    <div class="mb-3">
+                        <label for="{{ form.briefing_type.id_for_label }}" class="form-label">{{ form.briefing_type.label }}</label>
+                        {{ form.briefing_type }}
+                        {% if form.briefing_type.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.briefing_type.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Поле "learners" -->
+                    <div class="mb-3">
+                        <label for="{{ form.learners.id_for_label }}" class="form-label">{{ form.learners.label }}</label>
+                        {{ form.learners }}
+                        <div class="form-text">{{ form.learners.help_text }}</div>
+                        {% if form.learners.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.learners.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Поле "briefing_program" -->
+                    <div class="mb-3">
+                        <label for="{{ form.briefing_program.id_for_label }}" class="form-label">{{ form.briefing_program.label }}</label>
+                        {{ form.briefing_program }}
+                        {% if form.briefing_program.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.briefing_program.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Поле "briefing_reason" -->
+                    <div class="mb-3">
+                        <label for="{{ form.briefing_reason.id_for_label }}" class="form-label">{{ form.briefing_reason.label }}</label>
+                        {{ form.briefing_reason }}
+                        {% if form.briefing_reason.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.briefing_reason.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+                <div class="card-footer">
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-outline-primary">
+                            {% if object %}
+                            Сохранить
+                            {% else %}
+                            Создать
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'organization:entity_detail' model_name pk %}" class="btn btn-outline-secondary mx-4">Отмена</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

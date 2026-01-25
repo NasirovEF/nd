@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -6,8 +5,8 @@ from django.views.generic import (
     DetailView,
     ListView,
     UpdateView,
-    View,
 )
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.forms import inlineformset_factory
 from learning.forms import LearnerForm
 from learning.models import Learner, Direction, KnowledgeDate
@@ -15,7 +14,7 @@ from organization.models import Worker, Division
 
 
 class LearnerListView(ListView):
-    """Просмотр списка филиалов"""
+    """Просмотр графика проверки знаний"""
 
     model = Learner
 
@@ -76,28 +75,13 @@ class LearnerListView(ListView):
         return queryset
 
 
-class LearnerDetailView(DetailView):
-    """Просмотр одного из филиалов"""
-
-    model = Learner
-
-
-class LearnerCreateView(CreateView):
-    """Создание филиалов"""
-
-    model = Learner
-    form_class = LearnerForm
-
-    def get_success_url(self):
-        return reverse("organization:worker_detail", args=[self.object.worker.pk])
-
-
-class LearnerUpdateView(UpdateView):
-    """Редактирование филиалов"""
+class LearnerUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    """Редактирование обучаемого"""
 
     model = Worker
     fields = []
     template_name = "learning/learner_form.html"
+    permission_required = 'learning.change_learner'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -111,6 +95,34 @@ class LearnerUpdateView(UpdateView):
 
         return context
 
+    def _sync_knowledge_date(self, worker):
+        for learner in worker.learner.all():
+            # Текущие направления у learner (объекты Direction)
+            current_directions = learner.direction.all()
+            # Существующие направления в KnowledgeDate для этого learner
+            existing_knowledge_dates = KnowledgeDate.objects.filter(
+                learner=learner,
+                is_active=True
+            )
+            existing_directions = {kd.direction for kd in existing_knowledge_dates}
+
+            # 1. Добавляем новые направления
+            for direction in current_directions:
+                if direction not in existing_directions:
+                    KnowledgeDate.objects.create(
+                        learner=learner,
+                        direction=direction,
+                        is_active=True
+                    )
+
+            # 2. Деактивируем устаревшие направления
+            stale_directions = existing_directions - set(current_directions)
+            for direction in stale_directions:
+                knowledge_date = existing_knowledge_dates.filter(direction=direction).first()
+                if knowledge_date:  # Проверка на существование
+                    knowledge_date.is_active = False
+                    knowledge_date.save()
+
     def form_valid(self, form):
         self.object = form.save()
 
@@ -118,6 +130,7 @@ class LearnerUpdateView(UpdateView):
 
         if formset.is_valid():
             formset.save()
+            self._sync_knowledge_date(self.object)
             return super().form_valid(form)
         else:
             return self.form_invalid(form)
@@ -125,9 +138,3 @@ class LearnerUpdateView(UpdateView):
     def get_success_url(self):
         return reverse("organization:worker_detail", args=[self.object.pk])
 
-
-class LearnerDeleteView(DeleteView):
-    """Удаление филиала"""
-
-    model = Learner
-    success_url = reverse_lazy("organization:organization_list")

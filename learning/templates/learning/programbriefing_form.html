@@ -8,13 +8,14 @@
             <div class="card m-4">
                 <div class="card-header text-center">
                     {% if object %}
-                    Редактирование должности {{ object.name }}
+                    Редактирование программы {{object.name}}
                     {% else %}
-                    Для добавления должности заполните поля
+                    Для добавления программы заполните поля
                     {% endif %}
                 </div>
                 <div class="card-body">
                     {% csrf_token %}
+                    {{ form.media.js }}
                     {{ form.as_p }}
                 </div>
                 <div class="card-footer">
@@ -26,6 +27,8 @@
                             Создать
                             {% endif %}
                         </button>
+                        <a class="btn btn-outline-secondary mx-4"
+                        href="{% url 'organization:entity_briefing_program' model_name pk %}">Отмена</a>
                     </div>
                 </div>
             </div>

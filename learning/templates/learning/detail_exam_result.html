@@ -1,0 +1,91 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+
+<style>
+.table-fixed {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.text-wrap {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    /* Для старых браузеров */
+    -webkit-hyphens: auto;
+    -moz-hyphens: auto;
+    hyphens: auto;
+}
+</style>
+
+<div class="row">
+    <div class="col-1">
+        {% if all_results %}
+            <a href="{% url 'learning:all_exam_results' %}"
+               class="btn btn-sm btn-outline-secondary m-2">Назад</a>
+        {% elif all_assignments %}
+            <a href="{% url 'learning:all_results_for_exam' result.exam.pk result.learner.pk %}"
+               class="btn btn-sm btn-outline-secondary m-2">Назад</a>
+        {% else %}
+            <a href="{% url 'learning:exam_results' result.learner.pk %}"
+               class="btn btn-sm btn-outline-secondary m-2">Назад</a>
+        {% endif %}
+    </div>
+    <div class="col-10">
+        <h4 class="mt-5">Результаты тестирования:</h4>
+        <h6 class="my-2">Работник: {{ result.learner }}</h6>
+
+        {% if result.exam.program %}
+            <h6 class="my-2">Направления тестирования: Программа обучения {{ result.exam.program }}</h6>
+        {% elif result.exam.briefing_program %}
+            <h6 class="my-2">Направления тестирования: Программа инструктажа {{ result.exam.briefing_program }}</h6>
+        {% endif %}
+
+        <h6 class="my-2">Дата тестирования: {{ result.test_date|date:"d.m.Y" }}</h6>
+        <h6 class="my-2">Результат тестирования:
+            {% if result.is_passed %}
+                <span class="text-success">Сдан</span>
+            {% else %}
+                <span class="text-danger">Не сдан</span>
+            {% endif %}
+        </h6>
+
+        {% if content_list %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-fixed text-center">
+                    <thead>
+                        <tr>
+                            <th class="col-1">№ п/п</th>
+                            <th class="col-3">Вопрос</th>
+                            <th class="col-3">Ответ пользователя</th>
+                            <th class="col-3">Правильный ответ</th>
+                            <th class="col-1">Набранный балл</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                        {% for content in content_list %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="fw-normal text-wrap small">{{ content.question_text }}</td>
+                            <td class="fw-normal text-wrap small">{{ content.user_answer_text }}</td>
+                            <td class="fw-normal text-wrap small">{{ content.correct_answer_text }}</td>
+                            <td>
+                                {% if content.is_user_answer_correct %}
+                                    <span class="text-success">1</span>
+                                {% else %}
+                                    <span class="text-danger">0</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>У вас нет результатов экзаменов.</p>
+        {% endif %}
+    </div>
+    <div class="col-1"></div>
+</div>
+
+{% endblock %}

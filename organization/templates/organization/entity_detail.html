@@ -1,0 +1,235 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+<style>
+    .no-split-header thead tr:first-child th {
+    border-bottom: none;
+}
+
+.no-split-header thead tr:last-child th {
+    border-top: none;
+}
+</style>
+<div class="card mx-2">
+    <div class="card-body">
+        {% if object.return_parent %}
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+               {% for field in object.return_parent %}
+            <li class="breadcrumb-item"><a href="{% url 'organization:entity_detail' field|model_name field.pk %}">{{field}}</a></li>
+          {% endfor %}
+          </ol>
+        </nav>
+        {% endif %}
+        <h5 class="card-title">{{ object.name }}</h5>
+            <a class="btn btn-outline-primary btn-sm my-2"
+                       href="{% url 'organization:worker_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Добавить
+                    работника
+                </a>
+
+        <a href="{% url 'learning:briefing_day_bulk_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm mx-2">
+            Провести инструктаж
+        </a>
+
+        <a href="{% url 'learning:create_bulk_exam_assignment' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm">
+            Назначить тест</a>
+
+        <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle mx-2"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Программы
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item"
+                       href="{% url 'organization:entity_learning_program' object|model_name object.pk %}">Обучения
+                </a></li>
+                <li><a class="dropdown-item"
+                       href="{% url 'organization:entity_briefing_program' object|model_name object.pk %}">Инструктажа
+                </a></li>
+            </ul>
+
+                <table class="table table-sm table-hover text-center align-middle no-split-header">
+                    <thead>
+                    <tr>
+                        <th scope="col" rowspan="2" class="col-2">Подразделение</th>
+                        <th scope="col" rowspan="2">ФИО</th>
+                        <th scope="col" rowspan="2">Должность</th>
+                        <th scope="col" colspan="2" style="line-height:1.2; padding:0.25rem;">Предстоящая дата</th>
+                        <th scope="col" class="col-1" rowspan="2"></th>
+                        <th scope="col" class="col-1" rowspan="2"></th>
+                    </tr>
+                    <tr>
+                        <th scope="col" style="line-height:1.2; padding:0.25rem;">Обучения</th>
+                        <th scope="col" style="line-height:1.2; padding:0.25rem;">Инструктажа</th>
+                    </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                    <form method="get">
+                        <tr>
+                             <td></td>
+                            <td><input name="surname" class="form-control my-2 text-center" type="search"
+                                       placeholder="Введите Фамилию"
+                                       aria-label="Search" value="{{search_params.surname}}"></td>
+                            <td><input name="position" class="form-control my-2 text-center" type="search"
+                                       placeholder="Введите должность"
+                                       aria-label="Search" value="{{search_params.position}}"></td>
+                            <td>
+                                <input name="date_learning_from" class="form-control text-center mb-1" type="date"
+                                       placeholder="Дата с"
+                                       aria-label="Search" value="{{search_params.date_learning_from}}">
+                                <input name="date_learning_to" class="form-control text-center" type="date"
+                                       placeholder="Дата по"
+                                       aria-label="Search" value="{{search_params.date_learning_to}}">
+                            </td>
+
+                            <td>
+                                <input name="date_briefing_from" class="form-control text-center mb-1" type="date"
+                                       placeholder="Дата с"
+                                       aria-label="Search" value="{{search_params.date_briefing_from}}">
+                                <input name="date_briefing_to" class="form-control text-center" type="date"
+                                       placeholder="Дата по"
+                                       aria-label="Search" value="{{search_params.date_briefing_to}}">
+                            </td>
+                            <td>
+                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                    Поиск
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="window.location.href='?';">
+                                    Сбросить
+                                </button>
+                            </td>
+                        </tr>
+                    </form>
+                    {% for worker in worker_page.object_list %}
+                    <tr>
+                        <td>{{ worker.return_str_affiliation }}</td>
+                        <td>{{ worker }}</td>
+                        <td>{{ worker|get_main_position }}</td>
+                        <td>{{ worker|get_nearest_knowledge_date }}</td>
+                        <td>{{ worker|get_nearest_briefing_date }}</td>
+                        <td>
+                            <a class="btn btn-outline-primary btn-sm" type="button"
+                               href="{% url 'organization:worker_detail' worker.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">
+                                Подробнее
+                            </a>
+                        </td>
+                        <td>
+                            <div class="btn-group dropdown">
+                                <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'organization:worker_update' worker.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Изменить
+                                    </a></li>
+                                    <hr>
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'organization:worker_delete' worker.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Удалить
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Навигация для работников -->
+                <nav aria-label="Пагинация списка работников">
+                    <ul class="pagination pagination-sm">
+                        <!-- Кнопка "Предыдущая" -->
+                        {% if worker_page.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ worker_page.previous_page_number }}
+                           {% for key, value in worker_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">
+                                &laquo;
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                        {% endif %}
+
+                        <!-- Первая страница + разделитель -->
+                        {% if worker_page.number > 3 %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page=1
+                           {% for key, value in worker_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">1</a>
+                        </li>
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+
+                        <!-- Страницы до текущей (2–3 штуки) -->
+                        {% for page_num in worker_page.paginator.page_range %}
+                        {% if page_num >= worker_page.number|add:-2 and page_num < worker_page.number %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ page_num }}
+                             {% for key, value in worker_page.params.items %}
+                               {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                             {% endfor %}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- Текущая страница -->
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ worker_page.number }}</span>
+                        </li>
+
+                        <!-- Страницы после текущей (2–3 штуки) -->
+                        {% for page_num in worker_page.paginator.page_range %}
+                        {% if page_num > worker_page.number and page_num <= worker_page.number|add:2 %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ page_num }}
+                             {% for key, value in worker_page.params.items %}
+                               {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                             {% endfor %}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- Последняя страница + разделитель -->
+                        {% if worker_page.number < worker_page.paginator.num_pages|add:-2 %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ worker_page.paginator.num_pages }}
+                           {% for key, value in worker_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">{{ worker_page.paginator.num_pages }}</a>
+                        </li>
+                        {% endif %}
+
+                        <!-- Кнопка "Следующая" -->
+                        {% if worker_page.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?worker_page={{ worker_page.next_page_number }}
+                           {% for key, value in worker_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">&raquo;</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
+    </div>
+</div>
+
+{% endblock %}

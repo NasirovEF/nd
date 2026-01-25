@@ -1,8 +1,11 @@
 from django import template
 from django.utils.safestring import mark_safe
-from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult
+from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult, ExamAssignment, BriefingDay, \
+    ExamResult
 from datetime import date
+from django.utils import  timezone
 
+from learning.services import get_current_date
 from organization.models import Position
 
 register = template.Library()
@@ -24,7 +27,7 @@ def poster_page(value):
 @register.filter()
 def get_protocol_url(direction, learner):
     try:
-        protocol = Protocol.objects.filter(direction=direction, learner=learner).order_by("-prot_date", "-id").first()
+        protocol = Protocol.objects.filter(program__direction=direction, learner=learner).order_by("-prot_date", "-id").first()
         if protocol and protocol.doc_scan:
             return protocol.doc_scan.url
         else:
@@ -36,7 +39,7 @@ def get_protocol_url(direction, learner):
 @register.filter()
 def get_protocol_date(direction, learner):
     try:
-        protocol = Protocol.objects.filter(direction=direction, learner=learner).order_by("-prot_date", "-id").first()
+        protocol = Protocol.objects.filter(program__direction=direction, learner=learner).order_by("-prot_date", "-id").first()
         if protocol:
             return protocol.prot_date.strftime("%d.%m.%Y")
         else:
@@ -48,7 +51,7 @@ def get_protocol_date(direction, learner):
 @register.filter()
 def get_protocol_result(direction, learner):
     try:
-        protocol = Protocol.objects.filter(direction=direction, learner=learner).order_by("-prot_date", "-id").first()
+        protocol = Protocol.objects.filter(program__direction=direction, learner=learner).order_by("-prot_date", "-id").first()
         if protocol:
             result = protocol.protocol_result.get(learner=learner)
             return result.passed
@@ -61,7 +64,7 @@ def get_protocol_result(direction, learner):
 @register.filter()
 def get_knowledge_date(direction, learner):
     try:
-        protocol = Protocol.objects.filter(direction=direction, learner=learner).order_by("-prot_date", "-id").first()
+        protocol = Protocol.objects.filter(program__direction=direction, learner=learner).order_by("-prot_date", "-id").first()
         learner_direction = Learner.objects.get(pk=learner.pk).direction.all()
         if direction in learner_direction:
             knowledge_date = KnowledgeDate.objects.get(learner=learner, direction=direction, protocol=protocol, is_active=True).next_date.strftime("%d.%m.%Y")
@@ -73,11 +76,20 @@ def get_knowledge_date(direction, learner):
 
 
 @register.filter()
-def get_direction_name(directions):
-    directions_name = []
-    for direction in directions:
-        directions_name.append(direction.name)
-    return ", ".join(directions_name)
+def get_direction_name(programs):
+    directions_name = set()
+    for program in programs:
+        for direction in program.direction.all():
+            directions_name.add(direction.name)
+    return ", ".join(sorted(directions_name))
+
+
+@register.filter()
+def get_direction_name_for_one_program(program):
+    directions_name = set()
+    for direction in program.direction.all():
+        directions_name.add(direction.name)
+    return ", ".join(sorted(directions_name))
 
 
 @register.filter()
@@ -108,3 +120,89 @@ def get_extra_position(worker):
         return ", ".join(positions)
     else:
         return "отсутствует"
+
+
+@register.filter()
+def get_assignments(learner):
+    assignments = ExamAssignment.objects.filter(
+        learner=learner,
+        status__in=['assigned',]
+    ).select_related('exam')
+    return assignments
+
+
+@register.filter()
+def date_delta(date_end):
+    now = get_current_date()
+    delta_date = date_end - now
+
+    return delta_date.days
+
+
+@register.filter()
+def get_briefing(learner, briefing_type):
+    briefing_day = BriefingDay.objects.filter(
+        learner=learner,
+        briefing_type=briefing_type
+    ).order_by("-briefing_day", "-id").first()
+    return briefing_day
+
+
+@register.filter()
+def get_nearest_knowledge_date(worker):
+    leaners = worker.learner.all()
+    knowledge_date = KnowledgeDate.objects.filter(
+        learner__in=leaners,
+        is_active=True,
+        next_date__gte=get_current_date()
+    ).order_by("next_date").first()
+    if knowledge_date is not None:
+        return knowledge_date.next_date
+    else:
+        return mark_safe('<span class="text">Данные не найдены</span>')
+
+
+@register.filter()
+def get_nearest_briefing_date(worker):
+    leaners = worker.learner.all()
+    briefing_day = BriefingDay.objects.filter(
+        learner__in=leaners,
+        is_active=True,
+        next_briefing_day__gte=get_current_date()
+    ).order_by("next_briefing_day").first()
+    if briefing_day is not None:
+        if briefing_day.next_briefing_day is not None:
+            return briefing_day.next_briefing_day
+    else:
+        return mark_safe('<span class="text">Данные не найдены</span>')
+
+
+@register.filter()
+def get_last_test_for_briefing(briefing):
+    briefing_program = briefing.briefing_program
+    result = ExamResult.objects.filter(
+        learner=briefing.learner,
+        exam__briefing_program=briefing_program,
+    ).order_by("-test_date").first()
+    return result
+
+
+@register.filter()
+def get_exam_result(assignment):
+    result = assignment.exam.results.filter(
+        learner=assignment.learner,
+        exam=assignment.exam
+    ).exists()
+    return result
+
+@register.filter
+def model_name(obj):
+    return obj._meta.model_name
+
+
+@register.filter
+def briefing_type_name(names):
+    name_list = []
+    for name in names:
+        name_list.append(str(name))
+    return ", ".join(name_list)

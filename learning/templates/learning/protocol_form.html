@@ -1,4 +1,4 @@
-{% extends 'organization/base.html' %}
+{% extends "organization/base.html" %}
 {% block content %}
 <div class="row">
     <div class="col-8 offset-2">
@@ -90,18 +90,7 @@
                         </div>
                         {% endif %}
                     </div>
-                    <!-- Поле "direction" -->
-                    <div class="mb-3">
-                        <label class="form-label">{{ form.direction.label }}</label>
-                        {{ form.direction }}
-                        {% if form.direction.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.direction.errors %}
-                            {{ error }}<br>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
+
                     <!-- Поле "doc_scan" -->
                     <div class="mb-3">
                         <label class="form-label">{{ form.doc_scan.label }}</label>
@@ -124,21 +113,11 @@
                             Создать
                             {% endif %}
                         </button>
+                        <a href="{% url 'learning:protocol_list' %}" class="btn btn-outline-secondary mx-4">Отмена</a>
                     </div>
                 </div>
             </div>
         </form>
-        <script>
-            $(function() {
-                $.fn.selectpicker.Constructor.DEFAULTS.noneSelectedText = 'Ничего не выбрано';
-                $.fn.selectpicker.Constructor.DEFAULTS.countSelectedText = '{0} выбрано';
-
-                $('.selectpicker').selectpicker({
-                    liveSearch: true,
-                    actionsBox: true
-                });
-            });
-        </script>
     </div>
 </div>
 {% endblock %}

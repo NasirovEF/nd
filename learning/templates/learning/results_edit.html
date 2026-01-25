@@ -6,29 +6,69 @@
         <form method="post">
             {% csrf_token %}
             {{ formset.management_form }}
+
             <table class="table table-sm table-hover text-center fixed-columns table align-middle">
                 <thead>
-                <tr>
-                    <th>Работник</th>
-                    <th>Сдал?</th>
-                    <th>Комментарий</th>
-                </tr>
+                    <tr>
+                        <th>Работник</th>
+                        <th>Сдал?</th>
+                        <th>Комментарий</th>
+                    </tr>
                 </thead>
                 <tbody>
-                {% for form in formset %}
-                <tr>
-                    <td>{{ form.instance.learner }}</td>
-                    {{ form.id }}
-                    <td>{{ form.passed }}</td>
-                    <td>{{ form.comment }}</td>
-                </tr>
-                {% endfor %}
+                    {% for form in formset %}
+                    <tr>
+                        <!-- 1. Работник -->
+                        <td>{{ form.instance.learner|default:"Не указан" }}</td>
+
+                        <!-- 2. Скрытые поля -->
+                        {{ form.id }}
+                        <input type="hidden" name="{{ form.learner.html_name }}" value="{{ form.instance.learner.id }}">
+                        <input type="hidden" name="{{ form.protocol.html_name }}" value="{{ form.instance.protocol.id }}">
+
+
+                        <!-- 3. Поле "Сдал?" и его ошибки -->
+                        <td>
+                            {{ form.passed }}
+                            {% if form.passed.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.passed.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- 4. Поле "Комментарий" и его ошибки -->
+                        <td>
+                            {{ form.comment }}
+                            {% if form.comment.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.comment.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <!-- 5. Неполевые ошибки формы (из clean()) -->
+                            {% if form.non_field_errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
-            <div class="text-center">
-            <button type="submit" class="btn btn-outline-primary btn-sm">Сохранить</button>
-            <a href="{% url 'learning:protocol_detail' object.pk %}" class="btn btn-outline-secondary btn-sm">Назад</a>
+
+            <!-- 6. Общие ошибки формусета -->
+            {% if formset.non_form_errors %}
+                <div class="alert alert-danger">
+                    {% for error in formset.non_form_errors %}{{ error }}<br>{% endfor %}
                 </div>
+            {% endif %}
+
+            <div class="text-center mt-3">
+                <button type="submit" class="btn btn-outline-primary btn-sm">Сохранить</button>
+                <a href="{% url 'learning:protocol_detail' object.pk %}" class="btn btn-outline-secondary btn-sm">Назад</a>
+            </div>
         </form>
     </div>
 </div>

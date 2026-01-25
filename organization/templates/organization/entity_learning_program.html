@@ -1,0 +1,253 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+
+<div class="card mx-2">
+    <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-body-secondary">{{ object.division }}</h6>
+        <h5 class="card-title">{{ object.name }}</h5>
+        <a href="{% url 'organization:entity_detail' object|model_name object.pk %}" class="btn btn-outline-secondary btn-sm m-2">
+        Назад
+        </a>
+        <a href="{% url 'learning:program_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm m-2">
+            Добавить программу
+        </a>
+        <div class="text-center"><h3>Программы обучения</h3></div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover text-center align-middle">
+                    <thead>
+                    <tr>
+                        <th scope="col" class="col-3">Уровень программы</th>
+                        <th scope="col" class="col-3">Наименование программы</th>
+                        <th scope="col" class="col-2">Направление обучения</th>
+                        <th scope="col" class="col-2">Дата утверждения</th>
+                        <th scope="col" class="col-2">Скан-копия программы</th>
+                        <th scope="col" class="col-2">Статус программы</th>
+                        <th scope="col" class="col-auto"></th>
+                        <th scope="col" class="col-auto"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <form method="get">
+                        <td>
+                            <div>
+                                <select name="level_program" id="organizationSelect" class="form-control text-center w-100">
+                                    <option value="{{object|model_name}}" {% if search_params.level_program == "" %}selected{% endif %}>-----</option>
+                                    <option value="1" {% if search_params.level_program == "1" %}selected{% endif %}>ОСТ</option>
+                                    <option value="2" {% if search_params.level_program == "2" %}selected{% endif %}>Филиал</option>
+                                    <option value="3" {% if search_params.level_program == "3" %}selected{% endif %}>СП</option>
+                                    <option value="4" {% if search_params.level_program == "4" %}selected{% endif %}>Участок</option>
+                                    <option value="5" {% if search_params.level_program == "5" %}selected{% endif %}>Группа</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <input name="program_name" class="form-control text-center" type="search"
+                                   placeholder="Введите название" aria-label="Search"
+                                   value="{{search_params.program_name}}">
+                        </td>
+                        <td>
+                            <div>
+                                <input name="direction" class="form-control my-2 text-center" list="directionOptions"
+                                       id="directionDataList" value="{{search_params.direction}}"
+                                       placeholder="Выберите направление обучения">
+                                <datalist id="directionOptions">
+                                    {% for direction in directions %}
+                                    <option value="{{ direction }}">
+                                        {% endfor %}
+                                </datalist>
+                            </div>
+                        </td>
+                        <td>
+                            <input name="approval_date_from" class="form-control text-center mb-1" type="date"
+                                       placeholder="Дата с"
+                                       aria-label="Search" value="{{search_params.approval_date_from}}">
+                            <input name="approval_date_to" class="form-control text-center" type="date"
+                                       placeholder="Дата по"
+                                       aria-label="Search" value="{{search_params.approval_date_to}}">
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="hasFile"
+                                           name="has_file"
+                                           {% if search_params.has_file == '1' %}checked{% endif %}>
+                                    <label class="form-check-label" for="hasFile">Да</label>
+                                </div>
+                                <span class="text-muted">/</span>
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="checkbox" value="0" id="hasNotFile"
+                                           name="has_not_file"
+                                           {% if search_params.has_not_file == '0' %}checked{% endif %}>
+                                    <label class="form-check-label" for="hasNotFile">Нет</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                              <div>
+                                <select name="is_active" class="form-control text-center w-100" aria-label="Выбор статуса">
+                                  <option value="0" {% if search_params.is_active == "0" %}selected{% endif %}>
+                                    Все
+                                  </option>
+                                    <option value="" {% if search_params.is_active == "" %}selected{% endif %}>
+                                    Действующие
+                                  </option>
+                                  <option value="1" {% if search_params.is_active == "1" %}selected{% endif %}>
+                                    В архиве
+                                  </option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                    Поиск
+                                </button>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        onclick="window.location.href='?';">
+                                    Сбросить
+                                </button>
+                            </td>
+                        </form>
+                    </tr>
+                    {% for program in program_page.object_list %}
+                    <tr>
+                        <td>{{program.return_str_affiliation}}</td>
+                        <td>{{program.name}}</td>
+                        <td>{{program|get_direction_name_for_one_program}}</td>
+                        <td>{{program.approval_date}}</td>
+                        <td>
+                            {% if program.doc_scan %}
+                            <a class="btn btn-link-secondary btn-sm" href="{{program.doc_scan.url}}">Скан-файл</a>
+                            {% else %}
+                            <div class="text-danger">отсутствует</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not program.is_active %}
+                            <div class="text-secondary">архив</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a class="btn btn-outline-primary btn-sm" type="button"
+                               href="{% url 'learning:program_detail' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Подробнее</a>
+                        </td>
+                        <td>
+                            <div class="btn-group dropdown">
+                                <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
+                                        data-bs-toggle="dropdown" aria-expanded="false"></button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'learning:program_update' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Изменить</a>
+                                    </li>
+                                    <hr>
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'learning:program_delete' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Удалить</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+
+                <!-- Навигация  -->
+                <nav aria-label="Пагинация списка работников">
+                    <ul class="pagination pagination-sm">
+                        <!-- Кнопка "Предыдущая" -->
+                        {% if program_page.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?program_page={{ program_page.previous_page_number }}
+                           {% for key, value in program_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">
+                                &laquo;
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+                        {% endif %}
+
+                        <!-- Первая страница + разделитель -->
+                        {% if program_page.number > 3 %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?program_page=1
+                           {% for key, value in program_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">1</a>
+                        </li>
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+
+                        <!-- Страницы до текущей (2–3 штуки) -->
+                        {% for page_num in program_page.paginator.page_range %}
+                        {% if page_num >= program_page.number|add:-2 and page_num < program_page.number %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?program_page={{ page_num }}
+                             {% for key, value in program_page.params.items %}
+                               {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                             {% endfor %}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- Текущая страница -->
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">{{ program_page.number }}</span>
+                        </li>
+
+                        <!-- Страницы после текущей (2–3 штуки) -->
+                        {% for page_num in program_page.paginator.page_range %}
+                        {% if page_num > program_page.number and page_num <= program_page.number|add:2 %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?program_page={{ page_num }}
+                             {% for key, value in program_page.params.items %}
+                               {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                             {% endfor %}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        <!-- Последняя страница + разделитель -->
+                        {% if program_page.number < program_page.paginator.num_pages|add:-2 %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?program_page={{ program_page.paginator.num_pages }}
+                           {% for key, value in program_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">{{ program_page.paginator.num_pages }}</a>
+                        </li>
+                        {% endif %}
+
+                        <!-- Кнопка "Следующая" -->
+                        {% if program_page.has_next %}
+                        <li class="page-item">
+                            <a class="page-link"
+                               href="?program_page={{ program_page.next_page_number }}
+                           {% for key, value in program_page.params.items %}
+                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
+                           {% endfor %}">&raquo;</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
+    </div>
+</div>
+
+{% endblock %}

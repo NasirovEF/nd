@@ -1,21 +1,20 @@
-from django.shortcuts import render
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.views.generic import (
     CreateView,
     DeleteView,
     DetailView,
     ListView,
     UpdateView,
-    View,
 )
-from learning.models import Learner, KnowledgeDate
-from django.utils.datastructures import MultiValueDictKeyError
-
+from learning.models import Learner, KnowledgeDate, Briefing
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from learning.models.learner_direction import StaffDirection, Direction
 from organization.forms import WorkerCreateForm, WorkerUpdateForm, PositionForm, PositionFormSet
-from organization.models import Worker, District, Group, Organization, Branch, Division, Position
+from organization.models import Worker, Position
 from django.forms import inlineformset_factory
 from django.db import transaction
+from users.models import User
+
 
 
 class WorkerListView(ListView):
@@ -30,21 +29,30 @@ class WorkerDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['briefings'] = Briefing.objects.all()
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
         return context
 
 
-class WorkerCreateView(CreateView):
+class WorkerCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    """Создание работника"""
     model = Worker
     form_class = WorkerCreateForm
+    permission_required = 'organization.add_worker'
+    template_name = 'organization/worker_form.html'
 
     def get_success_url(self):
-        return reverse("organization:district_detail", args=[self.object.district.pk])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_detail", kwargs={'model_name': model_name, 'pk': pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        # Если формсет ещё не создан (GET-запрос или повторная отрисовка с ошибками)
-        if 'position_formset' not in context:
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
+        # Ключевое изменение: всегда проверяем POST данные
+        if self.request.method == 'POST':
             PositionFormSetClass = inlineformset_factory(
                 Worker,
                 Position,
@@ -54,29 +62,35 @@ class WorkerCreateView(CreateView):
                 extra=1,
                 can_delete=False,
             )
-            # Для GET: instance=None; для POST с ошибкой: instance=worker (если есть)
-            instance = self.object if self.object else None
-            context['position_formset'] = PositionFormSetClass(instance=instance)
-
+            # Для POST всегда используем данные из запроса
+            instance = self.object if hasattr(self, 'object') and self.object else None
+            context['position_formset'] = PositionFormSetClass(
+                self.request.POST,
+                self.request.FILES,
+                instance=instance,
+                prefix='positions'
+            )
+        elif 'position_formset' not in context:
+            # Для GET или если формсет ещё не создан
+            PositionFormSetClass = inlineformset_factory(
+                Worker,
+                Position,
+                form=PositionForm,
+                formset=PositionFormSet,
+                fields=["name", "is_main"],
+                extra=1,
+                can_delete=False,
+            )
+            context['position_formset'] = PositionFormSetClass(
+                instance=self.object,
+                prefix='positions'
+            )
         return context
 
     @transaction.atomic
     def form_valid(self, form):
         try:
-            # 1. Заполняем поля работника
-            worker = form.save(commit=False)
-            worker.organization = Organization.objects.get(pk=self.request.GET.get("organization"))
-            worker.branch = Branch.objects.get(pk=self.request.GET.get("branch"))
-            worker.division = Division.objects.get(pk=self.request.GET.get("division"))
-            worker.district = District.objects.get(pk=self.request.GET.get("district"))
-            worker.group = Group.objects.get(pk=self.request.GET.get("group")) if self.request.GET.get(
-                "group") else None
-
-            # 2. Сохраняем работника (обязательно!)
-            worker.save()
-            self.object = worker  # ← критически важно для контекста
-
-            # 3. Создаём формсет с POST-данными и привязанным instance
+            # Создаём формсет с POST-данными
             PositionFormSetClass = inlineformset_factory(
                 Worker,
                 Position,
@@ -86,23 +100,29 @@ class WorkerCreateView(CreateView):
                 extra=1,
                 can_delete=False,
             )
+
             position_formset = PositionFormSetClass(
                 self.request.POST,
-                instance=worker,  # ← instance=worker (уже сохранён)
+                self.request.FILES,
+                prefix='positions',
+                instance=form.instance
             )
-
-            # 4. Валидируем и сохраняем формсет
+            # Проверяем валидность формы и формсета
             if position_formset.is_valid():
-                position_formset.save(commit=True)  # ← commit=True обязательно!
+                # Сохраняем работника
+                worker = form.save()
+                self.object = worker
 
-                # 5. Создаём Learner для всех позиций
+                # Обновляем instance для формсета и сохраняем
+                position_formset.instance = worker
+                position_formset.save()
+                # Создаём Learner для всех позиций
                 for position in worker.position.all():
                     try:
                         staff_direction = StaffDirection.objects.get(position=position.name)
                         directions = staff_direction.direction.all()
                     except StaffDirection.DoesNotExist:
-                        directions = Direction.objects.none()  # пустой QuerySet
-
+                        directions = Direction.objects.none()
                     learner = Learner.objects.create(
                         worker=worker,
                         position=position
@@ -110,38 +130,74 @@ class WorkerCreateView(CreateView):
                     learner.direction.set(directions)
                     for direction in directions:
                         KnowledgeDate.objects.create_or_update_active(learner=learner, direction=direction)
+
+                # Создаём пользователя
+                user = User.objects.create(worker=worker)
+                login_name = user.get_login_name
+                user.username = login_name
+                service_num = user.service_number or ""
+                user.set_password(f"{login_name}{service_num}")
+                user.save()
+
                 return super().form_valid(form)
             else:
-                # 6. Если формсет невалиден — показываем ошибки
+                # Если формсет невалиден, показываем ошибки
                 context = self.get_context_data()
                 context['form'] = form
                 context['position_formset'] = position_formset
-                transaction.set_rollback(True)
                 return self.render_to_response(context)
-
         except Exception as e:
+            # При любой ошибке показываем форму с данными
             transaction.set_rollback(True)
+            context = self.get_context_data()
+            context['form'] = form
+            return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Переопределяем POST для корректной обработки
+        """
+        self.object = None
+        form = self.get_form()
+
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
             return self.form_invalid(form)
 
+    def form_invalid(self, form):
+        """
+        При невалидной форме сохраняем все данные
+        """
+        context = self.get_context_data()
+        context['form'] = form
+        return self.render_to_response(context)
 
-class WorkerUpdateView(UpdateView):
+
+
+class WorkerUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Worker
     form_class = WorkerUpdateForm
+    permission_required = 'organization.change_worker'
 
     def get_success_url(self):
-        return reverse("organization:district_detail", args=[self.object.district.pk])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_detail", kwargs={'model_name': model_name, 'pk': pk})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
 
         PositionFormSets = inlineformset_factory(
             Worker,
             Position,
             form=PositionForm,
-            formset=PositionFormSet,  # Ваш кастомный формсет с clean()
+            formset=PositionFormSet,
             fields=["name", "is_main"],
             extra=1,
-            can_delete=True,  # Разрешаем удаление позиций
+            can_delete=True,
         )
 
         if self.request.POST:
@@ -192,11 +248,20 @@ class WorkerUpdateView(UpdateView):
                     KnowledgeDate.objects.create_or_update_active(learner=learner, direction=direction)
 
 
-class WorkerDeleteView(DeleteView):
+class WorkerDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление работника"""
 
     model = Worker
+    permission_required = 'organization.delete_worker'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['model_name'] = self.request.GET.get('model_name')
+        context['pk'] = self.request.GET.get('pk')
+
+        return context
 
     def get_success_url(self):
-        district_pk = self.request.GET["district"]
-        return reverse("organization:district_detail", args=[district_pk])
+        model_name = self.request.GET.get('model_name')
+        pk = self.request.GET.get('pk')
+        return reverse("organization:entity_detail", kwargs={'model_name': model_name, 'pk': pk})

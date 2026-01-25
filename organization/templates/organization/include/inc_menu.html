@@ -1,6 +1,6 @@
 <nav class="navbar bg-body-tertiary">
     <div class="container-fluid">
-        <a class="navbar-brand mx-4" href="#">Название программы</a>
+        <a class="navbar-brand mx-4" href="#">Система обучения и инструктажа</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
                 aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -13,13 +13,31 @@
             <div class="offcanvas-body">
                 <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
                     <li class="nav-item">
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                        <div>
+                            {% if user.is_authenticated %}
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle mt-2"
+                                    data-bs-toggle="dropdown"
                                     aria-expanded="false">
                                 Профиль
                             </button>
+                            <ul class="dropdown-menu">
+                                {% if user.worker %}
+                                <li><a class="dropdown-item" href="{% url 'organization:worker_detail' user.worker.pk %}">Личный
+                                    кабинет</a></li>
+                                {% endif %}
+                                {% if user.is_staff %}
+                                <li><a class="dropdown-item" href="/admin/">Администрирование</a></li>
+                                {% endif %}
+                                <hr>
+                                <li><a class="dropdown-item" href="{% url 'users:logout' %}">Выйти</a></li>
+                            </ul>
+                            {% else %}
+                            <a class="btn btn-outline-primary" href="{% url 'users:login' %}">Войти</a>
+                            {% endif %}
                         </div>
-                        <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2" data-bs-toggle="dropdown"
+                        <div>
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2"
+                                data-bs-toggle="dropdown"
                                 aria-expanded="false">
                             Обучение по ОТ
                         </button>
@@ -28,9 +46,25 @@
                                 знаний по ОТ</a></li>
                             <li><a class="dropdown-item"
                                    href="{% url 'learning:learner_list' %}">График проверки знаний</a></li>
+                            <li><a class="dropdown-item"
+                                   href="{% url 'learning:direction_list' %}">Направления обучения</a></li>
                         </ul>
+                        </div>
                         <div>
-                            <a class="btn btn-outline-primary my-2" href="{% url 'accident:accident_list' %}">Несчастные случаи</a>
+                        <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                            Тестирование
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'learning:all_exam_assignment' %}">
+                                Управление тестами</a></li>
+                            <li><a class="dropdown-item" href="{% url 'learning:all_exam_results' %}">Результаты тестирований</a></li>
+                        </ul>
+                            </div>
+                        <div>
+                            <a class="btn btn-outline-primary my-2" href="{% url 'accident:accident_list' %}">Несчастные
+                                случаи</a>
                         </div>
                     </li>
                 </ul>

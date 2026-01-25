@@ -9,35 +9,66 @@ from organization.models import (
     Worker,
 )
 from django.core.exceptions import ValidationError
-from django.forms import inlineformset_factory, BaseInlineFormSet
-from django.forms import BooleanField, DateField, SelectMultiple
+from django.forms import BaseInlineFormSet
+from django import forms
 
 
 class StileFormMixin:
+    # Список полей, для которых применяем ПРОСТОЙ стиль (только form-control)
+    SIMPLE_FIELDS = {'organization', 'branch', 'division', 'district', 'group'}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            # Получаем текущие классы виджета (если есть)
-            current_classes = field.widget.attrs.get('class', '')
 
-            if isinstance(field, BooleanField):
-                # Для чекбоксов
-                field.widget.attrs['class'] = 'form-check-input'
-            elif isinstance(field, DateField):
-                field.widget = forms.DateInput(
-                    attrs={
-                        'class': 'form-control',
-                        'type': 'date'
-                    }
-                )
-            elif isinstance(field, SelectMultiple):
-                # Для множественного выбора — добавляем классы к существующим
-                new_classes = f'{current_classes} form-control form-select selectpicker'.strip()
-                field.widget.attrs['class'] = new_classes
+        for field_name, field in self.fields.items():
+            # Сохраняем ВСЕ существующие атрибуты
+            attrs = field.widget.attrs.copy()  # копируем, чтобы не менять оригинал напрямую
+            current_classes = attrs.get('class', '').split()
+
+            if isinstance(field, forms.BooleanField):
+                attrs['class'] = 'form-check-input'
+                field.widget.attrs.update(attrs)  # обновляем, сохраняя required и др.
+
+            elif isinstance(field, forms.DateField):
+                updated_classes = set(current_classes) | {'form-control'}
+                attrs.update({
+                    'class': ' '.join(updated_classes),
+                    'type': 'date'
+                })
+                field.widget.attrs.update(attrs)
+
+            elif isinstance(field, forms.ModelChoiceField):
+                if field_name in self.SIMPLE_FIELDS:
+                    updated_classes = set(current_classes) | {'form-control'}
+                    attrs['class'] = ' '.join(updated_classes)
+                else:
+                    select_classes = {'form-control', 'form-select', 'selectpicker'}
+                    updated_classes = set(current_classes) | select_classes
+                    attrs.update({
+                        'class': ' '.join(updated_classes),
+                        'data-live-search': 'true',
+                        'title': 'Выберите вариант'
+                    })
+                field.widget.attrs.update(attrs)
+
+            elif isinstance(field, forms.ModelMultipleChoiceField):
+                if field_name in self.SIMPLE_FIELDS:
+                    updated_classes = set(current_classes) | {'form-control'}
+                    attrs['class'] = ' '.join(updated_classes)
+                else:
+                    select_classes = {'form-control', 'form-select', 'selectpicker'}
+                    updated_classes = set(current_classes) | select_classes
+                    attrs.update({
+                        'class': ' '.join(updated_classes),
+                        'data-live-search': 'true',
+                        'multiple': 'multiple',
+                        'title': 'Выберите варианты'
+                    })
+                field.widget.attrs.update(attrs)
             else:
-                # Для остальных полей
-                new_classes = f'{current_classes} form-control'.strip()
-                field.widget.attrs['class'] = new_classes
+                updated_classes = set(current_classes) | {'form-control'}
+                attrs['class'] = ' '.join(updated_classes)
+                field.widget.attrs.update(attrs)
 
 
 class OrganizationForm(StileFormMixin, forms.ModelForm):
@@ -79,13 +110,13 @@ class PositionForm(StileFormMixin, forms.ModelForm):
 class WorkerCreateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
-        fields = ["surname", "name", "patronymic"]
+        exclude = ["image", "dismissed"]
 
 
 class WorkerUpdateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
-        fields = ["surname", "name", "patronymic", "dismissed"]
+        exclude = ["image"]
 
 
 class PositionFormSet(BaseInlineFormSet):

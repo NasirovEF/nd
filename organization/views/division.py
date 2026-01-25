@@ -1,35 +1,20 @@
-from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView,
     DeleteView,
-    DetailView,
-    ListView,
     UpdateView,
-    View,
 )
-
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from organization.forms import DivisionForm
-from organization.models import Division, Organization, Branch
+from organization.models import Division, Branch
 
 
-class DivisionListView(ListView):
-    """Просмотр списка структурных подразделений"""
-
-    model = Division
-
-
-class DivisionDetailView(DetailView):
-    """Просмотр одной из структурных подразделений"""
-
-    model = Division
-
-
-class DivisionCreateView(CreateView):
+class DivisionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """Создание структурных подразделений"""
 
     model = Division
     form_class = DivisionForm
+    permission_required = 'organization.add_division'
 
     def get_success_url(self):
         return reverse("organization:organization_list")
@@ -43,18 +28,20 @@ class DivisionCreateView(CreateView):
         return super().form_valid(form)
 
 
-class DivisionUpdateView(UpdateView):
+class DivisionUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     """Редактирование структурных подразделений"""
 
     model = Division
     form_class = DivisionForm
+    permission_required = 'organization.change_division'
 
     def get_success_url(self):
-        return reverse("organization:organization_list", args=[self.object.pk])
+        return reverse("organization:organization_list")
 
 
-class DivisionDeleteView(DeleteView):
+class DivisionDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Удаление структурных подразделений"""
 
     model = Division
+    permission_required = 'organization.delete_division'
     success_url = reverse_lazy("organization:organization_list")

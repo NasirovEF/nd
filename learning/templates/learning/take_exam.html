@@ -1,0 +1,294 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+
+        <h1>{{ result.exam.name }}</h1>
+        <p>Программа: {{ result.exam.program.name }}</p>
+        <p>Время на выполнение: {{ time_limit }} мин</p>
+
+        <!-- Таймер с ARIA-атрибутами для доступности -->
+        <div id="timer"
+             class="mb-3 text-danger font-weight-bold"
+             role="timer"
+             aria-live="polite"
+             aria-label="Оставшееся время на выполнение теста">
+        </div>
+
+        <form id="exam-form">
+            {% csrf_token %}
+            {% for question in questions %}
+            <div class="card question-card mb-2 p-3 shadow-sm" id="question-{{ question.id }}">
+                <h5 class="text-primary mb-3">
+                    Вопрос №{{ forloop.counter }}
+                </h5>
+                <div class="answer-frame my-2 p-2 bg-light border rounded">
+                <p class="card-text fs-5">{{ question.text }}</p>
+                </div>
+                <h6 class="text-primary">Варианты ответа:</h6>
+                {% for answer in question.answer.all %}
+                <div class="form-check mb-2">
+                    <input class="form-check-input"
+                           type="radio"
+                           name="question_{{ question.id }}"
+                           id="answer_{{ answer.id }}"
+                           value="{{ answer.id }}"
+                           data-correct="{{ answer.is_correct|yesno:'true,false' }}">
+                    <div class="answer-frame p-2 bg-light border rounded">
+                    <label class="form-check-label text-break w-100" for="answer_{{ answer.id }}">
+                        {{ answer.text }}
+                    </label>
+                    </div>
+                </div>
+                {% endfor %}
+                <!-- Блок обратной связи с ARIA -->
+                <div class="feedback alert mt-3"
+                     role="alert"
+                     style="display: none;"
+                     aria-hidden="true"></div>
+            </div>
+            {% endfor %}
+
+            <button type="button"
+                    class="btn btn-outline-primary"
+                    id="submit-btn"
+                    onclick="if (!this.disabled) submitAnswers()">
+                Завершить тест
+            </button>
+
+            <!-- Уведомление о незаполненных вопросах -->
+            <div id="validation-alert" class="alert alert-warning mt-3" style="display: none;">
+                Пожалуйста, ответьте на все вопросы.
+            </div>
+        </form>
+
+        <script>
+            let timer;
+            const timeLimit = {{ time_limit|default:0 }} * 60; // в секундах
+            const questions = document.querySelectorAll('.question-card');
+            const resultsUrl = '/results/';
+
+            // Уникальный ключ для хранения таймера (зависит от ID экзамена)
+            const TIMER_STORAGE_KEY = 'examTimer_' + {{ result.id }};
+
+            // Локализованные сообщения
+            const MESSAGES = {
+                timeLeft: "Осталось:",
+                minutes: "мин",
+                seconds: "сек",
+                testCompleted: "Тест завершён!",
+                score: "Ваш балл:",
+                passed: "Вы сдали!",
+                failed: "Вы не сдали.",
+                noAnswers: "Пожалуйста, выберите хотя бы один ответ.",
+                validationError: "Пожалуйста, ответьте на все вопросы.",
+                submitError: "Ошибка при отправке ответов:",
+                networkError: "Произошла ошибка сети:",
+                abortError: "Отправка была прервана."
+            };
+
+            /**
+             * Запуск таймера
+             * @param {number|null} remainingTime - оставшееся время в секундах (если восстанавливаем)
+             */
+            function startTimer(remainingTime = null) {
+                // Определяем начальное время
+                let currentTime = remainingTime !== null ? remainingTime : timeLimit;
+                const timerElement = document.getElementById('timer');
+
+                // Очищаем предыдущий таймер, если есть
+                if (timer) {
+                    clearInterval(timer);
+                }
+
+                timer = setInterval(() => {
+                    const minutes = Math.floor(currentTime / 60);
+                    const seconds = currentTime % 60;
+
+                    timerElement.textContent =
+                        `${MESSAGES.timeLeft} ${minutes} ${MESSAGES.minutes} ` +
+                        `${seconds.toString().padStart(2, '0')} ${MESSAGES.seconds}`;
+
+                    // Сохраняем текущее состояние в localStorage
+                    localStorage.setItem(TIMER_STORAGE_KEY, currentTime);
+
+                    // Визуальные и ARIA-изменения при <5 минут
+                    if (currentTime <= 300) {
+                        timerElement.classList.add('font-weight-bold', 'text-warning');
+                        timerElement.setAttribute('aria-label', 'Менее 5 минут осталось');
+                    } else {
+                        timerElement.setAttribute(
+                            'aria-label',
+                            `Осталось ${minutes} минут ${seconds} секунд`
+                        );
+                    }
+
+                    // Завершение теста при нуле
+                    if (currentTime <= 0) {
+                        clearInterval(timer);
+                        submitAnswers();
+                        return;
+                    }
+
+                    currentTime--;
+                }, 1000);
+            }
+
+            /**
+             * Восстановление таймера из localStorage
+             * @returns {boolean} - true, если восстановление прошло успешно
+             */
+            function restoreTimer() {
+                const savedTimeStr = localStorage.getItem(TIMER_STORAGE_KEY);
+
+                if (savedTimeStr) {
+                    const savedTime = parseInt(savedTimeStr, 10);
+
+                    // Проверяем валидность сохранённого времени
+                    if (!isNaN(savedTime) && savedTime > 0 && savedTime <= timeLimit) {
+                        startTimer(savedTime);
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            /**
+             * Валидация заполнения всех вопросов
+             * @returns {boolean} - true, если все вопросы заполнены
+             */
+            function validateAnswers() {
+                let allAnswered = true;
+
+                questions.forEach(question => {
+                    const match = question.id.match(/question-(\d+)/);
+                    const questionId = match ? match[1] : null;
+
+                    if (!questionId) return;
+
+                    const isAnswered = document.querySelector(
+                        `.question-card#question-${questionId} input[type="radio"]:checked`
+                    );
+
+                    if (!isAnswered) {
+                        allAnswered = false;
+                        question.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        question.classList.add('border', 'border-danger');
+                    } else {
+                        question.classList.remove('border', 'border-danger');
+                    }
+                });
+
+                return allAnswered;
+            }
+
+            /**
+             * Отправка ответов на сервер
+             */
+            function submitAnswers() {
+                // Скрываем уведомление о валидации
+                document.getElementById('validation-alert').style.display = 'none';
+
+                // Валидация: все ли вопросы отвечены
+                if (!validateAnswers()) {
+                    document.getElementById('validation-alert').style.display = 'block';
+                    return;
+                }
+
+                const answers = [];
+                document.querySelectorAll('.question-card input[type="radio"]:checked')
+                    .forEach(input => {
+                        const parts = input.name.split('_');
+                        const questionId = parts[1] ? parseInt(parts[1], 10) : null;
+
+                        if (questionId === null) return;
+
+                        answers.push({
+                            question_id: questionId,
+                            answer_ids: [parseInt(input.value, 10)]
+                        });
+                    });
+
+                // Проверка на наличие ответов
+                if (answers.length === 0) {
+                    alert(MESSAGES.noAnswers);
+                    return;
+                }
+
+                // Отключаем кнопку на время отправки
+                const submitBtn = document.getElementById('submit-btn');
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Отправляется...";
+
+                fetch(`{% url 'learning:submit_answers' learner_id=result.learner.id result_id=result.id %}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ answers }),
+                    signal: AbortSignal.timeout(30000) // Таймаут 30 секунд
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Завершить тест";
+
+                if (data.status === 'success') {
+                    // Очищаем таймер
+                    localStorage.removeItem(TIMER_STORAGE_KEY);
+
+                    // Перенаправляем на страницу результатов
+                    window.location.href = `{% url 'learning:exam_results' learner_id=result.learner.id %}`;
+                } else {
+                    alert(`${MESSAGES.submitError} ${data.message}`);
+                }
+            })
+                .catch(error => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Завершить тест";
+
+                    if (error.name === 'AbortError') {
+                        alert(MESSAGES.abortError);
+                        return;
+                    }
+
+                    console.error('Ошибка отправки:', error);
+                    alert(`${MESSAGES.networkError} ${error.message}`);
+                });
+            }
+
+            /**
+             * Инициализация при загрузке страницы
+             */
+            window.addEventListener('load', function() {
+                if (timeLimit > 0) {
+                    // Сначала пытаемся восстановить таймер из localStorage
+                    if (!restoreTimer()) {
+                        // Если восстановления не было — запускаем новый таймер
+                        startTimer();
+                    }
+                }
+            });
+
+            /**
+             * Очистка таймера при покидании страницы
+             */
+            window.addEventListener('beforeunload', function() {
+                if (timer) {
+                    clearInterval(timer);
+                }
+            });
+        </script>
+
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}

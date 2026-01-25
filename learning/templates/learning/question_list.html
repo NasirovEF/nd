@@ -1,0 +1,101 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1">
+        {% if test.direction %}
+        <a href="{% url 'learning:direction_list' %}" class="btn btn-outline-secondary btn-sm m-2">
+            Назад
+        </a>
+        {% elif test.briefing_program %}
+        <a href="{% url 'learning:briefing_program_detail' test.briefing_program.pk %}"
+           class="btn btn-outline-secondary btn-sm m-2">
+            Назад
+        </a>
+        {% endif %}
+    </div>
+    <div class="col-10">
+
+        <fieldset class="mb-2">
+            <legend class="border-bottom pb-2">
+                {% if test.direction %}
+                Вопросы к направлению обучения {{ test.direction }}
+                {% if test.sub_direction %}({{ test.sub_direction }}){% endif %}
+                {% elif test.briefing_program %}
+                Вопросы к программе инструктажа {{ test.briefing_program }}
+                {% endif %}
+            </legend>
+        </fieldset>
+
+        <form method="get" class="row align-items-center g-3 mb-4">
+            <!-- Кнопка "Добавить вопрос" (левая колонка) -->
+            <div class="col-auto">
+                <a href="{% url 'learning:question_create' test.pk %}"
+                   class="btn btn-outline-primary btn-sm"
+                   role="button">
+                    Добавить вопрос
+                </a>
+            </div>
+
+            <!-- Группа поиска (правая колонка, занимает остальное пространство) -->
+            <div class="col">
+                <div class="input-group">
+                    <input name="question_text"
+                           class="form-control text-center"
+                           type="search"
+                           placeholder="Введите текст вопроса"
+                           aria-label="Search"
+                           value="{{search_params.question_text}}">
+
+                    <button type="submit" class="btn btn-outline-primary">
+                        Поиск
+                    </button>
+
+                    <a href="{% url 'learning:question_list' test.pk %}"
+                       class="btn btn-outline-secondary"
+                       role="button">
+                        Очистить
+                    </a>
+                </div>
+            </div>
+        </form>
+
+
+        <fieldset>
+            {% for question in object_list %}
+            <div class="card question-card mb-3 p-2 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="text-primary mb-1">Вопрос №<span class="fw-bold">{{ forloop.counter }}</span></h5>
+                        <a href="{% url 'learning:question_update' question.pk %}"
+                           class="btn btn-outline-primary btn-sm ms-4" aria-label="Редактировать вопрос">Изменить</a>
+                        <a href="{% url 'learning:question_delete' question.pk %}?test_pk={{question.test.pk}}"
+                           class="btn btn-outline-danger btn-sm" aria-label="Удалить вопрос">Удалить</a>
+                    </div>
+                    <div class="question-frame my-2 p-2 bg-light border rounded">
+                        <p role="question" class="card-text fs-5 mb-0 ps-2">{{ question.text }}</p>
+                    </div>
+                    <h6 class="text-primary mb-2">Варианты ответа:</h6>
+                    <div class="answers-list">
+                        {% for answer in question.answer.all %}
+                        {% if answer.is_correct %}
+                        <div class="answer-frame my-2 p-2 bg-success bg-opacity-25 border rounded">
+                            {% else %}
+                            <div class="answer-frame my-2 p-2 bg-light border rounded">
+                                {% endif %}
+                                <div class="card-text fs-6 mb-0 ps-2">{{ answer.text }}</div>
+                            </div>
+
+                            {% endfor %}
+                        </div>
+                        <div id="feedback-{{ question.pk }}" class="alert alert-info mt-3 d-none"></div>
+                    </div>
+                </div>
+
+
+                {% endfor %}
+        </fieldset>
+
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}

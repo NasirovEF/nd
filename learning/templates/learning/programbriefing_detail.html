@@ -1,0 +1,251 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+
+{% block content %}
+<a class="btn btn-outline-secondary btn-sm m-2" href="{% url 'organization:entity_briefing_program' model_name pk %}">
+    Назад
+</a>
+<div class="card">
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
+                    type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">
+                Основная информация
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane"
+                    type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">
+                Документы для обучения
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane"
+                    type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">
+                Вопросы для подготовки
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="disabled-tab" data-bs-toggle="tab" data-bs-target="#disabled-tab-pane"
+                    type="button" role="tab" aria-controls="disabled-tab-pane" aria-selected="false" disabled>
+                Disabled
+            </button>
+        </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
+             tabindex="0">
+            <div class="row">
+                <div class="col-md-10 offset-md-1">
+                    <div class="card-body px-4">
+                        <p class="text"><small class="text-body-secondary my-2">{{object.organization}}
+                            {{object.branch}}</small></p>
+                        <p class="text"><small class="text-body-secondary my-2">
+                            {% if object.group %}{{object.group}}{%endif%} {{object.district}} {{object.division}}
+                        </small></p>
+                        <h5 class="card-title">Наименование программы: <strong>{{ object.name }}</strong></h5>
+                        {% if object.position %}
+                        <p class="card-text my-2">Для должности/профессии: {{ object.position }}</p>
+                        {% endif %}
+                        <p class="card-text"> Вид инструктажа:
+                            {% for briefing in object.briefing.all %}
+                            {{ briefing }},
+                            {% endfor %}
+                        </p>
+                        <p class="card-text">Утверждена: {{ object.approve }} от {{ object.approval_date }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+            <!-- Содержимое вкладки "Документы для обучения" -->
+            <div class="btn-group dropend">
+                <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle m-2"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    Редактировать
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item"
+                           href="{% url 'learning:briefing_docs' object.pk %}">
+                        Материалы по обучению
+                    </a></li>
+                    <li><a class="dropdown-item"
+                           href="{% url 'learning:briefing_posters' object.pk %}">
+                        Плакаты по обучению
+                    </a></li>
+                    <li><a class="dropdown-item"
+                           href="{% url 'learning:question_list' object.test.pk %}">
+                        Вопросы к тесту
+                    </a></li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-start w-100">
+                <div class="nav flex-column nav-pills m-2" id="v-pills-tab-learning" role="tablist"
+                     aria-orientation="vertical">
+                    <button class="nav-link active" id="v-pills-doc-tab" data-bs-toggle="pill"
+                            data-bs-target="#v-pills-doc" type="button" role="tab" aria-controls="v-pills-doc"
+                            aria-selected="true">Документы
+                    </button>
+                    <button class="nav-link" id="v-pills-poster-tab" data-bs-toggle="pill"
+                            data-bs-target="#v-pills-poster" type="button" role="tab" aria-controls="v-pills-poster"
+                            aria-selected="false">Плакаты
+                    </button>
+                </div>
+                <div class="container-fluid">
+
+                    <div class="tab-content" id="v-pills-tabContent-learning w-100">
+                        <div class="tab-pane fade show active mx-2" id="v-pills-doc" role="tabpanel"
+                             aria-labelledby="v-pills-doc-tab"
+                             tabindex="0">
+                            <table class="table table-hover text-center w-100">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Наименование документа по обучению</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for document in object.get_learning_docs %}
+                                <tr>
+                                    <td><a href="{{document.doc.url}}">{{document.name}}</a></td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="tab-pane fade mx-2" id="v-pills-poster" role="tabpanel"
+                             aria-labelledby="v-pills-poster-tab"
+                             tabindex="0">
+                            <div id="carouselPosters" class="carousel slide w-100" data-pause="true">
+                                <div class="carousel-inner">
+                                    <!-- Титульный лист -->
+                                    <div class="carousel-item active">
+                                        <img src="{{ ''|poster_page }}" class="d-block w-100"
+                                             alt="Титульный лист постера">
+                                    </div>
+
+                                    <!-- Остальные плакаты -->
+                                    {% for poster in object.get_learning_posters %}
+                                    <div class="carousel-item">
+                                        <img src="{{ poster.image|media_filter }}" class="d-block w-100"
+                                             alt="Изображение постера">
+                                    </div>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- Кнопки управления каруселью (остаются по бокам) -->
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carouselPosters"
+                                        data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Предыдущий</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carouselPosters"
+                                        data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Следующий</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
+            <div class="row">
+                <div class="col-10 offset-1">
+                    <p class="text-muted text-center m-4">
+                        Выберите ответ для каждого вопроса. Правильность ответа отобразится сразу.
+                    </p>
+                    {% for question in object.test.question.all %}
+                    <div class="card question-card mb-2 p-3 shadow-sm">
+                        <h5 class="text-primary">Вопрос №{{ forloop.counter }}</h5>
+                        <div class="answer-frame my-2 p-2 bg-light border rounded">
+                        <p class="card-text fs-5">{{ question.text }}</p>
+                        </div>
+                        <h6 class="text-primary">Варианты ответа:</h6>
+                        {% for answer in question.answer.all %}
+                        <div class="form-check mb-2 position-relative">
+                            <input class="form-check-input position-absolute top-50 start-9 translate-middle-y"
+                                   type="radio"
+                                   name="question_{{ question.id }}"
+                                   id="answer_{{ answer.id }}"
+                                   data-correct="{{ answer.is_correct|yesno:'true,false' }}">
+                            <div class="answer-frame p-2 bg-light border rounded">
+                            <label class="form-check-label text-break w-100" for="answer_{{ answer.id }}">
+                                {{ answer.text }}
+                            </label>
+                                </div>
+                        </div>
+                        {% endfor %}
+                        <div class="feedback alert mt-3" style="display: none;"></div>
+                    </div>
+                    {% endfor %}
+                    <!-- Кнопка сброса -->
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn btn-outline-secondary btn-reset m-2" id="resetBtn">
+                            Сбросить все ответы
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="disabled-tab-pane" role="tabpanel" aria-labelledby="disabled-tab" tabindex="0">
+            <!-- Содержимое отключенной вкладки -->
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Обработка выбора ответа
+    function handleAnswer(radio) {
+        const questionCard = radio.closest('.question-card');
+        const feedback = questionCard.querySelector('.feedback');
+
+        // Сброс стилей
+        questionCard.classList.remove('correct', 'incorrect');
+        feedback.style.display = 'none';
+        feedback.classList.remove('alert-success', 'alert-danger');
+
+        if (radio.checked) {
+            const isCorrect = radio.dataset.correct === 'true';
+
+            if (isCorrect) {
+                questionCard.classList.add('correct');
+                feedback.classList.add('alert-success');
+                feedback.textContent = 'Правильно! ✓';
+            } else {
+                questionCard.classList.add('incorrect');
+                feedback.classList.add('alert-danger');
+                feedback.textContent = 'Неверно. Попробуйте ещё раз.';
+            }
+
+            feedback.style.display = 'block';
+        }
+    }
+
+    // Назначаем обработчики на все радио-кнопки
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', () => handleAnswer(radio));
+    });
+
+    // Кнопка сброса
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.checked = false;
+
+            const questionCard = radio.closest('.question-card');
+            const feedback = questionCard.querySelector('.feedback');
+
+            questionCard.classList.remove('correct', 'incorrect');
+            feedback.style.display = 'none';
+            feedback.classList.remove('alert-success', 'alert-danger');
+            feedback.textContent = '';
+        });
+    });
+
+</script>
+{% endblock %}
