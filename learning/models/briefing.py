@@ -69,8 +69,21 @@ class BriefingDay(models.Model):
             return
 
     def save(self, *args, **kwargs):
+        if not self.pk:
+            if self.briefing_type and self.briefing_type.briefing_type == "repeated":
+                BriefingDay.objects.filter(
+                    learner=self.learner,
+                    briefing_type__briefing_type__in=["primary", "repeated"],
+                    is_active=True
+                ).update(is_active=False)
+
+        # Вычисляем next_briefing_day
         self.calculate_next_date()
         return super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Инструктаж"
+        verbose_name_plural = "Инструктажи"
 
     def __str__(self):
         return f"{self.briefing_type} инструктаж от {self.briefing_day}"

@@ -6,7 +6,7 @@ from organization.models import (
     District,
     Division,
     Position,
-    Worker,
+    Worker, ResponsibleForTraining,
 )
 from django.core.exceptions import ValidationError
 from django.forms import BaseInlineFormSet
@@ -117,6 +117,12 @@ class WorkerUpdateForm(StileFormMixin, forms.ModelForm):
     class Meta:
         model = Worker
         exclude = ["image"]
+
+
+class ResponsibleForTrainingForm(StileFormMixin, forms.ModelForm):
+    class Meta:
+        model = ResponsibleForTraining
+        fields = "__all__"
 
 
 class PositionFormSet(BaseInlineFormSet):

@@ -52,6 +52,21 @@ class Affiliation(models.Model):
         **NULLABLE)
 
     @property
+    def get_last_filled(self):
+        fields = [
+            self.organization,
+            self.branch,
+            self.division,
+            self.district,
+            self.group
+        ]
+        last_filled = None
+        for field in fields:
+            if field is not None:
+                last_filled = field
+        return last_filled
+
+    @property
     def return_affiliation(self):
         list_fields = [self.organization, self.branch, self.division, self.district, self.group]
         affiliation_list = []
@@ -133,11 +148,18 @@ class Worker(Affiliation):
         verbose_name = "Работник"
         verbose_name_plural = "Работники"
 
-    def __str__(self):
+    @property
+    def return_fio(self):
         if self.patronymic:
             return f'{self.name[:1]}.{self.patronymic[:1]}. {self.surname}'
         else:
             return f'{self.name[:1]}. {self.surname}'
+
+    def __str__(self):
+        if self.patronymic:
+            return f'{self.position.get(is_main=True)} {self.name[:1]}.{self.patronymic[:1]}. {self.surname}'
+        else:
+            return f'{self.position.get(is_main=True)} {self.name[:1]}. {self.surname}'
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -162,3 +184,71 @@ class Worker(Affiliation):
         if self.group and self.district and self.group.district != self.district:
             raise ValidationError("Группа не принадлежит указанному участку")
 
+
+class ResponsibilityLevel(models.Model):
+    """Уровни ответственности (перечислитель)"""
+    LEVEL_CHOICES = [
+        ('organization', 'Организация'),
+        ('branch', 'Филиал'),
+        ('division', 'Структурное подразделение'),
+        ('district', 'Участок'),
+        ('group', 'Группа'),
+    ]
+    code = models.CharField(max_length=20, choices=LEVEL_CHOICES, unique=True)
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = "Уровень ответственности"
+        verbose_name_plural = "Уровни ответственности"
+
+    def __str__(self):
+        return self.name
+
+
+class ResponsibleForTraining(Affiliation):
+    """Ответственный за инструктаж/обучение"""
+    responsible_worker = models.ForeignKey(
+        Worker,
+        on_delete=models.CASCADE,
+        verbose_name="Ответственный работник",
+        related_name="responsibilities"
+    )
+    level = models.ForeignKey(
+        ResponsibilityLevel,
+        on_delete=models.CASCADE,
+        verbose_name="Уровень ответственности"
+    )
+
+    # Привязка к группам работников (PositionGroup)
+    position_groups = models.ManyToManyField(
+        PositionGroup,
+        verbose_name="Группы работников",
+        blank=True
+    )
+
+    is_active = models.BooleanField(verbose_name="Активно", default=True)
+    start_date = models.DateField(verbose_name="Дата назначения", auto_now_add=True)
+    end_date = models.DateField(verbose_name="Дата окончания", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Ответственный за обучение"
+        verbose_name_plural = "Ответственные за обучение"
+
+    def __str__(self):
+        return f"{self.worker} ({self.level})"
+
+    def clean(self):
+        # Валидация: заполняем только те поля, которые соответствуют уровню
+        level_code = self.level.code
+        fields = {
+            'organization': self.organization,
+            'branch': self.branch,
+            'division': self.division,
+            'district': self.district,
+            'group': self.group
+        }
+        for code, value in fields.items():
+            if code == level_code and not value:
+                raise ValidationError(f"Для уровня '{level_code}' необходимо указать сущность.")
+            if code != level_code and value:
+                raise ValidationError(f"Для уровня '{level_code}' поле '{code}' должно быть пустым.")

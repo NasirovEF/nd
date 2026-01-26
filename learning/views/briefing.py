@@ -165,6 +165,7 @@ class BriefingDayListView(ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         context['worker_pk'] = self.kwargs['worker_pk']
+        context['worker'] = Worker.objects.filter(pk=self.kwargs['worker_pk']).first()
         return context
 
 
@@ -220,6 +221,7 @@ def create_bulk_briefing_day(request):
 class BriefingLogListView(EntityDetailView):
     """Просмотр журнала инструктажа"""
     template_name = 'learning/briefing_log.html'
+    paginate_by = 10
 
     def get_briefingday_queryset(self, entity_obj):
         model_name = self.kwargs['model_name']
@@ -251,33 +253,35 @@ class BriefingLogListView(EntityDetailView):
         """Собираем все параметры поиска из GET."""
         params = super().get_search_params()
         params.update({
-            'briefing_type': self.request.GET.get('briefing_type'),
-            'briefing_program': self.request.GET.get('briefing_program'),
-            'briefing_reason': self.request.GET.get('briefing_reason'),
-            'next_date_from': self.request.GET.get('next_date_from'),
-            'next_date_to': self.request.GET.get('next_date_to')
+            'briefing_type': self.request.GET.get('briefing_type', ''),
+            'briefing_program': self.request.GET.get('briefing_program', ''),
+            'briefing_reason': self.request.GET.get('briefing_reason', ''),
+            'next_date_from': self.request.GET.get('next_date_from', ''),
+            'next_date_to': self.request.GET.get('next_date_to', ''),
         })
         return params
 
     def get_filter(self, queryset, search_params):
-        filters = {}
+        """Применяет фильтры к queryset на основе параметров поиска."""
+        if not search_params:
+            return queryset
 
-        if search_params['surname']:
-            filters['learner__worker__surname__icontains'] = search_params['surname']
-        if search_params['briefing_type']:
-            filters['briefing_type__briefing_type'] = search_params['briefing_type']
-        if search_params['briefing_program']:
-            filters['briefing_program__name__icontains'] = search_params['briefing_program']
-        if search_params['date_briefing_from']:
-            filters['briefing_day__gte'] = search_params['date_briefing_from']
-        if search_params['date_briefing_to']:
-            filters['briefing_day__lte'] = search_params['date_briefing_to']
-        if search_params['briefing_reason']:
-            filters['briefing_reason__icontains'] = search_params['briefing_reason']
-        if search_params['next_date_from']:
-            filters['nextdate_from__gte'] = search_params['next_date_from']
-        if search_params['next_date_to']:
-            filters['nextdate_to__lte'] = search_params['next_date_to']
+        filters = {}
+        FILTER_MAP = {
+            'surname': 'learner__worker__surname__icontains',
+            'briefing_type': 'briefing_type__briefing_type',
+            'briefing_program': 'briefing_program__name__icontains',
+            'date_briefing_from': 'briefing_day__gte',
+            'date_briefing_to': 'briefing_day__lte',
+            'briefing_reason': 'briefing_reason__icontains',
+            'next_date_from': 'next_briefing_day__gte',
+            'next_date_to': 'next_briefing_day__lte',
+        }
+
+        for param_name, filter_key in FILTER_MAP.items():
+            value = search_params.get(param_name)
+            if value is not None and value != '':
+                filters[filter_key] = value
 
         return queryset.filter(**filters)
 
@@ -299,7 +303,7 @@ class BriefingLogListView(EntityDetailView):
         briefing_day_list = briefing_day_list.order_by('learner', '-briefing_day')
 
         # Пагинируем
-        briefing_day_page = self.get_paginated_page(briefing_day_list, 'worker_page')
+        briefing_day_page = self.get_paginated_page(briefing_day_list, 'briefing_day_page')
         context['briefing_day_page'] = briefing_day_page
 
         return context

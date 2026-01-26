@@ -20,7 +20,8 @@ from organization.views import (
     DivisionDeleteView,
     EntityDetailView,
     EntityBriefingProgramView,
-    EntityLearningProgramView
+    EntityLearningProgramView, ResponsibleForTrainingCreateView, ResponsibleForTrainingListView,
+    ResponsibleForTrainingUpdateView, ResponsibleForTrainingDeleteView
 )
 
 app_name = OrganizationConfig.name
@@ -33,17 +34,12 @@ urlpatterns = [
     path("branch_delete/<int:pk>", BranchDeleteView.as_view(), name="branch_delete"),
     path("district_create/", DistrictCreateView.as_view(), name="district_create"),
     path("district_update/<int:pk>", DistrictUpdateView.as_view(), name="district_update"),
-    path(
-        "district_delete/<int:pk>", DistrictDeleteView.as_view(), name="district_delete"
-    ),
-    path("division_create/", DivisionCreateView.as_view(), name="division_create"),
+    path("district_delete/<int:pk>", DistrictDeleteView.as_view(), name="district_delete"),
 
-    path(
-        "division_update/<int:pk>", DivisionUpdateView.as_view(), name="division_update"
-    ),
-    path(
-        "division_delete/<int:pk>", DivisionDeleteView.as_view(), name="division_delete"
-    ),
+    path("division_create/", DivisionCreateView.as_view(), name="division_create"),
+    path("division_update/<int:pk>", DivisionUpdateView.as_view(), name="division_update"),
+    path("division_delete/<int:pk>", DivisionDeleteView.as_view(), name="division_delete"),
+
     path("group_create/", GroupCreateView.as_view(), name="group_create"),
     path("group_update/<int:pk>", GroupUpdateView.as_view(), name="group_update"),
     path("group_delete/<int:pk>", GroupDeleteView.as_view(), name="group_delete"),
@@ -58,4 +54,9 @@ urlpatterns = [
     path("worker_detail/<int:pk>/", WorkerDetailView.as_view(), name="worker_detail"),
     path("worker_update/<int:pk>", WorkerUpdateView.as_view(), name="worker_update"),
     path("worker_delete/<int:pk>", WorkerDeleteView.as_view(), name="worker_delete"),
+
+    path("responsible_create/", ResponsibleForTrainingCreateView.as_view(), name="responsible_create"),
+    path("responsible_list/", ResponsibleForTrainingListView.as_view(), name="responsible_list"),
+    path("responsible_update/<int:pk>", ResponsibleForTrainingUpdateView.as_view(), name="responsible_update"),
+    path("responsible_delete/<int:pk>", ResponsibleForTrainingDeleteView.as_view(), name="responsible_delete"),
 ]

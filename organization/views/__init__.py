@@ -5,3 +5,5 @@ from .group import GroupDeleteView, GroupCreateView, GroupUpdateView
 from .organization import OrganizationListView, OrganizationDeleteView, OrganizationUpdateView, OrganizationCreateView
 from .worker import WorkerUpdateView, WorkerDetailView, WorkerCreateView, WorkerDeleteView
 from .entity import EntityDetailView, EntityBriefingProgramView, EntityLearningProgramView
+from .responsibilities import (ResponsibleForTrainingCreateView, ResponsibleForTrainingDeleteView,
+                               ResponsibleForTrainingUpdateView, ResponsibleForTrainingListView)

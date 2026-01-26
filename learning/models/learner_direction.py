@@ -178,7 +178,7 @@ class Learner(models.Model):
         verbose_name_plural = "Обучаемые"
 
     def __str__(self):
-        return f"{self.position}, {self.worker}"
+        return f"{self.position}, {self.worker.return_fio}"
 
 
 class StaffDirection(models.Model):

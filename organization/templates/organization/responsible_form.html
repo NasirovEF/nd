@@ -8,13 +8,14 @@
             <div class="card m-4">
                 <div class="card-header text-center">
                     {% if object %}
-                    Редактирование НС
+                    Редактирование ответственного
                     {% else %}
-                    Для добавления НС заполните поля
+                    Для назначения ответственного заполните поля
                     {% endif %}
                 </div>
                 <div class="card-body">
                     {% csrf_token %}
+                    {{ form.media.js }}
                     {{ form.as_p }}
                 </div>
                 <div class="card-footer">
@@ -26,13 +27,15 @@
                             Создать
                             {% endif %}
                         </button>
-                        <a class="btn btn-outline-secondary mx-4" href="{% url 'accident:accident_list' %}">Отмена</a>
+                        <a href="{% url 'organization:responsible_list' %}" class="btn btn-outline-secondary mx-2">
+                            Отмена
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-2">
         </div>
-    </div>
-</form>
+        </div>
+    </form>
 {% endblock %}

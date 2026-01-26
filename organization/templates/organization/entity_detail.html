@@ -22,10 +22,19 @@
         </nav>
         {% endif %}
         <h5 class="card-title">{{ object.name }}</h5>
-            <a class="btn btn-outline-primary btn-sm my-2"
+        <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle my-2"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                Работники
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item"
+                       href="{% url 'organization:responsible_list' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Список ответственных
+                </a></li>
+                <li><a class="dropdown-item"
                        href="{% url 'organization:worker_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Добавить
                     работника
-                </a>
+                </a></li>
+            </ul>
         <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle mx-2"
                     data-bs-toggle="dropdown" aria-expanded="false">
                 Инструктаж

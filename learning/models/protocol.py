@@ -25,63 +25,15 @@ class Protocol(models.Model):
         return f"Протокол проверки знаний от {self.prot_date.strftime("%d.%m.%Y")}"
 
 
-class KnowledgeDateManager(models.Manager):
-    @transaction.atomic
-    def create_or_update_active(self, protocol=None, learner=None, direction=None, kn_date=None):
-        if learner is None or direction is None:
-            raise ValueError("learner и direction не могут быть None")
-
-        # Блокируем записи для избежания гонок
-        existing_records = self.filter(
-            learner=learner,
-            direction=direction
-        ).select_for_update()
-
-        # Создаём и сохраняем новую запись сразу
-        new_record = self.model(
-            protocol=protocol,
-            learner=learner,
-            direction=direction,
-            kn_date=kn_date if kn_date is not None else get_current_date(),
-            is_active=False,
-            next_date=None
-        )
-        new_record.save()  # Сохраняем для генерации id
-
-        # Теперь можно определить актуальную запись
-        latest_record = max(
-            list(existing_records) + [new_record],
-            key=lambda x: (x.kn_date, x.id)
-        )
-
-        # Деактивируем все остальные
-        self.filter(
-            learner=learner,
-            direction=direction
-        ).exclude(id=latest_record.id).update(is_active=False)
-
-        # Активируем актуальную
-        if not latest_record.is_active:
-            self.filter(id=latest_record.id).update(is_active=True)
-            latest_record.is_active = True
-
-        return latest_record
-
-
 class KnowledgeDate(models.Model):
-    """Класс даты проверки знаний"""
     kn_date = models.DateField(verbose_name="Дата проверки знаний", default=get_current_date)
     protocol = models.ForeignKey(Protocol, verbose_name="Протокол проверки", related_name="knowledge_date", on_delete=models.CASCADE, **NULLABLE)
     direction = models.ForeignKey("Direction", verbose_name="Направление обучения", related_name="knowledge_date", on_delete=models.SET_NULL, **NULLABLE)
-    learner = models.ForeignKey("Learner", verbose_name="Работник", related_name="knowledge_date", on_delete=models.CASCADE,
-                                  **NULLABLE)
+    learner = models.ForeignKey("Learner", verbose_name="Работник", related_name="knowledge_date", on_delete=models.CASCADE, **NULLABLE)
     next_date = models.DateField(verbose_name="Дата следующей проверки знаний", default=get_current_date)
     is_active = models.BooleanField(default=True, verbose_name="Актуальность")
 
-    objects = KnowledgeDateManager()
-
     def calculate_next_date(self):
-        """Рассчитывает next_date после сохранения ProtocolResult."""
         try:
             if self.protocol:
                 protocol_result = self.protocol.protocol_result.get(learner=self.learner)
@@ -94,9 +46,17 @@ class KnowledgeDate(models.Model):
         except (ProtocolResult.DoesNotExist, Protocol.DoesNotExist):
             self.next_date = self.kn_date + timedelta(days=30)
 
+    @transaction.atomic
     def save(self, *args, **kwargs):
+        if not self.pk:
+            if self.direction and self.learner:
+                KnowledgeDate.objects.filter(
+                    direction=self.direction,
+                    learner=self.learner,
+                    is_active=True
+                ).update(is_active=False)
         self.calculate_next_date()
-        return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Дата проверки знаний"

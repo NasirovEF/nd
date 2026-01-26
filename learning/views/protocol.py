@@ -149,8 +149,7 @@ class ProtocolCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
                 )
         for direction in directions:
             for learner in learners:
-                knowledge_date = KnowledgeDate.objects.create_or_update_active(kn_date=protocol.prot_date, protocol=protocol, direction=direction, learner=learner)
-                knowledge_date.save()
+                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol, direction=direction, learner=learner)
 
         return super().form_valid(form)
 
@@ -207,10 +206,8 @@ class ProtocolUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
 
         for direction in protocol.direction.all():
             for learner in protocol.learner.all():
-                knowledge_date = KnowledgeDate.objects.create_or_update_active(kn_date=protocol.prot_date, protocol=protocol,
+                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol,
                                                               direction=direction, learner=learner)
-                knowledge_date.save()
-
         return super().form_valid(form)
 
 

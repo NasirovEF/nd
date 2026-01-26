@@ -16,7 +16,6 @@ from django.db import transaction
 from users.models import User
 
 
-
 class WorkerListView(ListView):
     """Просмотр списка работников"""
     model = Worker
@@ -129,7 +128,7 @@ class WorkerCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                     )
                     learner.direction.set(directions)
                     for direction in directions:
-                        KnowledgeDate.objects.create_or_update_active(learner=learner, direction=direction)
+                        KnowledgeDate.objects.create(learner=learner, direction=direction)
 
                 # Создаём пользователя
                 user = User.objects.create(worker=worker)
@@ -245,7 +244,7 @@ class WorkerUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
                 )
                 learner.direction.set(directions)
                 for direction in directions:
-                    KnowledgeDate.objects.create_or_update_active(learner=learner, direction=direction)
+                    KnowledgeDate.objects.create(learner=learner, direction=direction)
 
 
 class WorkerDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
