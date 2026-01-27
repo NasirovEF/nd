@@ -28,7 +28,7 @@ class ProtocolListView(ListView):
         context["divisions"] = divisions
         context["directions"] = directions
         context['search_params'] = {
-            'division': self.request.GET.get('division', ''),
+            'issued_division': self.request.GET.get('issued_division', ''),
             'direction': self.request.GET.get('direction', ''),
             'date_from': self.request.GET.get('date_from', ''),
             'date_to': self.request.GET.get('date_to', ''),
@@ -43,7 +43,7 @@ class ProtocolListView(ListView):
     def get_queryset(self, *args, **kwargs):
         queryset = super().get_queryset(*args, **kwargs)
 
-        division = self.request.GET.get("division")
+        issued_division = self.request.GET.get("issued_division")
         direction = self.request.GET.get("direction")
         date_from = self.request.GET.get("date_from")
         date_to = self.request.GET.get("date_to")
@@ -53,8 +53,8 @@ class ProtocolListView(ListView):
         name = self.request.GET.get("name")
         patronymic = self.request.GET.get("patronymic")
 
-        if division:
-            queryset = queryset.filter(division__name__icontains=division)
+        if issued_division:
+            queryset = queryset.filter(issued_division__name__icontains=issued_division)
         if direction:
             queryset = queryset.filter(program__direction__name__icontains=direction)
         if date_from:

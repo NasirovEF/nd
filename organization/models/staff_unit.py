@@ -196,13 +196,18 @@ class ResponsibilityLevel(models.Model):
     ]
     code = models.CharField(max_length=20, choices=LEVEL_CHOICES, unique=True)
     name = models.CharField(max_length=100)
+    order = models.PositiveIntegerField(
+        help_text="Порядок уровня (1 = высший, 5 = низший)"
+    )
 
     class Meta:
         verbose_name = "Уровень ответственности"
         verbose_name_plural = "Уровни ответственности"
+        ordering = ['order']
 
     def __str__(self):
         return self.name
+
 
 
 class ResponsibleForTraining(Affiliation):
@@ -219,7 +224,6 @@ class ResponsibleForTraining(Affiliation):
         verbose_name="Уровень ответственности"
     )
 
-    # Привязка к группам работников (PositionGroup)
     position_groups = models.ManyToManyField(
         PositionGroup,
         verbose_name="Группы работников",
@@ -228,7 +232,6 @@ class ResponsibleForTraining(Affiliation):
 
     is_active = models.BooleanField(verbose_name="Активно", default=True)
     start_date = models.DateField(verbose_name="Дата назначения", auto_now_add=True)
-    end_date = models.DateField(verbose_name="Дата окончания", null=True, blank=True)
 
     class Meta:
         verbose_name = "Ответственный за обучение"
@@ -238,17 +241,39 @@ class ResponsibleForTraining(Affiliation):
         return f"{self.worker} ({self.level})"
 
     def clean(self):
-        # Валидация: заполняем только те поля, которые соответствуют уровню
-        level_code = self.level.code
-        fields = {
-            'organization': self.organization,
-            'branch': self.branch,
-            'division': self.division,
-            'district': self.district,
-            'group': self.group
+        if not self.level:
+            raise ValidationError("Необходимо указать уровень ответственности.")
+
+        current_order = self.level.order
+
+        field_labels = {
+            'organization': 'Организация',
+            'branch': 'Филиал',
+            'division': 'Структурное подразделение',
+            'district': 'Участок',
+            'group': 'Группа',
         }
-        for code, value in fields.items():
-            if code == level_code and not value:
-                raise ValidationError(f"Для уровня '{level_code}' необходимо указать сущность.")
-            if code != level_code and value:
-                raise ValidationError(f"Для уровня '{level_code}' поле '{code}' должно быть пустым.")
+
+        field_orders = {
+            'organization': 1,
+            'branch': 2,
+            'division': 3,
+            'district': 4,
+            'group': 5,
+        }
+
+        for field_name, field_order in field_orders.items():
+            field_value = getattr(self, field_name)
+            field_label = field_labels[field_name]
+
+            if field_order == current_order:
+                if not field_value:
+                    raise ValidationError(
+                        f"Для уровня '{self.level.name}' необходимо указать '{field_label}'."
+                    )
+            elif field_order > current_order:
+                if field_value is not None:
+                    raise ValidationError(
+                        f"Для уровня '{self.level.name}' поле '{field_label}' должно быть пустым "
+                        "(оно относится к более низкому уровню)."
+                    )

@@ -51,6 +51,7 @@
                 </div>
             </div>
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 ms-2">
+                {% if user.worker == object %}
                 {% for learner in object.learner.all %}
                 {% for assignment in learner|get_assignments %}
                 <div class="col">  <!-- Обёртка-колонка (ключевой элемент!) -->
@@ -86,6 +87,7 @@
                 </div>
                 {% endfor %}
                 {% endfor %}
+                {% endif %}
             </div>
 
         </div>
@@ -105,6 +107,10 @@
 
             <a href="{% url 'learning:briefing_day_list' object.pk %}" class="btn btn-outline-primary btn-sm">Архив
                 инструктажей</a>
+            {% with object.get_last_filled as model_name %}
+            <a href="{% url 'organization:entity_briefing_program' model_name|model_name model_name.pk %}"
+               class="btn btn-outline-primary btn-sm ms-2">Программы</a>
+            {% endwith %}
             <div class="card">
                 <div class="card-body">
 
@@ -216,6 +222,10 @@
                     {% endfor %}
                 </ul>
             </div>
+            {% with object.get_last_filled as model_name %}
+            <a href="{% url 'organization:entity_learning_program' model_name|model_name model_name.pk %}"
+               class="btn btn-outline-primary btn-sm ms-2">Программы</a>
+            {% endwith %}
 
             <div class="card">
                 <div class="card-body">

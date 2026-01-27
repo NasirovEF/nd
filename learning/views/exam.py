@@ -101,6 +101,9 @@ def start_exam(request, learner_id, assignment_id):
     except Learner.DoesNotExist:
         return HttpResponseNotFound("Learner not found")
 
+    if request.user.worker != learner.worker:
+        return HttpResponseForbidden("Доступ запрещён")
+
     assignment = get_object_or_404(ExamAssignment, learner=learner, id=assignment_id)
 
     if assignment.status == 'assigned':
@@ -182,8 +185,9 @@ def submit_answers(request, learner_id, result_id):
 @login_required
 def exam_results(request, learner_id):
     """Просмотр результатов экзаменов для одного работника"""
+
     try:
-        learner = request.user.worker.learner.get(pk=learner_id)
+        learner = Learner.objects.get(pk=learner_id)
     except Learner.DoesNotExist:
         return HttpResponseNotFound("Learner not found")
     results = ExamResult.objects.filter(learner=learner).select_related('exam')

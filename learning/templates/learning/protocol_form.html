@@ -18,13 +18,13 @@
                         {{ form.non_field_errors }}
                     </div>
                     {% endif %}
-                    <!-- Поле "division" -->
+                    <!-- Поле "issued_division" -->
                     <div class="mb-3">
-                        <label class="form-label">{{ form.division.label }}</label>
-                        {{ form.division }}
-                        {% if form.division.errors %}
+                        <label class="form-label">{{ form.issued_division.label }}</label>
+                        {{ form.issued_division }}
+                        {% if form.issued_division.errors %}
                         <div class="invalid-feedback d-block">
-                            {% for error in form.division.errors %}
+                            {% for error in form.issued_division.errors %}
                             {{ error }}<br>
                             {% endfor %}
                         </div>

@@ -13,6 +13,7 @@ from organization.forms import StileFormMixin
 
 
 class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['program'].queryset = Program.objects.filter(is_active=True)

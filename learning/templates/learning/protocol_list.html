@@ -22,8 +22,8 @@
                                      aria-label="Search" value="{{search_params.date_from}}"></p>
                     <p>Дата по <input name="date_to" class="form-control text-center" type="date" placeholder="Дата по"
                                       aria-label="Search" value="{{ search_params.date_to }}"></p>
-                    <input name="division" class="form-control my-2 text-center" list="divisionOptions"
-                           id="divisionDataList" value="{{search_params.division}}"
+                    <input name="issued_division" class="form-control my-2 text-center" list="divisionOptions"
+                           id="divisionDataList" value="{{search_params.issued_division}}"
                            placeholder="Введите название структурного подразделения выдавшего протокол...">
                     <datalist id="divisionOptions">
                         {% for division in divisions %}
@@ -92,7 +92,7 @@
         <tbody class="table-group-divider">
         {% for protocol in object_list %}
         <tr>
-            <td>{{protocol.division}}<br>{{protocol.division.branch}}</td>
+            <td>{{protocol.issued_division}}<br>{{protocol.issued_division.branch}}</td>
             <td>{{protocol.program.all|get_direction_name}}</td>
             <td>{{ protocol.prot_date }}</td>
             <td>{% if protocol.doc_scan %}

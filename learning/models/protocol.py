@@ -7,7 +7,7 @@ from organization.services import NULLABLE
 
 class Protocol(models.Model):
     """Модель протокола проверки знаний"""
-    division = models.ForeignKey(Division, on_delete=models.SET_NULL, verbose_name="Структурное подразделение выдавшее протокол", related_name="protocol", null=True)
+    issued_division = models.ForeignKey(Division, on_delete=models.SET_NULL, verbose_name="Структурное подразделение выдавшее протокол", related_name="protocol", null=True)
     chairman = models.ForeignKey(Worker, on_delete=models.SET_NULL, verbose_name="Председатель комиссии", related_name="protocol_chairman", null=True)
     members = models.ManyToManyField(Worker, verbose_name="Члены комиссии", related_name="protocol_members")
     prot_date = models.DateField(verbose_name="Дата протокола проверки знаний", default=get_current_date)

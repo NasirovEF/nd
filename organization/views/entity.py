@@ -158,12 +158,12 @@ class HierarchicalEntityView(DetailView):
             'date_learning_to': self.request.GET.get('date_learning_to', ''),
             'date_briefing_from': self.request.GET.get('date_briefing_from', ''),
             'date_briefing_to': self.request.GET.get('date_briefing_to', ''),
+            'affiliation': self.request.GET.get('affiliation', '')
         }
 
     def apply_filters(self, queryset, search_params):
         """Применяем фильтры к QuerySet работников."""
 
-        # 1. Текстовые фильтры
         if search_params.get('surname'):
             queryset = queryset.filter(surname__icontains=search_params['surname'])
 
@@ -171,8 +171,14 @@ class HierarchicalEntityView(DetailView):
             queryset = queryset.filter(
                 position__name__full_name__icontains=search_params['position']
             )
+        if search_params.get('affiliation'):
+            queryset = queryset.filter(Q(organization__name__icontains=search_params['affiliation']) |
+                                       Q(branch__name__icontains=search_params['affiliation']) |
+                                       Q(division__name__icontains=search_params['affiliation']) |
+                                       Q(district__name__icontains=search_params['affiliation']) |
+                                       Q(group__name__icontains=search_params['affiliation'])
+                                       )
 
-        # 2. Группируем параметры дат для единообразной обработки
         date_filters = [
             # Обучение
             ('date_learning_from', KnowledgeDate, 'next_date__gte'),
@@ -186,11 +192,10 @@ class HierarchicalEntityView(DetailView):
             if not search_params.get(param_name):
                 continue
 
-            # Формируем подзапрос без values_list(flat=True) — эффективнее
             valid_ids = model.objects.filter(
                 **{lookup: search_params[param_name]},
                 is_active=True
-            ).values('learner')  # Возвращает QuerySet с полем learner
+            ).values('learner')
 
             queryset = queryset.filter(learner__in=valid_ids)
 

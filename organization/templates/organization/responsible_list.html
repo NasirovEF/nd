@@ -22,7 +22,6 @@
             <th class="col-2" scope="col">Подразделение</th>
             <th class="col-2" scope="col">ФИО</th>
             <th class="col-2" scope="col">Должность</th>
-            <th class="col-1" scope="col">Обучение / Инструктаж</th>
             <th class="col-2" scope="col">Группа работников</th>
             <th class="col-1" scope="col"></th>
             <th class="col-1" scope="col"></th>
@@ -39,7 +38,9 @@
                                     <option value="4" {% if search_params.level == "4" %}selected{% endif %}>Участок</option>
                                     <option value="5" {% if search_params.level == "5" %}selected{% endif %}>Группа</option>
                                 </select></td>
-            <td></td>
+            <td><input name="affiliation" class="form-control my-2 text-center" type="search"
+                                       placeholder="Введите подразделение"
+                                       aria-label="Search" value="{{search_params.affiliation}}"></td>
             <td><input name="surname" class="form-control my-2 text-center" type="search"
                                        placeholder="Введите Фамилию"
                                        aria-label="Search" value="{{search_params.surname}}"></td>
@@ -47,15 +48,17 @@
             <td><input name="position" class="form-control my-2 text-center" type="search"
                                        placeholder="Введите должность"
                                        aria-label="Search" value="{{search_params.position}}"></td>
-            <td><select name="level" id="PositionGroupSelect" class="form-control text-center w-100">
-                                    <option value="" {% if search_params.level == "" %}selected{% endif %}>-----</option>
-                                    <option value="1" {% if search_params.level == "1" %}selected{% endif %}>ОСТ</option>
-                                    <option value="2" {% if search_params.level == "2" %}selected{% endif %}>Филиал</option>
+            <td><select name="position_groups" id="PositionGroupSelect" class="form-control text-center w-100">
+                                    <option value="" {% if search_params.position_groups == "" %}selected{% endif %}>-----</option>
+                                    {% for group in position_groups %}
+                                    <option value="{{group.pk}}" {% if search_params.position_groups|add:"0" == group.pk|add:"0" %}selected{% endif %}>{{group}}</option>
+                                    {% endfor %}
                                 </select></td>
-            <td><button type="submit" class="btn btn-outline-primary btn-sm mb-1">
+            <td><button type="submit" class="btn btn-outline-primary btn-sm">
                                     Поиск
                                 </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm"
+            </td>
+            <td>                <button type="button" class="btn btn-outline-secondary btn-sm"
                                         onclick="window.location.href='?';">
                                     Сбросить
                                 </button>
@@ -64,12 +67,13 @@
         </form>
         {% for responsible in object_list %}
         <tr>
-            <td>{{responsible.level.code}}</td>
+            <td>{{responsible.level}}</td>
             <td>{{responsible.return_str_affiliation}}</td>
-            <td>{{responsible.responsible_worker.return_fio}}</td>
-            <td>{{responsible.responsible_worker.position }}</td>
-            <td></td>
-            <td></td>
+            <td colspan="2">{{responsible.responsible_worker}}</td>
+            <td>{% for group in responsible.position_groups.all %}
+                {{group}}
+                {% endfor %}
+            </td>
             <td></td>
             <td><div class="btn-group">
                 <button type="button" class="btn btn-outline-primary  btn-sm dropdown-toggle" data-bs-toggle="dropdown"
@@ -77,11 +81,9 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item"
-                           href="#">Результат тестирования</a></li>
+                           href="{% url 'organization:responsible_update'  responsible.pk %}?archive=1">Изменить</a></li>
                     <li><a class="dropdown-item"
-                           href="{% url 'learning:briefing_day_update'  briefing.pk %}?archive=1">Изменить</a></li>
-                    <li><a class="dropdown-item"
-                           href="{% url 'learning:briefing_day_delete'  briefing.pk briefing.learner.worker.pk %}?archive=1">Удалить</a></li>
+                           href="{% url 'organization:responsible_delete'  responsible.pk %}?archive=1">Удалить</a></li>
                 </ul>
             </div></td>
         </tr>
