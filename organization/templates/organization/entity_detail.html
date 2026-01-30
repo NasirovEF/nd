@@ -22,35 +22,43 @@
         </nav>
         {% endif %}
         <h5 class="card-title">{{ object.name }}</h5>
+        {% if perms.organization.add_worker or perms.organization.view_responsiblefortraining %}
         <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle my-2"
                     data-bs-toggle="dropdown" aria-expanded="false">
                 Работники
             </button>
             <ul class="dropdown-menu">
+                {% if perms.organization.view_responsiblefortraining %}
                 <li><a class="dropdown-item"
-                       href="{% url 'organization:responsible_list' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Список ответственных
+                       href="{% url 'organization:responsible_list' object|model_name object.pk %}">Список ответственных
                 </a></li>
+                {% endif %}
+                {% if perms.organization.add_worker %}
                 <li><a class="dropdown-item"
                        href="{% url 'organization:worker_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Добавить
                     работника
                 </a></li>
+                                {% endif %}
             </ul>
+        {% endif %}
         <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle mx-2"
                     data-bs-toggle="dropdown" aria-expanded="false">
                 Инструктаж
             </button>
             <ul class="dropdown-menu">
+                {% if perms.learning.add_programbriefing %}
                 <li><a class="dropdown-item"
                        href="{% url 'learning:briefing_day_bulk_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Провести инструктаж
                 </a></li>
+                {% endif %}
                 <li><a class="dropdown-item"
                        href="{% url 'learning:briefing_log_list' object|model_name object.pk %}">Журнал инструктажа
                 </a></li>
             </ul>
-
+        {% if perms.learning.add_examassignment %}
         <a href="{% url 'learning:create_bulk_exam_assignment' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm">
             Назначить тест</a>
-
+        {% endif %}
         <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle mx-2"
                     data-bs-toggle="dropdown" aria-expanded="false">
                 Программы
@@ -137,21 +145,26 @@
                             </a>
                         </td>
                         <td>
+                            {% if perms.organization.change_worker or perms.organization.delete_worker %}
                             <div class="btn-group dropdown">
                                 <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
                                         data-bs-toggle="dropdown" aria-expanded="false">
 
                                 </button>
                                 <ul class="dropdown-menu">
+                                    {% if perms.organization.change_worker %}
                                     <li><a class="dropdown-item"
                                            href="{% url 'organization:worker_update' worker.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Изменить
                                     </a></li>
-                                    <hr>
-                                    <li><a class="dropdown-item"
+                                    {% endif %}
+                                    {% if perms.organization.delete_worker %}
+                                    <li><a class="dropdown-item text-danger"
                                            href="{% url 'organization:worker_delete' worker.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Удалить
                                     </a></li>
+                                    {% endif %}
                                 </ul>
                             </div>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

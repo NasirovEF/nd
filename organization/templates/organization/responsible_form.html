@@ -27,7 +27,7 @@
                             Создать
                             {% endif %}
                         </button>
-                        <a href="{% url 'organization:responsible_list' %}" class="btn btn-outline-secondary mx-2">
+                        <a href="{% url 'organization:responsible_list' model_name model_pk %}" class="btn btn-outline-secondary mx-2">
                             Отмена
                         </a>
                     </div>

@@ -55,8 +55,8 @@ urlpatterns = [
     path("worker_update/<int:pk>", WorkerUpdateView.as_view(), name="worker_update"),
     path("worker_delete/<int:pk>", WorkerDeleteView.as_view(), name="worker_delete"),
 
-    path("responsible_create/", ResponsibleForTrainingCreateView.as_view(), name="responsible_create"),
-    path("responsible_list/", ResponsibleForTrainingListView.as_view(), name="responsible_list"),
-    path("responsible_update/<int:pk>", ResponsibleForTrainingUpdateView.as_view(), name="responsible_update"),
-    path("responsible_delete/<int:pk>", ResponsibleForTrainingDeleteView.as_view(), name="responsible_delete"),
+    path("responsible_create/<str:model_name>/<int:model_pk>/", ResponsibleForTrainingCreateView.as_view(), name="responsible_create"),
+    path("responsible_list/<str:model_name>/<int:model_pk>/", ResponsibleForTrainingListView.as_view(), name="responsible_list"),
+    path("responsible_update/<str:model_name>/<int:model_pk>/<int:pk>", ResponsibleForTrainingUpdateView.as_view(), name="responsible_update"),
+    path("responsible_delete/<str:model_name>/<int:model_pk>/<int:pk>", ResponsibleForTrainingDeleteView.as_view(), name="responsible_delete"),
 ]

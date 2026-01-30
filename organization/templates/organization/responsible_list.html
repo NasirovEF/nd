@@ -1,17 +1,10 @@
 {% extends 'organization/base.html' %}
 {% load my_tags %}
 {% block content %}
-{% if model_name and pk %}
-<a href="{% url 'organization:entity_detail' model_name pk %}"
+<a href="{% url 'organization:entity_detail' model_name model_pk %}"
    class="btn btn-outline-secondary btn-sm mx-4 my-2">Назад</a>
-{% else %}
-{% with user.worker.get_last_filled as model_name %}
-<a href="{% url 'organization:entity_detail' model_name|model_name model_name.pk %}"
-   class="btn btn-outline-secondary btn-sm mx-4 my-2">Назад</a>
-{% endwith %}
-{% endif %}
 
-<a href="{% url 'organization:responsible_create' %}"
+<a href="{% url 'organization:responsible_create' model_name model_pk %}"
    class="btn btn-outline-primary btn-sm my-2">Назначить ответственного</a>
 
 <div class="container-lg">
@@ -81,9 +74,9 @@
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item"
-                           href="{% url 'organization:responsible_update'  responsible.pk %}?archive=1">Изменить</a></li>
+                           href="{% url 'organization:responsible_update' model_name model_pk responsible.pk %}">Изменить</a></li>
                     <li><a class="dropdown-item"
-                           href="{% url 'organization:responsible_delete'  responsible.pk %}?archive=1">Удалить</a></li>
+                           href="{% url 'organization:responsible_delete' model_name model_pk responsible.pk %}">Удалить</a></li>
                 </ul>
             </div></td>
         </tr>

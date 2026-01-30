@@ -15,7 +15,7 @@
                     c {{ object.responsible_worker }} ?
                 </div>
                 <div class="card-footer">
-                    <a href="{% url 'organization:responsible_list' %}" class="btn btn-outline-primary">
+                    <a href="{% url 'organization:responsible_list model_name model_pk' %}" class="btn btn-outline-primary">
                         Отмена
                     </a>
                     <button type="submit" class="btn btn-outline-danger">

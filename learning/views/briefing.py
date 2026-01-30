@@ -5,6 +5,7 @@ from django.views.generic import (
     UpdateView,
     ListView,
 )
+from django.db.models import Q
 from datetime import timedelta
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ValidationError
@@ -267,6 +268,8 @@ class BriefingLogListView(EntityDetailView):
             return queryset
 
         filters = {}
+        q_objects = []  # Для сложных Q-условий (например, affiliation)
+
         FILTER_MAP = {
             'surname': 'learner__worker__surname__icontains',
             'briefing_type': 'briefing_type__briefing_type',
@@ -278,12 +281,26 @@ class BriefingLogListView(EntityDetailView):
             'next_date_to': 'next_briefing_day__lte',
         }
 
+        if search_params.get('affiliation'):
+            affiliation_q = (
+                    Q(learner__worker__organization__name__icontains=search_params['affiliation']) |
+                    Q(learner__worker__branch__name__icontains=search_params['affiliation']) |
+                    Q(learner__worker__division__name__icontains=search_params['affiliation']) |
+                    Q(learner__worker__district__name__icontains=search_params['affiliation']) |
+                    Q(learner__worker__group__name__icontains=search_params['affiliation'])
+            )
+            q_objects.append(affiliation_q)
+
         for param_name, filter_key in FILTER_MAP.items():
             value = search_params.get(param_name)
-            if value is not None and value != '':
+            if value not in (None, ''):
                 filters[filter_key] = value
+        if filters:
+            queryset = queryset.filter(**filters)
+        if q_objects:
+            queryset = queryset.filter(*q_objects)
 
-        return queryset.filter(**filters)
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

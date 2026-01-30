@@ -1,3 +1,4 @@
+{% load my_tags %}
 <nav class="navbar bg-body-tertiary">
     <div class="container-fluid">
         <a class="navbar-brand mx-4" href="#">Система обучения и инструктажа</a>
@@ -47,10 +48,13 @@
                                 знаний по ОТ</a></li>
                             <li><a class="dropdown-item"
                                    href="{% url 'learning:learner_list' %}">График проверки знаний</a></li>
+                            {% if perms.learning.view_direction %}
                             <li><a class="dropdown-item"
                                    href="{% url 'learning:direction_list' %}">Направления обучения</a></li>
+                            {% endif %}
                         </ul>
                         </div>
+                        {% if perms.learning.view_examassignment %}
                         <div>
                         <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2"
                                 data-bs-toggle="dropdown"
@@ -63,6 +67,7 @@
                             <li><a class="dropdown-item" href="{% url 'learning:all_exam_results' %}">Результаты тестирований</a></li>
                         </ul>
                             </div>
+                        {% endif %}
                         <div>
                             <a class="btn btn-outline-primary my-2" href="{% url 'accident:accident_list' %}">Несчастные
                                 случаи</a>
