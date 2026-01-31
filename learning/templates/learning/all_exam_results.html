@@ -96,7 +96,6 @@
 
         <h4 class="my-2">Результаты тестирований работников</h4>
 
-        {% if page_obj %}
         <table class="table table-hover text-center">
             <thead>
             <tr>
@@ -111,6 +110,7 @@
             </tr>
             </thead>
             <tbody>
+            {% if page_obj %}
             {% for result in page_obj %}
             <tr>
                 <td>{{ forloop.counter }}</td>
@@ -135,11 +135,15 @@
                  <td><a class="btn btn-outline-primary btn-sm" href="{% url 'learning:detail_exam_results' result.pk %}?all_results=1">подробнее</a></td>
             </tr>
             {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="8">Результаты тестирования отсутствуют</td>
+            </tr>
+            {% endif %}
             </tbody>
         </table>
-        {% else %}
-        <p>Результаты тестирования отсутствуют</p>
-        {% endif %}
+
+
         <div class="position-relative m-4">
 
         <nav aria-label="Навигация по страницам" class="mt-3">

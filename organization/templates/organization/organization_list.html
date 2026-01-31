@@ -20,6 +20,7 @@
                     <!-- Действия для организации -->
                     <div class="btn-group dropend mb-3">
                         <a href="{% url 'organization:entity_detail' 'organization' organization.pk %}" class="btn btn-outline-primary btn-sm">Подробнее</a>
+                        {% if perms.organization.add_branch %}
                         <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle"
                                 data-bs-toggle="dropdown" aria-expanded="false">
 
@@ -32,6 +33,7 @@
                                 </a>
                             </li>
                         </ul>
+                        {% endif %}
                     </div>
 
                     <!-- Аккордеон филиалов -->
@@ -53,6 +55,7 @@
                                     <!-- Действия для филиала -->
                                     <div class="btn-group dropend mb-3">
                                         <a href="{% url 'organization:entity_detail' 'branch' branch.pk %}" class="btn btn-outline-primary btn-sm">Подробнее</a>
+                                        {% if perms.organization.add_division or perms.organization.change_branch %}
                                         <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle"
                                                 data-bs-toggle="dropdown" aria-expanded="false">
 
@@ -80,6 +83,7 @@
                                                 </a>
                                             </li>
                                         </ul>
+                                        {% endif %}
                                     </div>
 
                                     <!-- Аккордеон подразделений -->
@@ -101,6 +105,7 @@
                                                     <!-- Действия для подразделения -->
                                                     <div class="btn-group dropend mb-3">
                                                         <a href="{% url 'organization:entity_detail' 'division' division.pk %}" class="btn btn-outline-primary btn-sm">Подробнее</a>
+                                                        {% if perms.organization.add_district or perms.organization.change_division %}
                                                         <button type="button"
                                                                 class="btn btn-sm btn-outline-primary dropdown-toggle"
                                                                 data-bs-toggle="dropdown" aria-expanded="false">
@@ -129,7 +134,7 @@
                                                                 </a>
                                                             </li>
                                                         </ul>
-
+                                                        {% endif %}
                                                     </div>
 
 
@@ -144,6 +149,7 @@
                                                                    class="text-decoration-none fw-bold">
                                                                     {{ district.name }}
                                                                 </a>
+                                                                {% if perms.organization.add_group or perms.organization.change_district %}
                                                                 <span class="btn-group">
                                                                     <a href="{% url 'organization:group_create' %}?district={{district.pk}}"
                                                                        class="btn btn-sm btn-outline-secondary">Добавить группу</a>
@@ -152,6 +158,7 @@
                                                                     <a href="{% url 'organization:district_delete' district.pk %}"
                                                                        class="btn btn-sm btn-outline-danger">Удалить</a>
                                                                 </span>
+                                                                {% endif %}
                                                             </div>
                                                             <hr class="border border-primary">
 
@@ -165,12 +172,14 @@
                                                                         <div class="d-flex justify-content-between align-items-center mt-1 group-item">
                                                                             <a class="text-reset text-decoration-none" href="{% url 'organization:entity_detail' 'group' group.pk %}">{{ group.name }}
                                                                             </a>
+                                                                            {% if perms.organization.change_group %}
                                                                             <span class="btn-group">
                                                                                 <a href="{% url 'organization:group_update' group.pk %}"
                                                                                    class="btn btn-sm btn-outline-primary">Изменить</a>
                                                                                 <a href="{% url 'organization:group_delete' group.pk %}"
                                                                                    class="btn btn-sm btn-outline-danger">Удалить</a>
                                                                             </span>
+                                                                            {% endif %}
                                                                         </div>
                                                                         <hr>
                                                                         {% endif %}

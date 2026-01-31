@@ -5,8 +5,9 @@
         aria-controls="staticBackdrop">
     <i class="bi bi-search"></i>
 </button>
+{% if perms.learning.add_protocol %}
 <a class="btn btn-outline-primary my-4" href="{% url 'learning:protocol_create' %}">Создать протокол</a>
-
+{% endif %}
 <div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
      aria-labelledby="staticBackdropLabel">
     <div class="offcanvas-header">

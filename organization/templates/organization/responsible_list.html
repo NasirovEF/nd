@@ -3,10 +3,10 @@
 {% block content %}
 <a href="{% url 'organization:entity_detail' model_name model_pk %}"
    class="btn btn-outline-secondary btn-sm mx-4 my-2">Назад</a>
-
+{% if perms.add_responsiblefortraining %}
 <a href="{% url 'organization:responsible_create' model_name model_pk %}"
    class="btn btn-outline-primary btn-sm my-2">Назначить ответственного</a>
-
+{% endif %}
 <div class="container-lg">
     <table class="table table-sm table-hover text-center fixed-columns table align-middle">
         <thead>
@@ -68,17 +68,25 @@
                 {% endfor %}
             </td>
             <td></td>
-            <td><div class="btn-group">
+            <td>
+                {% if perms.change_responsiblefortraining or perms.delete_responsiblefortraining %}
+                <div class="btn-group">
                 <button type="button" class="btn btn-outline-primary  btn-sm dropdown-toggle" data-bs-toggle="dropdown"
                         aria-expanded="false">
                 </button>
                 <ul class="dropdown-menu">
+                    {% if perms.change_responsiblefortraining %}
                     <li><a class="dropdown-item"
                            href="{% url 'organization:responsible_update' model_name model_pk responsible.pk %}">Изменить</a></li>
+                    {% endif %}
+                    {% if perms.delete_responsiblefortraining %}
                     <li><a class="dropdown-item"
                            href="{% url 'organization:responsible_delete' model_name model_pk responsible.pk %}">Удалить</a></li>
+                    {% endif %}
                 </ul>
-            </div></td>
+            </div>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
         </tbody>

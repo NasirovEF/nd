@@ -5,8 +5,9 @@
         aria-controls="staticBackdrop">
     <i class="bi bi-search"></i>
 </button>
+{% if perms.accident.add_accident %}
 <a class="btn btn-outline-danger my-4 mx-2" href="{% url 'accident:accident_create' %}">Добавить НС</a>
-
+{% endif %}
 <div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
      aria-labelledby="staticBackdropLabel">
     <div class="offcanvas-header">

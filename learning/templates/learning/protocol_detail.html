@@ -57,7 +57,7 @@
                     {% endfor %}
                     </tbody>
                 </table>
-
+                {% if perms.learning.change_protocol %}
                 <div class="btn-group dropend" role="group">
                     <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
                             data-bs-toggle="dropdown"
@@ -65,17 +65,24 @@
                         Редактировать
                     </button>
                     <ul class="dropdown-menu">
+                        {% if perms.learning.change_protocolresult %}
                         <li><a class="dropdown-item" href="{% url 'learning:protocol_results_edit' object.pk %}">
                             Результаты проверки знаний
                         </a></li>
+                        {% endif %}
+                        {% if perms.learning.change_protocol %}
                         <li><a class="dropdown-item" href="{% url 'learning:protocol_update' object.pk %}">
                             Протокол проверки знаний
                         </a></li>
+                        {% endif %}
+                        {% if perms.learning.delete_protocolresult %}
                         <li><a class="dropdown-item" href="{% url 'learning:protocol_delete' object.pk %}">
                             Удалить протокол
                         </a></li>
+                        {% endif %}
                     </ul>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>

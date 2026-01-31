@@ -9,9 +9,11 @@
         <a href="{% url 'organization:entity_detail' object|model_name object.pk %}" class="btn btn-outline-secondary btn-sm m-2">
         Назад
         </a>
+        {% if perms.learning.add_program %}
         <a href="{% url 'learning:program_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm m-2">
             Добавить программу
         </a>
+        {% endif %}
         <div class="text-center"><h3>Программы обучения</h3></div>
                 <div class="table-responsive">
                     <table class="table table-sm table-hover text-center align-middle">
@@ -135,19 +137,24 @@
                                href="{% url 'learning:program_detail' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Подробнее</a>
                         </td>
                         <td>
+                            {% if perms.learning.change_program or perms.learning.delete_program %}
                             <div class="btn-group dropdown">
                                 <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
                                         data-bs-toggle="dropdown" aria-expanded="false"></button>
                                 <ul class="dropdown-menu">
+                                    {% if perms.learning.change_program %}
                                     <li><a class="dropdown-item"
                                            href="{% url 'learning:program_update' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Изменить</a>
                                     </li>
-                                    <hr>
-                                    <li><a class="dropdown-item"
+                                    {% endif %}
+                                    {% if perms.learning.delete_program %}
+                                    <li><a class="dropdown-item text-danger"
                                            href="{% url 'learning:program_delete' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Удалить</a>
                                     </li>
+                                    {% endif %}
                                 </ul>
                             </div>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

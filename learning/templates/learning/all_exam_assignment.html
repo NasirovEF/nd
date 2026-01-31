@@ -91,10 +91,10 @@
         </div>
     </div>
     <div class="col-10">
-
+        {% if perms.learning.add_examassignment %}
         <a href="{% url 'learning:create_bulk_exam_assignment' %}" class="btn btn-outline-primary btn-sm my-2">
             Назначить тест</a>
-
+        {% endif %}
         <h4 class="my-2">Список тестов</h4>
 
         <table class="table table-hover text-center">
@@ -132,17 +132,23 @@
                     Подробнее</a>
                     {% endif %}
                 </td>
-                <td><button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
+                <td>{% if perms.learning.change_examassignment or perms.learning.delete_examassignment %}
+                    <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false">
                         </button>
                         <ul class="dropdown-menu">
+                            {% if perms.learning.change_examassignment %}
                             <li><a class="dropdown-item"
                                    href="{% url 'learning:exam_assignment_update' assignment.pk %}">
                                 Редактировать</a></li>
-                            <li><a class="dropdown-item"
+                            {% endif %}
+                            {% if perms.learning.delete_examassignment %}
+                            <li><a class="dropdown-item text-danger"
                                    href="{% url 'learning:exam_assignment_delete' assignment.pk %}">Удалить</a></li>
-                        </ul></td>
+                            {% endif %}
+                        </ul>{% endif %}
+                </td>
             </tr>
             {% endfor %}
             {% else %}

@@ -195,6 +195,7 @@ def get_exam_result(assignment):
     ).exists()
     return result
 
+
 @register.filter
 def model_name(obj):
     return obj._meta.model_name
@@ -211,6 +212,6 @@ def briefing_type_name(names):
 @register.simple_tag(takes_context=True)
 def modify_page_url(context, page_number):
     request = context['request']
-    get_params = request.GET.copy()  # Копируем GET‑параметры
-    get_params['page'] = page_number   # Устанавливаем новый номер страницы
+    get_params = request.GET.copy()
+    get_params['page'] = page_number
     return f"?{get_params.urlencode()}"

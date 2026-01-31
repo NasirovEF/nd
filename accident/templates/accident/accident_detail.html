@@ -19,9 +19,13 @@
                 </div>
             </div>
             <div class="card-footer text-center">
+                {% if perms.accident.change_accident %}
                 <a href="{% url 'accident:accident_update' object.pk %}"
                    class="btn btn-outline-primary">Редактировать</a>
+                {% endif %}
+                {% if perms.accident.delete_accident %}
                 <a href="{% url 'accident:accident_delete' object.pk %}" class="btn btn-outline-danger">Удалить</a>
+                {% endif %}
             </div>
         </div>
     </div>

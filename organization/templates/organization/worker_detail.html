@@ -92,6 +92,7 @@
 
         </div>
         <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+            {% if perms.learning.add_briefingday %}
             <div class="btn-group m-2">
                 <button type="button" class="btn btn-outline-primary  btn-sm dropdown-toggle" data-bs-toggle="dropdown"
                         aria-expanded="false">
@@ -104,6 +105,7 @@
                     {% endfor %}
                 </ul>
             </div>
+            {% endif %}
 
             <a href="{% url 'learning:briefing_day_list' object.pk %}" class="btn btn-outline-primary btn-sm">Архив
                 инструктажей</a>
@@ -171,14 +173,18 @@
                                                href="{% url 'learning:detail_exam_results' result.pk %}">Результат тестирования</a></li>
                                         {% endwith %}
                                         {% endif %}
+                                        {% if perms.learning.change_briefingday %}
                                         <li>
                                             <a class="dropdown-item"
                                                href="{% url 'learning:briefing_day_update' briefing_obj.pk %}">Изменить</a>
                                         </li>
+                                        {% endif %}
+                                        {% if perms.learning.change_briefingday %}
                                         <li>
-                                            <a class="dropdown-item"
+                                            <a class="dropdown-item text-danger"
                                                href="{% url 'learning:briefing_day_delete' briefing.pk briefing_obj.learner.worker.pk %}?archive=1">Удалить</a>
                                         </li>
+                                        {% endif %}
                                     </ul>
                                 </div>
                                 {% endif %}
@@ -195,6 +201,7 @@
 
         <!-- Раздел "Обучение" -->
         <div class="tab-pane fade" id="contact-tab-pane" role="tabpanel" aria-labelledby="contact-tab" tabindex="0">
+            {% if perms.learning.change_learner %}
             <div class="btn-group m-2">
                 <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown"
                         aria-expanded="false">
@@ -207,6 +214,7 @@
                     </li>
                 </ul>
             </div>
+            {% endif %}
 
             <div class="btn-group m-2">
                 <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown"

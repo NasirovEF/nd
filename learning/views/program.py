@@ -54,11 +54,12 @@ class ProgramDetailView(DetailView):
         return context
 
 
-class ProgramCreateView(CreateView):
+class ProgramCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     """Создание программы обучения"""
 
     model = Program
     form_class = ProgramForm
+    permission_required = 'learning.add_program'
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)

@@ -8,4 +8,6 @@ class DirectionListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 
     model = Direction
     permission_required = 'learning.view_direction'
+    paginate_by = 15
+
 

@@ -25,12 +25,7 @@
                 Вопросы для подготовки
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="disabled-tab" data-bs-toggle="tab" data-bs-target="#disabled-tab-pane"
-                    type="button" role="tab" aria-controls="disabled-tab-pane" aria-selected="false" disabled>
-                Disabled
-            </button>
-        </li>
+
     </ul>
     <div class="tab-content" id="myTabContent">
         <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab"
@@ -55,22 +50,28 @@
         </div>
         <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
             <!-- Содержимое вкладки "Документы для обучения" -->
+            {% if perms.learning.change_learningdoc or perms.learning.change_learningposter %}
             <div class="btn-group dropend">
                 <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle m-2"
                         data-bs-toggle="dropdown" aria-expanded="false">
                     Редактировать
                 </button>
                 <ul class="dropdown-menu">
+                    {% if perms.learning.change_learningdoc %}
                     <li><a class="dropdown-item"
                            href="{% url 'learning:program_docs' object.pk %}">
                         Материалы по обучению
                     </a></li>
+                    {% endif %}
+                    {% if perms.learning.change_learningposter %}
                     <li><a class="dropdown-item"
                            href="{% url 'learning:program_posters' object.pk %}">
                         Плакаты по обучению
                     </a></li>
+                    {% endif %}
                 </ul>
             </div>
+            {% endif %}
             <div class="d-flex align-items-start w-100">
                 <div class="nav flex-column nav-pills m-2" id="v-pills-tab-learning" role="tablist"
                      aria-orientation="vertical">
@@ -179,13 +180,8 @@
                             Сбросить все ответы
                         </button>
                     </div>
-
-
                 </div>
             </div>
-        </div>
-        <div class="tab-pane fade" id="disabled-tab-pane" role="tabpanel" aria-labelledby="disabled-tab" tabindex="0">
-            <!-- Содержимое отключенной вкладки -->
         </div>
     </div>
 </div>

@@ -29,6 +29,7 @@
 
         <form method="get" class="row align-items-center g-3 mb-4">
             <!-- Кнопка "Добавить вопрос" (левая колонка) -->
+            {% if perms.learning.add_question %}
             <div class="col-auto">
                 <a href="{% url 'learning:question_create' test.pk %}"
                    class="btn btn-outline-primary btn-sm"
@@ -36,7 +37,7 @@
                     Добавить вопрос
                 </a>
             </div>
-
+            {% endif %}
             <!-- Группа поиска (правая колонка, занимает остальное пространство) -->
             <div class="col">
                 <div class="input-group">
@@ -67,10 +68,14 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-2">
                         <h5 class="text-primary mb-1">Вопрос №<span class="fw-bold">{{ forloop.counter }}</span></h5>
+                        {% if perms.learning.change_question %}
                         <a href="{% url 'learning:question_update' question.pk %}"
                            class="btn btn-outline-primary btn-sm ms-4" aria-label="Редактировать вопрос">Изменить</a>
+                        {% endif %}
+                        {% if perms.learning.delete_question %}
                         <a href="{% url 'learning:question_delete' question.pk %}?test_pk={{question.test.pk}}"
                            class="btn btn-outline-danger btn-sm" aria-label="Удалить вопрос">Удалить</a>
+                        {% endif %}
                     </div>
                     <div class="question-frame my-2 p-2 bg-light border rounded">
                         <p role="question" class="card-text fs-5 mb-0 ps-2">{{ question.text }}</p>

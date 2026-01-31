@@ -91,12 +91,20 @@
                         aria-expanded="false">
                 </button>
                 <ul class="dropdown-menu">
+                    {% if briefing|get_last_test_for_briefing %}
+                    {% with briefing|get_last_test_for_briefing as result %}
                     <li><a class="dropdown-item"
-                           href="#">Результат тестирования</a></li>
+                           href="{% url 'learning:detail_exam_results' result.pk %}">Результат тестирования</a></li>
+                    {% endwith %}
+                    {% endif %}
+                    {% if perms.learning.change_briefingday %}
                     <li><a class="dropdown-item"
                            href="{% url 'learning:briefing_day_update'  briefing.pk %}?archive=1">Изменить</a></li>
-                    <li><a class="dropdown-item"
+                    {% endif %}
+                    {% if perms.learning.delete_briefingday %}
+                    <li><a class="dropdown-item text-danger"
                            href="{% url 'learning:briefing_day_delete'  briefing.pk briefing.learner.worker.pk %}?archive=1">Удалить</a></li>
+                    {% endif %}
                 </ul>
             </div></td>
         </tr>

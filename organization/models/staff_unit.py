@@ -229,8 +229,6 @@ class ResponsibleForTraining(Affiliation):
         verbose_name="Группы работников",
         blank=True
     )
-
-    is_active = models.BooleanField(verbose_name="Активно", default=True)
     start_date = models.DateField(verbose_name="Дата назначения", auto_now_add=True)
 
     class Meta:
