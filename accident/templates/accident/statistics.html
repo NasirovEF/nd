@@ -1,0 +1,82 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+<a class="btn btn-outline-secondary btn-sm mt-2 ms-4" href="{% url 'accident:accident_list' %}">Назад</a>
+<div class="container mt-4">
+    <h1>Статистика несчастных случаев</h1>
+
+    <!-- Основные показатели -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-secondary">
+                <div class="card-body">
+                    <h5 class="card-title">Всего НС</h5>
+                    <p class="card-text">{{ total_accidents }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Пострадавших</h5>
+                    <p class="card-text">{{ total_victims }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Смертность</h5>
+                    <p class="card-text">{{ death_rate }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графики -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            {{ graph1|safe }}
+        </div>
+        <div class="col-12 mb-4">
+            {{ graph2|safe }}
+        </div>
+        <div class="col-12 mb-4">
+            {{ graph3|safe }}
+        </div>
+        <div class="col-12 mb-4">
+            <h4>Распределение по организациям</h4>
+            {{ graph4|safe }}
+        </div>
+    </div>
+
+    <!-- Таблица детализации -->
+    <div class="row">
+        <div class="col-12">
+            <h5>Детализация по организациям</h5>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Организация (ОСТ)</th>
+                            <th class="text-end">Количество НС</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in table_data %}
+                        <tr>
+                            <td>{{ item.organization }}</td>
+                            <td class="text-end">{{ item.count }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted">Нет данных</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

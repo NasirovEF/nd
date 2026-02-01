@@ -3,8 +3,8 @@
 {% block content %}
 <a class="btn btn-outline-secondary btn-sm my-4 mx-4" href="{% url 'accident:accident_list' %}">Назад</a>
 <div class="row">
-    <div class="col-2"></div>
-    <div class="col-8">
+    <div class="col-1"></div>
+    <div class="col-10">
         <div class="card">
             <div class="row g-0">
                 <div class="col-md-4">
@@ -14,7 +14,6 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ object.order }}</h5>
                         <p class="card-text">{{ object.description }}</p>
-                        <p class="card-text"><small class="text-body-secondary">Количество просмотров: </small></p>
                     </div>
                 </div>
             </div>
@@ -29,6 +28,6 @@
             </div>
         </div>
     </div>
-    <div class="col-2"></div>
+    <div class="col-1"></div>
 </div>
 {% endblock %}

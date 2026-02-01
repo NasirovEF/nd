@@ -33,7 +33,8 @@ class LearningDocUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateV
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         content_type = ContentType.objects.get_for_model(self.object)
         learning_docs = LearningDoc.objects.filter(
             content_type=content_type,
@@ -84,10 +85,16 @@ class LearningDocUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateV
             return self.form_invalid(form)
 
     def get_success_url(self):
+        model_name = self.kwargs['model_name']
+        model_pk = self.kwargs['model_pk']
         if self.model_class == Program:
-            return reverse('learning:program_docs', kwargs={'pk': self.object.pk})
+            return reverse('learning:program_docs', kwargs={'model_name': model_name,
+                                                            'model_pk': model_pk,
+                                                            'pk': self.object.pk})
         elif self.model_class == ProgramBriefing:
-            return reverse('learning:briefing_docs', kwargs={'pk': self.object.pk})
+            return reverse('learning:briefing_docs', kwargs={'model_name': model_name,
+                                                            'model_pk': model_pk,
+                                                            'pk': self.object.pk})
 
 
 class LearningPosterUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -114,7 +121,8 @@ class LearningPosterUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Upda
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         content_type = ContentType.objects.get_for_model(self.object)
         learning_posters = LearningPoster.objects.filter(
             content_type=content_type,
@@ -165,8 +173,13 @@ class LearningPosterUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Upda
             return self.form_invalid(form)
 
     def get_success_url(self):
+        model_name = self.kwargs['model_name']
+        model_pk = self.kwargs['model_pk']
         if self.model_class == Program:
-            return reverse('learning:program_posters', kwargs={'pk': self.object.pk})
+            return reverse('learning:program_posters', kwargs={'model_name': model_name,
+                                                            'model_pk': model_pk,
+                                                            'pk': self.object.pk})
         elif self.model_class == ProgramBriefing:
-            return reverse('learning:briefing_posters', kwargs={'pk': self.object.pk})
-
+            return reverse('learning:briefing_posters', kwargs={'model_name': model_name,
+                                                            'model_pk': model_pk,
+                                                            'pk': self.object.pk})

@@ -25,22 +25,22 @@ urlpatterns = [
     path("learner_list/", LearnerListView.as_view(), name="learner_list"),
     path("learner_update/<int:pk>", LearnerUpdateView.as_view(), name="learner_update"),
 
-    path("program_create/", ProgramCreateView.as_view(), name="program_create"),
-    path("program_detail/<int:pk>", ProgramDetailView.as_view(), name="program_detail"),
-    path("program_update/<int:pk>", ProgramUpdateView.as_view(), name="program_update"),
-    path("program_delete/<int:pk>", ProgramDeleteView.as_view(), name="program_delete"),
+    path("program_create/<str:model_name>/<int:model_pk>/", ProgramCreateView.as_view(), name="program_create"),
+    path("program_detail/<str:model_name>/<int:model_pk>/<int:pk>", ProgramDetailView.as_view(), name="program_detail"),
+    path("program_update/<str:model_name>/<int:model_pk>/<int:pk>", ProgramUpdateView.as_view(), name="program_update"),
+    path("program_delete/<str:model_name>/<int:model_pk>/<int:pk>", ProgramDeleteView.as_view(), name="program_delete"),
 
-    path('program/<int:pk>/docs/', LearningDocUpdateView.as_view(), {
+    path('program/<str:model_name>/<int:model_pk>/<int:pk>/docs/', LearningDocUpdateView.as_view(), {
         'model_class': Program
     }, name='program_docs'),
-    path('briefing/<int:pk>/docs/', LearningDocUpdateView.as_view(), {
+    path('briefing/<str:model_name>/<int:model_pk>/<int:pk>/docs/', LearningDocUpdateView.as_view(), {
         'model_class': ProgramBriefing
     }, name='briefing_docs'),
 
-    path('program/<int:pk>/poster/', LearningPosterUpdateView.as_view(), {
+    path('program/<str:model_name>/<int:model_pk>/<int:pk>/poster/', LearningPosterUpdateView.as_view(), {
         'model_class': Program
     }, name='program_posters'),
-    path('briefing/<int:pk>/poster/', LearningPosterUpdateView.as_view(), {
+    path('briefing/<str:model_name>/<int:model_pk>/<int:pk>/poster/', LearningPosterUpdateView.as_view(), {
         'model_class': ProgramBriefing
     }, name='briefing_posters'),
 
@@ -69,10 +69,10 @@ urlpatterns = [
     path('exam_assignment_update/<int:pk>', ExamAssignmentUpdateView.as_view(), name='exam_assignment_update'),
     path('exam_assignment_delete/<int:pk>', ExamAssignmentDeleteView.as_view(), name='exam_assignment_delete'),
 
-    path("briefing_program_create/", ProgramBriefingCreateView.as_view(), name="briefing_program_create"),
-    path("briefing_program_detail/<int:pk>", ProgramBriefingDetailView.as_view(), name="briefing_program_detail"),
-    path("briefing_program_update/<int:pk>", ProgramBriefingUpdateView.as_view(), name="briefing_program_update"),
-    path("briefing_program_delete/<int:pk>", ProgramBriefingDeleteView.as_view(), name="briefing_program_delete"),
+    path("briefing_program_create/<str:model_name>/<int:model_pk>/", ProgramBriefingCreateView.as_view(), name="briefing_program_create"),
+    path("briefing_program_detail/<str:model_name>/<int:model_pk>/<int:pk>", ProgramBriefingDetailView.as_view(), name="briefing_program_detail"),
+    path("briefing_program_update/<str:model_name>/<int:model_pk>/<int:pk>", ProgramBriefingUpdateView.as_view(), name="briefing_program_update"),
+    path("briefing_program_delete/<str:model_name>/<int:model_pk>/<int:pk>", ProgramBriefingDeleteView.as_view(), name="briefing_program_delete"),
 
     path("briefing_day_bulk_create/", create_bulk_briefing_day,  name="briefing_day_bulk_create"),
     path("briefing_day_create/<int:learner_pk>", BriefingDayCreateView.as_view(), name="briefing_day_create"),

@@ -37,7 +37,7 @@ class Accident(models.Model):
         **NULLABLE
     )
     victims_count = models.PositiveIntegerField(verbose_name="Количество пострадавших")
-    is_death = models.BooleanField(default=False, verbose_name="Смерть")
+    is_death = models.BooleanField(default=False, verbose_name="Смертельный")
     description = models.TextField(verbose_name="Описание НС")
     image = models.ImageField(
         upload_to="accident/photo", verbose_name="Фото", **NULLABLE

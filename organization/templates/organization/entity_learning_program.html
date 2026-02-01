@@ -10,7 +10,7 @@
         Назад
         </a>
         {% if perms.learning.add_program %}
-        <a href="{% url 'learning:program_create' %}?model_name={{ object|model_name }}&pk={{ object.pk }}" class="btn btn-outline-primary btn-sm m-2">
+        <a href="{% url 'learning:program_create' object|model_name object.pk %}" class="btn btn-outline-primary btn-sm m-2">
             Добавить программу
         </a>
         {% endif %}
@@ -134,7 +134,7 @@
                         </td>
                         <td>
                             <a class="btn btn-outline-primary btn-sm" type="button"
-                               href="{% url 'learning:program_detail' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Подробнее</a>
+                               href="{% url 'learning:program_detail' object|model_name object.pk program.pk %}">Подробнее</a>
                         </td>
                         <td>
                             {% if perms.learning.change_program or perms.learning.delete_program %}
@@ -144,12 +144,12 @@
                                 <ul class="dropdown-menu">
                                     {% if perms.learning.change_program %}
                                     <li><a class="dropdown-item"
-                                           href="{% url 'learning:program_update' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Изменить</a>
+                                           href="{% url 'learning:program_update' object|model_name object.pk program.pk %}">Изменить</a>
                                     </li>
                                     {% endif %}
                                     {% if perms.learning.delete_program %}
                                     <li><a class="dropdown-item text-danger"
-                                           href="{% url 'learning:program_delete' program.pk %}?model_name={{ object|model_name }}&pk={{ object.pk }}">Удалить</a>
+                                           href="{% url 'learning:program_delete' object|model_name object.pk program.pk %}">Удалить</a>
                                     </li>
                                     {% endif %}
                                 </ul>

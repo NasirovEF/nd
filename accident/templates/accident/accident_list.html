@@ -8,6 +8,9 @@
 {% if perms.accident.add_accident %}
 <a class="btn btn-outline-danger my-4 mx-2" href="{% url 'accident:accident_create' %}">Добавить НС</a>
 {% endif %}
+{% if perms.accident.view_accident %}
+<a class="btn btn-outline-primary mx-2" href="{% url 'accident:statistics' %}">Статистика</a>
+{% endif %}
 <div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
      aria-labelledby="staticBackdropLabel">
     <div class="offcanvas-header">
@@ -83,7 +86,7 @@
         <table class="table table-sm table-hover text-center fixed-columns table align-middle">
             <thead>
             <tr>
-                <th class="col-3" scope="col">№ и дата приказа</th>
+                <th class="col-3" scope="col">№ и дата письма</th>
                 <th class="col-3" scope="col">Дата НС</th>
                 <th class="col-3" scope="col">ОСТ</th>
                 <th class="col-3" scope="col">Категория НС</th>

@@ -31,11 +31,11 @@
                             {% endif %}
                         </button>
                          {% if model_class == "program" %}
-                        <a href="{% url 'learning:program_detail' object.pk %}" class="btn btn-outline-primary">
+                        <a href="{% url 'learning:program_detail' model_name model_pk object.pk %}" class="btn btn-outline-primary">
                             Выйти
                         </a>
                         {% elif model_class == "program_briefing" %}
-                        <a href="{% url 'learning:briefing_program_detail' object.pk %}" class="btn btn-outline-primary">
+                        <a href="{% url 'learning:briefing_program_detail' model_name model_pk object.pk %}" class="btn btn-outline-primary">
                             Выйти
                         </a>
                         {% endif %}

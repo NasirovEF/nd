@@ -60,12 +60,12 @@
                             {% if assignment.exam.program %}
                             <h6 class="card-title">Вам назначено тестирование по программе обучения:
                                 {{ assignment.exam.program.name }}</h6>
-                            <a href="{% url 'learning:program_detail' assignment.exam.program.pk %}"
+                            <a href="{% url 'learning:program_detail' model_name|model_name model_name.pk assignment.exam.program.pk %}"
                                class="btn btn-outline-primary btn-sm">Просмотр программы</a><br>
                             {% elif assignment.exam.briefing_program %}
                             <h6 class="card-title">Тестирование по программе инструктажа:
                                 {{ assignment.exam.briefing_program }}</h6>
-                            <a href="{% url 'learning:briefing_program_detail' assignment.exam.briefing_program.pk %}"
+                            <a href="{% url 'learning:briefing_program_detail' model_name|model_name model_name.pk assignment.exam.briefing_program.pk %}"
                                class="btn btn-outline-primary btn-sm">Просмотр программы</a><br>
                             {% endif %}
 

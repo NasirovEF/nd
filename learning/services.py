@@ -35,3 +35,4 @@ def add_doc_url(instance, filename):
 def add_prot_url(instance, file_name):
     return f"learning/{instance.__class__.__name__}/{instance.division.branch.organization.pk}/{instance.division.branch.pk}/{instance.division.pk}/{file_name}"
 
+

@@ -11,7 +11,8 @@ class BaseNamedEntity(models.Model):
     name = models.CharField(
         max_length=150,
         verbose_name="Наименование",
-        help_text="Краткое официальное название"
+        help_text="Краткое официальное название",
+        unique=True
     )
     full_name = models.CharField(
         max_length=250,

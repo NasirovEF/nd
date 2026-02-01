@@ -19,8 +19,8 @@ class ProgramDetailView(DetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['model_name'] = self.request.GET.get('model_name')
-        context['pk'] = self.request.GET.get('pk')
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         tests = []
         questions =[]
         for direction in self.object.direction.all():
@@ -63,8 +63,8 @@ class ProgramCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['model_name'] = self.request.GET.get('model_name')
-        context['pk'] = self.request.GET.get('pk')
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         return context
 
     def form_valid(self, form):
@@ -73,9 +73,10 @@ class ProgramCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
         return super().form_valid(form)
 
     def get_success_url(self):
-        model_name = self.request.GET.get('model_name')
-        pk = self.request.GET.get('pk')
-        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name, 'pk': pk})
+        model_name = self.kwargs['model_name']
+        model_pk = self.kwargs['model_pk']
+        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name,
+                                                                       'model_pk': model_pk})
 
 
 class ProgramUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -86,8 +87,8 @@ class ProgramUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['model_name'] = self.request.GET.get('model_name')
-        context['pk'] = self.request.GET.get('pk')
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         return context
 
     def get_object(self, queryset=None):
@@ -102,9 +103,9 @@ class ProgramUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
         return ProgramForm if self.object.is_active else ProgramFormNotActive
 
     def get_success_url(self):
-        model_name = self.request.GET.get('model_name')
-        pk = self.request.GET.get('pk')
-        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name, 'pk': pk})
+        model_name = self.kwargs['model_name']
+        model_pk = self.kwargs['model_pk']
+        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name, 'model_pk': model_pk})
 
 
 class ProgramDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -115,11 +116,11 @@ class ProgramDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['model_name'] = self.request.GET.get('model_name')
-        context['pk'] = self.request.GET.get('pk')
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         return context
 
     def get_success_url(self):
-        model_name = self.request.GET.get('model_name')
-        pk = self.request.GET.get('pk')
-        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name, 'pk': pk})
+        model_name = self.kwargs['model_name']
+        model_pk = self.kwargs['model_pk']
+        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name, 'model_pk': model_pk})

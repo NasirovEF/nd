@@ -37,12 +37,15 @@ class ProgramBriefingCreateView(LoginRequiredMixin, PermissionRequiredMixin, Cre
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['model_name'] = self.request.GET.get('model_name')
-        context['pk'] = self.request.GET.get('pk')
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         return context
 
     def get_success_url(self):
-        return reverse("learning:briefing_program_detail", args=[self.object.pk])
+        model_name = self.kwargs['model_name']
+        model_pk = self.kwargs['model_pk']
+        return reverse("organization:entity_briefing_program", kwargs={'model_name': model_name,
+                                                                       'model_pk': model_pk})
 
 
 class ProgramBriefingDetailView(DetailView):
@@ -51,8 +54,8 @@ class ProgramBriefingDetailView(DetailView):
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['model_name'] = self.request.GET.get('model_name')
-        context['pk'] = self.request.GET.get('pk')
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         return context
 
 
@@ -64,8 +67,8 @@ class ProgramBriefingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Upd
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['model_name'] = self.request.GET.get('model_name')
-        context['pk'] = self.request.GET.get('pk')
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         return context
 
     def get_object(self, queryset=None):
@@ -80,9 +83,10 @@ class ProgramBriefingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Upd
         return ProgramBriefingForm if self.object.is_active else ProgramBriefingNotActive
 
     def get_success_url(self):
-        model_name = self.request.GET.get('model_name')
-        pk = self.request.GET.get('pk')
-        return reverse("organization:entity_briefing_program", kwargs={'model_name': model_name, 'pk': pk})
+        model_name = self.kwargs['model_name']
+        model_pk = self.kwargs['model_pk']
+        return reverse("organization:entity_briefing_program", kwargs={'model_name': model_name,
+                                                                       'model_pk': model_pk})
 
 
 class ProgramBriefingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -90,18 +94,18 @@ class ProgramBriefingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, Del
 
     model = ProgramBriefing
     permission_required = 'learning.delete_programbriefing'
-    template_name = "learning/program_confirm_delete.html"
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        context['model_name'] = self.request.GET.get('model_name')
-        context['pk'] = self.request.GET.get('pk')
+        context['model_name'] = self.kwargs['model_name']
+        context['model_pk'] = self.kwargs['model_pk']
         return context
 
     def get_success_url(self):
-        model_name = self.request.GET.get('model_name')
-        pk = self.request.GET.get('pk')
-        return reverse("organization:entity_briefing_program", kwargs={'model_name':model_name, 'pk': pk})
+        model_name = self.kwargs['model_name']
+        model_pk = self.kwargs['model_pk']
+        return reverse("organization:entity_briefing_program", kwargs={'model_name':model_name,
+                                                                       'model_pk': model_pk})
 
 
 class BriefingDayCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):

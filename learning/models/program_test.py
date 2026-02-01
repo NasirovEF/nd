@@ -47,7 +47,7 @@ class Test(models.Model):
                 return f"Тест к направлению обучения: ({self.direction.name} → {self.sub_direction.name})"
             return f"Тест к направлению обучения: ({self.direction.name})"
         elif self.briefing_program:
-            return f"Тест к программе инструктажа: ({self.direction.name})"
+            return f"Тест к программе инструктажа: ({self.briefing_program.name})"
 
     def clean(self):
         # Проверка: если направление не имеет поднаправлений, sub_direction должно быть пустым

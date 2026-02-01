@@ -10,13 +10,17 @@ from django.forms import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from learning.models.learner_direction import LearningDoc, LearningPoster
 from organization.forms import StileFormMixin
+from organization.models import Worker, Organization
 
 
 class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['chairman'].queryset = Worker.objects.filter(dismissed=False)
         self.fields['program'].queryset = Program.objects.filter(is_active=True)
+        self.fields['members'].queryset = Worker.objects.filter(dismissed=False)
+        self.fields['learner'].queryset = Learner.objects.filter(is_active=True)
 
     class Meta:
         model = Protocol
@@ -60,6 +64,10 @@ class LearnerForm(StileFormMixin, forms.ModelForm):
 
 class ProgramForm(StileFormMixin, forms.ModelForm):
     error_css_class = 'text-danger'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['organization'].queryset = Organization.objects.filter(is_main=True)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -383,6 +391,10 @@ class LearningPosterForm(StileFormMixin, forms.ModelForm):
 class ProgramBriefingForm(StileFormMixin, forms.ModelForm):
     error_css_class = 'text-danger'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['organization'].queryset = Organization.objects.filter(is_main=True)
+
     def clean(self):
         cleaned_data = super().clean()
         replacement = cleaned_data.get('replacement')
@@ -407,6 +419,11 @@ class ProgramBriefingNotActive(ProgramBriefingForm):
 
 
 class BriefingDayForm(StileFormMixin, forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['briefing_program'].queryset = ProgramBriefing.objects.filter(is_active=True)
+
     class Meta:
         model = BriefingDay
         exclude = ["learner", "next_briefing_day", "is_active"]

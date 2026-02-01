@@ -2,7 +2,7 @@
 {% load my_tags %}
 
 {% block content %}
-<a class="btn btn-outline-secondary btn-sm m-2" href="{% url 'organization:entity_briefing_program' model_name pk %}">
+<a class="btn btn-outline-secondary btn-sm m-2" href="{% url 'organization:entity_briefing_program' model_name model_pk %}">
     Назад
 </a>
 <div class="card">
@@ -23,12 +23,6 @@
             <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane"
                     type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">
                 Вопросы для подготовки
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="disabled-tab" data-bs-toggle="tab" data-bs-target="#disabled-tab-pane"
-                    type="button" role="tab" aria-controls="disabled-tab-pane" aria-selected="false" disabled>
-                Disabled
             </button>
         </li>
     </ul>
@@ -68,13 +62,13 @@
                 <ul class="dropdown-menu">
                     {% if perms.learning.change_learningdoc %}
                     <li><a class="dropdown-item"
-                           href="{% url 'learning:briefing_docs' object.pk %}">
+                           href="{% url 'learning:briefing_docs' model_name model_pk object.pk %}">
                         Материалы по обучению
                     </a></li>
                     {% endif %}
                     {% if perms.learning.change_learningposter %}
                     <li><a class="dropdown-item"
-                           href="{% url 'learning:briefing_posters' object.pk %}">
+                           href="{% url 'learning:briefing_posters' model_name model_pk object.pk %}">
                         Плакаты по обучению
                     </a></li>
                     {% endif %}
@@ -195,9 +189,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="tab-pane fade" id="disabled-tab-pane" role="tabpanel" aria-labelledby="disabled-tab" tabindex="0">
-            <!-- Содержимое отключенной вкладки -->
         </div>
     </div>
 </div>

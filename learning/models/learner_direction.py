@@ -1,11 +1,39 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from learning.services import add_doc_url, get_current_date
-from organization.models import Position, Worker, Organization, Branch, Division, District, Group, StaffUnit
+from organization.models import Position, Worker, StaffUnit
 from organization.models.staff_unit import Affiliation
 from organization.services import NULLABLE
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
+import os
+from django.utils.deconstruct import deconstructible
+
+
+@deconstructible
+class ProgramUploadPath:
+    def __init__(self, subfolder):
+        self.subfolder = subfolder
+
+    def __call__(self, instance, filename):
+        program = instance.content_object
+        if program.__class__.__name__ == 'Program':
+            program_type = 'program'
+        elif program.__class__.__name__ == 'ProgramBriefing':
+            program_type = 'briefing'
+        else:
+            raise ValueError(f"Неподдерживаемый тип: {program.__class__.__name__}")
+
+        return os.path.join(
+            'learning',
+            f'{program_type}_{program.pk}',
+            self.subfolder,
+            filename
+        )
+
+
+doc_upload_path = ProgramUploadPath('docs')
+poster_upload_path = ProgramUploadPath('posters')
 
 
 class Direction(models.Model):
@@ -145,7 +173,7 @@ class LearningDoc(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')
 
     name = models.CharField(verbose_name="Наименование документа", max_length=250)
-    doc = models.FileField(verbose_name="Файл документа", upload_to="learning/learning_doc/")
+    doc = models.FileField(verbose_name="Файл документа", upload_to=doc_upload_path)
 
     class Meta:
         verbose_name = "Документ для обучения"
@@ -159,7 +187,7 @@ class LearningPoster(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')
 
     name = models.CharField(verbose_name="Наименование плаката", max_length=250)
-    image = models.ImageField(verbose_name="Картинка плаката", upload_to="learning/learning_poster/")
+    image = models.ImageField(verbose_name="Картинка плаката", upload_to=poster_upload_path)
 
     class Meta:
         verbose_name = "Плакат для обучения"

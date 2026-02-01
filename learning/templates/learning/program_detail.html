@@ -2,7 +2,7 @@
 {% load my_tags %}
 
 {% block content %}
-<a class="btn btn-outline-secondary btn-sm m-2" href="{% url 'organization:entity_learning_program' model_name pk %}">
+<a class="btn btn-outline-secondary btn-sm m-2" href="{% url 'organization:entity_learning_program' model_name model_pk %}">
     Назад
 </a>
 <div class="card">
@@ -59,13 +59,13 @@
                 <ul class="dropdown-menu">
                     {% if perms.learning.change_learningdoc %}
                     <li><a class="dropdown-item"
-                           href="{% url 'learning:program_docs' object.pk %}">
+                           href="{% url 'learning:program_docs' model_name model_pk object.pk %}">
                         Материалы по обучению
                     </a></li>
                     {% endif %}
                     {% if perms.learning.change_learningposter %}
                     <li><a class="dropdown-item"
-                           href="{% url 'learning:program_posters' object.pk %}">
+                           href="{% url 'learning:program_posters' model_name model_pk object.pk %}">
                         Плакаты по обучению
                     </a></li>
                     {% endif %}

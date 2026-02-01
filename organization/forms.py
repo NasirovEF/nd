@@ -108,12 +108,16 @@ class PositionForm(StileFormMixin, forms.ModelForm):
 
 
 class WorkerCreateForm(StileFormMixin, forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['organization'].queryset = Organization.objects.filter(is_main=True)
+
     class Meta:
         model = Worker
         exclude = ["image", "dismissed"]
 
 
-class WorkerUpdateForm(StileFormMixin, forms.ModelForm):
+class WorkerUpdateForm(WorkerCreateForm):
     class Meta:
         model = Worker
         exclude = ["image"]
