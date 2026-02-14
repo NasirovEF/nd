@@ -32,6 +32,7 @@ class KnowledgeDate(models.Model):
     learner = models.ForeignKey("Learner", verbose_name="Работник", related_name="knowledge_date", on_delete=models.CASCADE, **NULLABLE)
     next_date = models.DateField(verbose_name="Дата следующей проверки знаний", default=get_current_date)
     is_active = models.BooleanField(default=True, verbose_name="Актуальность")
+    is_passed = models.BooleanField(verbose_name='Сдал', default=True)
 
     def calculate_next_date(self):
         try:
@@ -39,12 +40,16 @@ class KnowledgeDate(models.Model):
                 protocol_result = self.protocol.protocol_result.get(learner=self.learner)
                 if protocol_result.passed:
                     self.next_date = self.kn_date + timedelta(days=self.direction.periodicity)
+                    self.is_passed = True
                 else:
                     self.next_date = self.kn_date + timedelta(days=30)
+                    self.is_passed = False
             else:
                 self.next_date = self.kn_date + timedelta(days=30)
+                self.is_passed = False
         except (ProtocolResult.DoesNotExist, Protocol.DoesNotExist):
             self.next_date = self.kn_date + timedelta(days=30)
+            self.is_passed = False
 
     @transaction.atomic
     def save(self, *args, **kwargs):

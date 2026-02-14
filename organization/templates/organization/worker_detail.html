@@ -214,6 +214,21 @@
                     </li>
                 </ul>
             </div>
+
+            <div class="btn-group mx-2">
+                <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    Печать удостоверения
+                </button>
+                <ul class="dropdown-menu">
+                   {% for learner in object.learner.all %}
+                    <li>
+                        <a class="dropdown-item"
+                           href="{% url 'learning:load_identity' learner.pk %}">{{learner.position}}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
             {% endif %}
 
             <div class="btn-group m-2">

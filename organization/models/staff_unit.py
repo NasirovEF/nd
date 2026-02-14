@@ -149,6 +149,13 @@ class Worker(Affiliation):
         verbose_name_plural = "Работники"
 
     @property
+    def return_full_fio(self):
+        if self.patronymic:
+            return f'{self.surname} {self.name} {self.patronymic}'
+        else:
+            return f'{self.surname} {self.name}'
+
+    @property
     def return_fio(self):
         if self.patronymic:
             return f'{self.name[:1]}.{self.patronymic[:1]}. {self.surname}'

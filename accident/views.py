@@ -5,6 +5,7 @@ from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView, View)
 from accident.forms import AccidentForm
 from accident.models import Accident, AccidentСategory, Organization
+from accident.services import insert_line_breaks
 from config.settings import EMAIL_HOST_USER
 from datetime import date
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -108,7 +109,7 @@ class AccidentUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
 class AccidentDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Accident
     permission_required = 'accident:delete_accident'
-    success_url = reverse_lazy("accident_list")
+    success_url = reverse_lazy("accident:accident_list")
 
 
 @login_required
@@ -118,13 +119,39 @@ def accident_statistics(request):
     accidents = Accident.objects.all()
 
     # 1. График: Количество НС по категориям
+    # Формируем данные с переносами
     category_data = Counter(acc.category.name for acc in accidents if acc.category)
+    categories = list(category_data.keys())
+    values = list(category_data.values())
+
+    # Применяем перенос строк к каждой категории
+    wrapped_categories = [insert_line_breaks(cat, max_chars=40) for cat in categories]
+
+    # Строим горизонтальный бар‑чарт
     fig1 = go.Figure(data=[go.Bar(
-        x=list(category_data.keys()),
-        y=list(category_data.values()),
-        marker_color='indianred'
+        y=wrapped_categories,
+        x=values,
+        orientation='h',
+        marker_color='indianred',
+        hovertext=categories,
+        hoverinfo='text+x'
     )])
-    fig1.update_layout(title="Количество НС по категориям", xaxis_title="Категория", yaxis_title="Количество")
+
+    fig1.update_layout(
+        title="Количество НС по категориям",
+        xaxis_title="Количество",
+        yaxis_title="Категория",
+        yaxis=dict(
+            tickmode='array',
+            tickvals=wrapped_categories,  # Явно задаём значения тиков
+            ticktext=wrapped_categories,  # И их отображения
+            tickfont=dict(size=10),
+            automargin=True  # Автоматически подбирает отступы
+        ),
+        margin=dict(l=150, r=20, t=50, b=20),  # Левый отступ для длинных подписей
+        height=max(400, 30 * len(categories))  # Адаптивная высота
+    )
+
     graph1 = opy.plot(fig1, auto_open=False, output_type='div')
 
     # 2. График: Динамика по годам
@@ -152,7 +179,7 @@ def accident_statistics(request):
     org_data = {}
     for acc in accidents:
         if acc.organization:
-            org_name = acc.organization.name  # Предполагаем, что у Organization есть поле name
+            org_name = acc.organization.name
             org_data[org_name] = org_data.get(org_name, 0) + 1
 
     # Сортируем по убыванию количества НС

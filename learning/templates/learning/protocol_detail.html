@@ -82,6 +82,21 @@
                         {% endif %}
                     </ul>
                 </div>
+                <div class="btn-group dropend" role="group">
+                    <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        Печать
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{% url 'learning:load_protocol' object.pk 'protocol' %}">
+                            Протокола проверки знаний
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'learning:load_protocol' object.pk 'identities' %}">
+                            Удостоверений работников
+                        </a></li>
+                    </ul>
+                </div>
                 {% endif %}
             </div>
         </div>

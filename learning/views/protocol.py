@@ -204,7 +204,7 @@ class ProtocolUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
 
             )
 
-        for direction in protocol.direction.all():
+        for direction in directions:
             for learner in protocol.learner.all():
                 knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol,
                                                               direction=direction, learner=learner)

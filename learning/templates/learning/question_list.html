@@ -8,7 +8,7 @@
             Назад
         </a>
         {% elif test.briefing_program %}
-        <a href="{% url 'learning:briefing_program_detail' test.briefing_program.pk %}"
+        <a href="{% url 'learning:briefing_program_detail' test.briefing_program.get_last_filled|model_name test.briefing_program.get_last_filled.pk test.briefing_program.pk %}"
            class="btn btn-outline-secondary btn-sm m-2">
             Назад
         </a>

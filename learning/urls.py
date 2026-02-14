@@ -12,6 +12,7 @@ from learning.views.exam import start_exam, take_exam, submit_answers, exam_resu
     ExamAssignmentDeleteView
 from learning.views.learner import LearnerUpdateView, LearnerListView
 from learning.views.learning_doc_poster import LearningDocUpdateView, LearningPosterUpdateView
+from learning.views.load_docs import generate_protocol, generate_identity
 from learning.views.program import ProgramCreateView, ProgramUpdateView, ProgramDeleteView, ProgramDetailView
 from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, ProtocolDeleteView, ProtocolListView, \
     ProtocolDetailView
@@ -80,5 +81,8 @@ urlpatterns = [
     path("briefing_log_list/<str:model_name>/<int:pk>/", BriefingLogListView.as_view(), name="briefing_log_list"),
     path("briefing_day_update/<int:pk>", BriefingDayUpdateView.as_view(), name="briefing_day_update"),
     path("briefing_day_delete/<int:pk>/<int:worker_pk>", BriefingDayDeleteView.as_view(), name="briefing_day_delete"),
+
+    path("load_protocol/<int:pk>/<str:template_name>", generate_protocol, name="load_protocol"),
+    path("load_identity/<int:pk>", generate_identity, name="load_identity")
 
 ]

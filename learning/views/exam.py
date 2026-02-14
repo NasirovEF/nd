@@ -99,7 +99,7 @@ def start_exam(request, learner_id, assignment_id):
     try:
         learner = request.user.worker.learner.get(pk=learner_id)
     except Learner.DoesNotExist:
-        return HttpResponseNotFound("Learner not found")
+        return HttpResponseNotFound("Работник не найден")
 
     if request.user.worker != learner.worker:
         return HttpResponseForbidden("Доступ запрещён")
