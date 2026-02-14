@@ -4,23 +4,37 @@
 <a class="btn btn-outline-secondary btn-sm my-4 mx-4" href="{% url 'accident:accident_list' %}">Назад</a>
 <div class="row">
     <div class="col-1"></div>
-    <div class="col-10">
+    <div class="col-7">
+        <!-- Карточка инцидента (ваш существующий код) -->
         <div class="card">
-            <div class="row g-0">
-                <div class="col-md-4">
-                    <img src="{{ object.image|media_filter }}" class="img-fluid rounded-start"/>
+            <div class="card-header text-center">
+               {{ object.order }}
+            </div>
+            <div class="card-body">
+                <h6 class="card-title text-center">{% if object.title %}{{ object.title }}{% endif %}</h6>
+                <h6 class="card-title">1. Место происшествия: {% if object.scene %}{{ object.scene }}{% endif %}</h6>
+                <h6 class="card-title">2. Дата происшествия: {{ object.date }}</h6>
+                <h6 class="card-title">3. Пострадавший: {{ object.victim }}</h6>
+                <h6 class="card-title">4. Краткие обстоятельства:</h6>
+                <p class="card-text text-justify ms-4">{{ object.description }}</p>
+
+                <div class="text-center my-3">
+                    <img src="{{ object.image|media_filter }}" class="img-fluid rounded" style="max-height: 300px; object-fit: cover;">
                 </div>
-                <div class="col-md-8">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ object.order }}</h5>
-                        <p class="card-text">{{ object.description }}</p>
-                    </div>
+                <h6 class="card-title">5. Причины несчастного случая: {{ object.cause }}</h6>
+
+                <!-- Блок требований -->
+                <div class="mt-3 p-3 border border-primary" style="color: var(--bs-primary);">
+                     {{ object.safety_requirements }}
+                </div>
+
+                <div class="mt-3 mb-0" style="background-color: #FF0000; color: #FFFFFF; text-align: center; padding: 9px 0; font-size: 20px;">
+                    <strong>БЕРЕГИТЕ ЖИЗНЬ И ЗДОРОВЬЕ!</strong>
                 </div>
             </div>
             <div class="card-footer text-center">
                 {% if perms.accident.change_accident %}
-                <a href="{% url 'accident:accident_update' object.pk %}"
-                   class="btn btn-outline-primary">Редактировать</a>
+                <a href="{% url 'accident:accident_update' object.pk %}" class="btn btn-outline-primary">Редактировать</a>
                 {% endif %}
                 {% if perms.accident.delete_accident %}
                 <a href="{% url 'accident:accident_delete' object.pk %}" class="btn btn-outline-danger">Удалить</a>
@@ -28,6 +42,68 @@
             </div>
         </div>
     </div>
-    <div class="col-1"></div>
+    <div class="col-4">
+        {% if similar_accidents %}
+        <div class="container mt-4">
+            <h6 class="mb-3 text-center">Похожие несчастные случаи</h6>
+            <ul class="list-group">
+                {% for item in similar_accidents %}
+                <li class="list-group-item py-2">
+                    <!-- Кнопка, открывающая модальное окно -->
+                    <button type="button"
+                            class="btn p-0 text-start w-100 text-decoration-none"
+                            data-bs-toggle="modal"
+                            data-bs-target="#similarAccidentModal{{ item.pk }}">
+                        {{ item.order }}
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Модальные окна для каждого похожего случая -->
+        {% for item in similar_accidents %}
+        <div class="modal fade" id="similarAccidentModal{{ item.pk }}" tabindex="-1" aria-labelledby="similarAccidentLabel{{ item.pk }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title text-center" id="similarAccidentLabel{{ item.pk }}">{{ item.order }}</h6>
+                    </div>
+                    <div class="modal-body">
+                        <h6 class="card-title text-center">{% if item.title %}{{ item.title }}{% endif %}</h6>
+                        <h6 class="card-title">1. Место происшествия: {% if item.scene %}{{ item.scene }}{% endif %}</h6>
+                        <h6 class="card-title">2. Дата происшествия: {{ item.date }}</h6>
+                        <h6 class="card-title">3. Пострадавший: {{ item.victim }}</h6>
+                        <h6 class="card-title">4. Краткие обстоятельства:</h6>
+                        <p class="card-text text-justify ms-4">{{ item.description }}</p>
+
+                        <div class="text-center my-3">
+                            <img src="{{ item.image|media_filter }}" class="img-fluid rounded" style="max-height: 300px; object-fit: cover;">
+                        </div>
+                        <h6 class="card-title">5. Причины несчастного случая: {{ item.cause }}</h6>
+
+                        <!-- Блок требований -->
+                        <div class="mt-3 p-3 border border-primary" style="color: var(--bs-primary);">
+                             {{ item.safety_requirements }}
+                        </div>
+
+                        <div class="mt-3 mb-0" style="background-color: #FF0000; color: #FFFFFF; text-align: center; padding: 9px 0; font-size: 20px;">
+                            <strong>БЕРЕГИТЕ ЖИЗНЬ И ЗДОРОВЬЕ!</strong>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% else %}
+        <div class="container mt-4">
+            <p class="text-muted">Похожие случаи не найдены.</p>
+        </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

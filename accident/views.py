@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
-                                  UpdateView, View)
+                                  UpdateView)
 from accident.forms import AccidentForm
 from accident.models import Accident, AccidentСategory, Organization
 from accident.services import insert_line_breaks
@@ -14,6 +14,68 @@ import plotly.offline as opy
 from collections import Counter
 from datetime import datetime
 from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models import Q
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
+
+
+def find_similar_accidents(accident_id, limit=5):
+    try:
+        original = Accident.objects.get(id=accident_id)
+    except Accident.DoesNotExist:
+        return []
+
+    query = ~Q(id=original.id)
+    similar = Accident.objects.filter(query)
+
+    # Полнотекстовый поиск (если есть описание)
+    if original.description:
+        search_text = original.description[:500]  # обрезаем длинный текст
+        search_query = SearchQuery(search_text, config='russian')
+        search_vector = SearchVector('description', config='russian')
+        similar = similar.annotate(rank=SearchRank(search_vector, search_query))
+        similar = similar.order_by('-rank')
+
+    # Фильтры
+    if original.category:
+        similar = similar.filter(category=original.category)
+    if original.organization:
+        similar = similar.filter(organization=original.organization)
+
+    similar = similar.filter(
+        victims_count__gte=original.victims_count - 2,
+        victims_count__lte=original.victims_count + 2
+    )
+
+    if original.scene:
+        similar = similar.filter(scene__icontains=original.scene[:50])
+
+    # Оптимизация загрузки
+    similar = similar.select_related('category', 'organization').only(
+        'id', 'order', 'date', 'description', 'scene',
+        'category__id', 'organization__id', 'victims_count'
+    )
+
+    # Ручной расчёт, если нет описания или ранжирования
+    if not original.description or 'rank' not in similar.query.annotations:
+        def calculate_score(accident):
+            score = 0
+            if accident.category == original.category:
+                score += 10
+            if accident.organization == original.organization:
+                score += 8
+            if abs(accident.victims_count - original.victims_count) <= 2:
+                score += 7 - abs(accident.victims_count - original.victims_count)
+            if original.scene and accident.scene and original.scene.lower() in accident.scene.lower():
+                score += 5
+            return score
+
+        results = sorted(similar, key=calculate_score, reverse=True)
+    else:
+        results = list(similar[:limit])
+
+    return results[:limit]
+
+
 
 
 class AccidentListView(ListView):
@@ -73,6 +135,11 @@ class AccidentListView(ListView):
 
 class AccidentDetailView(DetailView):
     model = Accident
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['similar_accidents'] = find_similar_accidents(self.object.pk)
+        return context
 
 
 class AccidentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):

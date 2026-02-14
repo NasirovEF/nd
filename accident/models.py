@@ -18,7 +18,9 @@ class AccidentСategory(models.Model):
 
 class Accident(models.Model):
     order = models.CharField(max_length=350, verbose_name="№ и дата информационного письма")
-    date = models.DateField(verbose_name="Дата НС", default=get_current_date)
+    title = models.CharField(max_length=350, verbose_name="Титул", **NULLABLE)
+    scene = models.CharField(max_length=350, verbose_name="Место происшествия", **NULLABLE)
+    date = models.DateField(verbose_name="Дата происшествия", default=get_current_date)
     organization = models.ForeignKey(
         Organization,
         on_delete=models.SET_NULL,
@@ -36,12 +38,15 @@ class Accident(models.Model):
         related_name="accident",
         **NULLABLE
     )
+    victim = models.CharField(max_length=350, verbose_name="Пострадавший", **NULLABLE)
     victims_count = models.PositiveIntegerField(verbose_name="Количество пострадавших")
     is_death = models.BooleanField(default=False, verbose_name="Смертельный")
-    description = models.TextField(verbose_name="Описание НС")
+    description = models.TextField(verbose_name="Краткие обстоятельства")
     image = models.ImageField(
         upload_to="accident/photo", verbose_name="Фото", **NULLABLE
     )
+    cause = models.TextField(verbose_name="Причины несчастного случая", **NULLABLE)
+    safety_requirements = models.TextField(verbose_name="Требования безопасности", **NULLABLE)
 
     class Meta:
         verbose_name = "Несчастный случай"
