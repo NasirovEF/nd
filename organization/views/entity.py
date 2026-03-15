@@ -158,11 +158,17 @@ class HierarchicalEntityView(DetailView):
             'date_learning_to': self.request.GET.get('date_learning_to', ''),
             'date_briefing_from': self.request.GET.get('date_briefing_from', ''),
             'date_briefing_to': self.request.GET.get('date_briefing_to', ''),
-            'affiliation': self.request.GET.get('affiliation', '')
+            'affiliation': self.request.GET.get('affiliation', ''),
+            'dismissed': self.request.GET.get('dismissed', '')
         }
 
     def apply_filters(self, queryset, search_params):
         """Применяем фильтры к QuerySet работников."""
+
+        if search_params.get('dismissed') == "1":
+            queryset = queryset.filter(dismissed=True)
+        else:
+            queryset = queryset.filter(dismissed=False)
 
         if search_params.get('surname'):
             queryset = queryset.filter(surname__icontains=search_params['surname'])

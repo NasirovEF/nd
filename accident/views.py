@@ -154,13 +154,13 @@ class AccidentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
         object = form.save()
         host = self.request.get_host()
         # заглушка кода на случай введения уведомления через почту
-        # send_mail(
-        #     subject=f"Информация о новом несчастном случае",
-        #     message=f"Внимание в АСУ НС добавлена информация о новом несчастном случае. "
-        #     f"Для ознакомления перейдите по ссылке: http://{host}/accident/accident_detail/{object.pk}",
-        #     from_email=EMAIL_HOST_USER,
-        #     recipient_list=["i@ef-nasirov.ru",],
-        # )
+        send_mail(
+            subject=f"Информация о новом несчастном случае",
+            message=f"Внимание в АСУ НС добавлена информация о новом несчастном случае. "
+            f"Для ознакомления перейдите по ссылке: http://{host}/accident_detail/{object.pk}",
+            from_email=EMAIL_HOST_USER,
+            recipient_list=["i@ef-nasirov.ru",],
+        )
         return super().form_valid(form)
 
 

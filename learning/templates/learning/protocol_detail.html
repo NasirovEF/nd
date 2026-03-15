@@ -32,7 +32,8 @@
                         <th class="col-3">Должность, И.О. Фамилия работника</th>
                         <th class="col-3">Структурное подразделение</th>
                         <th class="col-2">Результат проверки</th>
-                        <th class="col">Комментарий</th>
+                        <th class="col-2">Проверка знаний</th>
+                        <th class="col">Регистрационные номера</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -48,7 +49,10 @@
                             <span class="text-danger">неудовлетворительно</span>
                             {% endif %}
                         </td>
-                        <td>{{ result.comment|default:"—" }}</td>
+                        <td>
+                            {{ result.get_type_display }}
+                        </td>
+                        <td>{{ result.reg_number|default:"—" }}</td>
                     </tr>
                     {% empty %}
                     <tr>

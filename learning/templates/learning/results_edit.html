@@ -12,7 +12,8 @@
                     <tr>
                         <th>Работник</th>
                         <th>Сдал?</th>
-                        <th>Комментарий</th>
+                        <th>Проверка знаний</th>
+                        <th>Регистрационные номера</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -37,12 +38,22 @@
                             {% endif %}
                         </td>
 
-                        <!-- 4. Поле "Комментарий" и его ошибки -->
+                        <!-- 4. Поле "Проверка знаний" и его ошибки -->
                         <td>
-                            {{ form.comment }}
-                            {% if form.comment.errors %}
+                            {{ form.type }}
+                            {% if form.type.errors %}
                                 <div class="text-danger small">
-                                    {% for error in form.comment.errors %}{{ error }}{% endfor %}
+                                    {% for error in form.type.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- 5. Поле "Комментарий" и его ошибки -->
+                        <td>
+                            {{ form.reg_number }}
+                            {% if form.reg_number.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.reg_number.errors %}{{ error }}{% endfor %}
                                 </div>
                             {% endif %}
 

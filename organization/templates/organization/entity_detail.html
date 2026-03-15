@@ -119,12 +119,22 @@
                                        aria-label="Search" value="{{search_params.date_briefing_to}}">
                             </td>
                             <td>
+                                <div>
+                                    <select name="dismissed" class="form-control text-center w-100" aria-label="Выбор статуса">
+                                        <option value="" {% if search_params.dismissed == "" %}selected{% endif %}>
+                                        ---------
+                                      </option>
+                                      <option value="1" {% if search_params.dismissed == "1" %}selected{% endif %}>
+                                        Уволенные
+                                      </option>
+                                    </select>
+                                </div>
+                            </td>
+                            <td>
                                 <button type="submit" class="btn btn-outline-primary btn-sm">
                                     Поиск
                                 </button>
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2"
                                         onclick="window.location.href='?';">
                                     Сбросить
                                 </button>

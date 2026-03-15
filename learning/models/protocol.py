@@ -76,7 +76,12 @@ class ProtocolResult(models.Model):
     protocol = models.ForeignKey(Protocol, on_delete=models.CASCADE, related_name="protocol_result", **NULLABLE)
     learner = models.ForeignKey("Learner", on_delete=models.CASCADE, related_name="protocol_result", **NULLABLE)
     passed = models.BooleanField(verbose_name='Сдал', default=True)
-    comment = models.TextField(verbose_name='Комментарий', **NULLABLE)
+    type = models.CharField(max_length=20, verbose_name="Вид проверки", choices=[
+            ('primary', 'Первичная'),
+            ('planned', 'Плановая'),
+            ('unscheduled', 'Внеплановая'),
+        ], default='planned')
+    reg_number = models.TextField(verbose_name='Регистрационный номер', **NULLABLE)
 
     class Meta:
         unique_together = ('protocol', 'learner')

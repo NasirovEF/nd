@@ -34,23 +34,24 @@ class ProgramDetailView(DetailView):
         for test in tests:
             for question in test.question.all():
                 questions.append(question)
-        quest_paginator = Paginator(questions, 10)
-        quest_page_number = self.request.GET.get('quest_page')
-        quest_page_obj = quest_paginator.get_page(quest_page_number)
-        context["questions"] = questions
+        context['questions'] = questions
+        # quest_paginator = Paginator(questions, 10)
+        # quest_page_number = self.request.GET.get('quest_page')
+        # quest_page_obj = quest_paginator.get_page(quest_page_number)
+        # context["quest_page_obj"] = quest_page_obj
 
-        docs = self.object.get_learning_docs()
-        doc_paginator = Paginator(docs, 10)
-        doc_page_number = self.request.GET.get('doc_page')
-        doc_page_obj = doc_paginator.get_page(doc_page_number)
-        context["doc_page_obj"] = doc_page_obj
-
-        get_params = self.request.GET.copy()
-        if 'doc_page' in get_params:
-            get_params.pop('doc_page')
-        if 'quest_page' in get_params:
-            get_params.pop('quest_page')
-        context['get_params'] = get_params
+        # docs = self.object.get_learning_docs()
+        # doc_paginator = Paginator(docs, 10)
+        # doc_page_number = self.request.GET.get('doc_page')
+        # doc_page_obj = doc_paginator.get_page(doc_page_number)
+        # context["doc_page_obj"] = doc_page_obj
+        #
+        # get_params = self.request.GET.copy()
+        # if 'doc_page' in get_params:
+        #     get_params.pop('doc_page')
+        # if 'quest_page' in get_params:
+        #     get_params.pop('quest_page')
+        # context['get_params'] = get_params
         return context
 
 

@@ -29,8 +29,8 @@ class WorkerDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['briefings'] = Briefing.objects.all()
-        context['model_name'] = self.request.GET.get('model_name')
-        context['pk'] = self.request.GET.get('pk')
+        context['model_name'] = self.request.GET.get('model_name', self.object.get_last_filled)
+        context['pk'] = self.request.GET.get('pk', self.object.get_last_filled.pk)
         return context
 
 

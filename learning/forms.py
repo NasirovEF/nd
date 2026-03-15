@@ -108,7 +108,7 @@ class ProgramFormNotActive(ProgramForm):
 
 class ProtocolResultForm(StileFormMixin, forms.ModelForm):
     passed = forms.BooleanField(required=False, label='Сдал')
-    comment = forms.CharField(
+    reg_number = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'rows': 2}),
         label='Комментарий'
@@ -181,7 +181,7 @@ class ProtocolResultForm(StileFormMixin, forms.ModelForm):
 
     class Meta:
         model = ProtocolResult
-        fields = ['id', 'protocol', 'learner', 'passed', 'comment']
+        fields = ['id', 'protocol', 'learner', 'passed', 'type', 'reg_number']
 
 
 class TestForm(StileFormMixin, forms.ModelForm):

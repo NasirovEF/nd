@@ -1,12 +1,13 @@
 {% extends 'organization/base.html' %}
 {% load my_tags %}
 {% block content %}
-<a class="btn btn-outline-secondary btn-sm my-4 mx-4" href="{% url 'accident:accident_list' %}">Назад</a>
 <div class="row">
-    <div class="col-1"></div>
+    <div class="col-1">
+        <a class="btn btn-outline-secondary btn-sm my-4 mx-4" href="{% url 'accident:accident_list' %}">Назад</a>
+    </div>
     <div class="col-7">
         <!-- Карточка инцидента (ваш существующий код) -->
-        <div class="card">
+        <div class="card mt-4">
             <div class="card-header text-center">
                {{ object.order }}
             </div>
@@ -44,8 +45,8 @@
     </div>
     <div class="col-4">
         {% if similar_accidents %}
-        <div class="container mt-4">
-            <h6 class="mb-3 text-center">Похожие несчастные случаи</h6>
+        <div class="container mt-4 border rounded p-2">
+            <h6 class="mb-3 text-center">Несчастные случаи с аналогичными обстоятельствами</h6>
             <ul class="list-group">
                 {% for item in similar_accidents %}
                 <li class="list-group-item py-2">
@@ -100,8 +101,8 @@
         {% endfor %}
 
         {% else %}
-        <div class="container mt-4">
-            <p class="text-muted">Похожие случаи не найдены.</p>
+        <div class="container mt-4  border rounded">
+            <p class="text-muted text-center">Несчастные случаи с аналогичными <br>обстоятельствами не найдены.</p>
         </div>
         {% endif %}
     </div>
