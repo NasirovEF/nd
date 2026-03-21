@@ -21,8 +21,6 @@
                     {% endfor %}
                     <p class="mb-1"><em>Проведена проверка знаний по программе</em>
                         {%for program in object.program.all%}<strong>{{program}}</strong>{%endfor%}</p>
-                    <p class="mb-1"><em>по направлениям обучения</em><strong> {{object.program.all|get_direction_name}}</strong>
-                    </p>
                 </div>
                 <h5>Результаты проверки знаний:</h5>
                 <table class="table table-sm table-hover text-center fixed-columns table align-middle">
@@ -37,29 +35,39 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for result in results %}
-                    <tr>
-                        <th>{{forloop.counter}}</th>
-                        <td>{{ result.learner }}</td>
-                        <td>{{ result.learner.worker.district }} {{ result.learner.worker.division }}</td>
-                        <td>
-                            {% if result.passed %}
-                            <span class="text-success">удовлетворительно</span>
-                            {% else %}
-                            <span class="text-danger">неудовлетворительно</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ result.get_type_display }}
-                        </td>
-                        <td>{{ result.reg_number|default:"—" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5">Нет данных о результатах</td>
-                    </tr>
+                    {% for direction in directions %}
+                        <tr>
+                            <th>{{ forloop.counter }}</th>
+                            <th colspan="5" class="text-start">
+                                {{ direction }}
+                                {% if direction.sub_direction.all %}({{ subdirections }}){% endif %}
+                            </th>
+                        </tr>
+                        {% for result in object.protocol_result.all|get_direction_result:direction %}
+                        <tr>
+                            <td>{{ forloop.parentloop.counter }}.{{ forloop.counter }}</td>
+                            <td>{{ result.learner }}</td>
+                            <td>{{ result.learner.worker.district }} {{ result.learner.worker.division }}</td>
+                            <td>
+                                {% if result.passed %}
+                                    <span class="text-success">удовлетворительно</span>
+                                {% else %}
+                                    <span class="text-danger">неудовлетворительно</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ result.get_type_display }}
+                            </td>
+                            <td>{{ result.reg_number|default:"—" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5">Нет данных о результатах</td>
+                        </tr>
+                        {% endfor %}
                     {% endfor %}
                     </tbody>
+
                 </table>
                 {% if perms.learning.change_protocol %}
                 <div class="btn-group dropend" role="group">

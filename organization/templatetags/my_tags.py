@@ -209,6 +209,12 @@ def briefing_type_name(names):
     return ", ".join(name_list)
 
 
+@register.filter()
+def get_direction_result(result, direction):
+    res = result.filter(direction=direction)
+    return res
+
+
 @register.simple_tag(takes_context=True)
 def modify_page_url(context, page_number):
     request = context['request']

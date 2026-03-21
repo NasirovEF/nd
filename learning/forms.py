@@ -9,12 +9,13 @@ from datetime import timedelta
 from django.forms import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from learning.models.learner_direction import LearningDoc, LearningPoster
+from learning.models.protocol import KnowledgeOrder
 from organization.forms import StileFormMixin
 from organization.models import Worker, Organization
 
 
 class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
-
+    """Форма обновления протокола проверки знаний"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['chairman'].queryset = Worker.objects.filter(dismissed=False)
@@ -38,31 +39,36 @@ class ProtocolUpdateForm(StileFormMixin, forms.ModelForm):
                 for program in programs:
                     for direction in program.direction.all():
                         if direction not in learner_direction:
-                            errors.append(f"Работнику ({learner}) не требуется обучение по направлению: {direction}")
+                            errors.append(f"Работнику ({learner}) не "
+                                          f"требуется обучение по направлению: {direction}")
         if errors:
             raise forms.ValidationError(errors)
         return cleaned_data
 
 
 class ProtocolCreateForm(ProtocolUpdateForm):
+    """Форма создания протокола проверки знаний"""
     class Meta(ProtocolUpdateForm.Meta):
         model = Protocol
         exclude = ["doc_scan"]
 
 
 class DirectionForm(StileFormMixin, forms.ModelForm):
+    """Форма направления обучения по ОТ"""
     class Meta:
         model = Direction
         fields = "__all__"
 
 
 class LearnerForm(StileFormMixin, forms.ModelForm):
+    """Форма обучающегося (работника)"""
     class Meta:
         model = Learner
         fields = ["direction"]
 
 
 class ProgramForm(StileFormMixin, forms.ModelForm):
+    """Форма программы обучения"""
     error_css_class = 'text-danger'
 
     def __init__(self, *args, **kwargs):
@@ -101,12 +107,14 @@ class ProgramForm(StileFormMixin, forms.ModelForm):
 
 
 class ProgramFormNotActive(ProgramForm):
+    """Форма архивной программы обучения"""
     class Meta:
         model = Program
         exclude = ["replacement", "is_active"]
 
 
 class ProtocolResultForm(StileFormMixin, forms.ModelForm):
+    """Форма результата проверки знаний"""
     passed = forms.BooleanField(required=False, label='Сдал')
     reg_number = forms.CharField(
         required=False,
@@ -185,12 +193,14 @@ class ProtocolResultForm(StileFormMixin, forms.ModelForm):
 
 
 class TestForm(StileFormMixin, forms.ModelForm):
+    """Форма теста по направлению"""
     class Meta:
         model = Test
         fields = []
 
 
 class AnswerForm(forms.ModelForm):
+    """Форма ответа на вопрос"""
     is_correct = forms.BooleanField(
         required=False,
         label="Правильный ответ"
@@ -227,8 +237,8 @@ class AnswerForm(forms.ModelForm):
         return cleaned_data
 
 
-
 class QuestionForm(forms.ModelForm):
+    """Форма вопроса"""
     text = forms.CharField(
         widget=forms.Textarea(attrs={
             'class': 'form-control',
@@ -258,6 +268,7 @@ class QuestionForm(forms.ModelForm):
 
 
 class QuestionFormSet(BaseInlineFormSet):
+    """Формсет для вопроса"""
     def clean(self):
         super().clean()
 
@@ -305,6 +316,7 @@ class QuestionFormSet(BaseInlineFormSet):
 
 
 class AnswerFormSet(BaseInlineFormSet):
+    """Формсет для ответа"""
     def clean(self):
         super().clean()
 
@@ -361,6 +373,7 @@ AnswerFormSets = forms.inlineformset_factory(
 
 
 class LearningDocForm(StileFormMixin, forms.ModelForm):
+    """Форма документа к программе обучения/инструктажа"""
     # Скрытое поле для хранения ID связанного объекта
     object_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
 
@@ -376,6 +389,7 @@ class LearningDocForm(StileFormMixin, forms.ModelForm):
 
 
 class LearningPosterForm(StileFormMixin, forms.ModelForm):
+    """Форма постера к программе обучения/инструктажа"""
     object_id = forms.IntegerField(widget=forms.HiddenInput(), required=False)
 
     class Meta:
@@ -389,6 +403,7 @@ class LearningPosterForm(StileFormMixin, forms.ModelForm):
 
 
 class ProgramBriefingForm(StileFormMixin, forms.ModelForm):
+    """Форма программы инструктажа"""
     error_css_class = 'text-danger'
 
     def __init__(self, *args, **kwargs):
@@ -413,13 +428,14 @@ class ProgramBriefingForm(StileFormMixin, forms.ModelForm):
 
 
 class ProgramBriefingNotActive(ProgramBriefingForm):
+    """Форма архивной программы инструктажа"""
     class Meta:
         model = ProgramBriefing
         exclude = ["replacement", "is_active"]
 
 
 class BriefingDayForm(StileFormMixin, forms.ModelForm):
-
+    """Форма дня проведения инструктажа"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['briefing_program'].queryset = ProgramBriefing.objects.filter(is_active=True)
@@ -441,6 +457,7 @@ class BriefingDayForm(StileFormMixin, forms.ModelForm):
 
 
 class BulkBriefingDayForm(forms.Form):
+    """Форма массового создания дня инструктажа"""
     briefing_day = forms.DateField(
         required=True,
         label="Дата инструктажа",
@@ -457,14 +474,17 @@ class BulkBriefingDayForm(forms.Form):
         queryset=Learner.objects.filter(is_active=True),
         required=True,
         label="Работники",
-        widget=forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
-                   'title': 'Выберите работников...', 'size': 10})
+        widget=forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker',
+                                           'data-live-search': 'true',
+                                           'title': 'Выберите работников...',
+                                           'size': 10})
     )
     briefing_program = forms.ModelChoiceField(
         queryset=ProgramBriefing.objects.filter(is_active=True),
         required=True,
         label="Программа инструктажа или документ в объеме которого проведен инструктаж",
-        widget=forms.Select(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
+        widget=forms.Select(attrs={'class': 'form-control form-select selectpicker',
+                                   'data-live-search': 'true',
                                    'title': 'Выберите программу инструктажа'})
     )
     briefing_reason = forms.CharField(
@@ -525,28 +545,34 @@ class BulkBriefingDayForm(forms.Form):
 
 
 class ExamAssignmentForm(StileFormMixin, forms.ModelForm):
+    """Форма назначения экзамена"""
     class Meta:
         model = ExamAssignment
         exclude = ["learner", "exam", "assigned_date"]
 
 
 class BulkExamAssignmentForm(forms.Form):
+    """Форма массового назначения экзамена"""
     exam = forms.ModelChoiceField(
         queryset=Exam.objects.all(),
         label="Экзамен",
-        widget=forms.Select(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
-                   'title': 'Выберите тип теста'})
+        widget=forms.Select(attrs={'class': 'form-control form-select selectpicker',
+                                   'data-live-search': 'true',
+                                   'title': 'Выберите тип теста'})
     )
     learners = forms.ModelMultipleChoiceField(
         queryset=Learner.objects.filter(is_active=True),
         label="Работники",
-        widget=forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker', 'data-live-search': 'true',
-                   'title': 'Выберите работников...', 'size':10})
+        widget=forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker',
+                                           'data-live-search': 'true',
+                                           'title': 'Выберите работников...',
+                                           'size':10})
     )
     deadline = forms.DateField(
         required=False,
         label="Срок выполнения",
-        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+        widget=forms.DateInput(attrs={'type': 'date',
+                                      'class': 'form-control'})
     )
     total_attempts = forms.IntegerField(
         min_value=1,
@@ -574,3 +600,9 @@ class BulkExamAssignmentForm(forms.Form):
             assignments.append(assignment)
         return assignments
 
+
+class KnowledgeOrderForm(StileFormMixin, forms.ModelForm):
+    """Форма распорядительного документа о создании комиссии"""
+    class Meta:
+        model = KnowledgeOrder
+        fields = "__all__"

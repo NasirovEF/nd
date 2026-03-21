@@ -90,9 +90,16 @@ class ProtocolDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['results'] = ProtocolResult.objects.filter(
-            protocol=self.object
-        ).select_related('learner')
+        subdirections = set()
+        directions = set()
+        for program in self.object.program.all():
+            for direction in program.direction.all():
+                directions.add(direction)
+            if program.subdirection:
+                for subdirection in program.subdirection.all():
+                    subdirections.add(subdirection)
+        context['directions'] = directions
+        context['subdirections'] = ", ".join(str(subdir) for subdir in subdirections)
         return context
 
 
@@ -120,35 +127,29 @@ class ProtocolCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
             for direction in program.direction.all():
                 directions.add(direction)
 
-        for learner in learners:
-            # 1. Проверяем: есть ли НЕСДАННЫЕ экзамены по программам протокола?
-            has_failed = learner.exam_results.filter(
-                exam__program__in=program_ids,
-                is_passed=False,
-                **date_filter
-            ).exists()
-
-            all_passed = (
-                    learner.exam_results.filter(
-                        exam__program__in=program_ids,
-                        is_passed=True,
-                        **date_filter
-                    ).values('exam__program_id').distinct().count() == len(program_ids)
-            )
-            if all_passed:
-                ProtocolResult.objects.create(
-                    protocol=protocol,
-                    learner=learner,
-                    passed=True
-                )
-            elif has_failed and not all_passed:
-                ProtocolResult.objects.create(
-                    protocol=protocol,
-                    learner=learner,
-                    passed=False
-                )
         for direction in directions:
             for learner in learners:
+                # 1. Проверяем: есть ли НЕСДАННЫЕ экзамены по программам протокола?
+                has_failed = learner.exam_results.filter(
+                    exam__program__in=program_ids,
+                    is_passed=False,
+                    **date_filter
+                ).exists()
+
+                all_passed = not has_failed and (
+                        learner.exam_results.filter(
+                            exam__program__in=program_ids,
+                            is_passed=True,
+                            **date_filter
+                        ).values('exam__program_id').distinct().count() == len(program_ids)
+                )
+
+                ProtocolResult.objects.create(
+                    protocol=protocol,
+                    direction=direction,
+                    learner=learner,
+                    passed=all_passed
+                )
                 knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol, direction=direction, learner=learner)
 
         return super().form_valid(form)
@@ -181,33 +182,32 @@ class ProtocolUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
             for direction in program.direction.all():
                 directions.add(direction)
 
-        for learner in learners:
-            # 1. Проверяем: есть ли НЕСДАННЫЕ экзамены по программам протокола?
-            has_failed = learner.exam_results.filter(
-                exam__program__in=program_ids,
-                is_passed=False,
-                **date_filter
-            ).exists()
-
-            all_passed = not has_failed and (
-                    learner.exam_results.filter(
-                        exam__program__in=program_ids,
-                        is_passed=True,
-                        **date_filter
-                    ).values('exam__program_id').distinct().count() == len(program_ids)
-            )
-
-            ProtocolResult.objects.create(
-                protocol=protocol,
-                learner=learner,
-                passed=all_passed
-
-            )
-
         for direction in directions:
-            for learner in protocol.learner.all():
+            for learner in learners:
+                # 1. Проверяем: есть ли НЕСДАННЫЕ экзамены по программам протокола?
+                has_failed = learner.exam_results.filter(
+                    exam__program__in=program_ids,
+                    is_passed=False,
+                    **date_filter
+                ).exists()
+
+                all_passed = not has_failed and (
+                        learner.exam_results.filter(
+                            exam__program__in=program_ids,
+                            is_passed=True,
+                            **date_filter
+                        ).values('exam__program_id').distinct().count() == len(program_ids)
+                )
+
+                ProtocolResult.objects.create(
+                    protocol=protocol,
+                    direction=direction,
+                    learner=learner,
+                    passed=all_passed
+                )
                 knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date, protocol=protocol,
                                                               direction=direction, learner=learner)
+
         return super().form_valid(form)
 
 
