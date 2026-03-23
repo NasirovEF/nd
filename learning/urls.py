@@ -10,6 +10,8 @@ from learning.views.direction_test import QuestionDeleteView, QuestionListView, 
 from learning.views.exam import start_exam, take_exam, submit_answers, exam_results, detail_exam_results, \
     all_exam_results, all_exam_assignment, create_bulk_exam_assignment, all_results_for_exam, ExamAssignmentUpdateView, \
     ExamAssignmentDeleteView
+from learning.views.knowledge_order import KnowledgeOrderCreateView, KnowledgeOrderListView, KnowledgeOrderUpdateView, \
+    KnowledgeOrderDeleteView
 from learning.views.learner import LearnerUpdateView, LearnerListView
 from learning.views.learning_doc_poster import LearningDocUpdateView, LearningPosterUpdateView
 from learning.views.load_docs import generate_protocol, generate_identity
@@ -81,6 +83,12 @@ urlpatterns = [
     path("briefing_log_list/<str:model_name>/<int:pk>/", BriefingLogListView.as_view(), name="briefing_log_list"),
     path("briefing_day_update/<int:pk>", BriefingDayUpdateView.as_view(), name="briefing_day_update"),
     path("briefing_day_delete/<int:pk>/<int:worker_pk>", BriefingDayDeleteView.as_view(), name="briefing_day_delete"),
+
+    path("knowledge_order_list/", KnowledgeOrderListView.as_view(), name="knowledge_order_list"),
+    path("knowledge_order_create/>", KnowledgeOrderCreateView.as_view(), name="knowledge_order_create"),
+    path("knowledge_order_update/<int:pk>", KnowledgeOrderUpdateView.as_view(), name="knowledge_order_update"),
+    path("knowledge_order_delete/<int:pk>", KnowledgeOrderDeleteView.as_view(), name="knowledge_order_delete"),
+
 
     path("load_protocol/<int:pk>/<str:template_name>", generate_protocol, name="load_protocol"),
     path("load_identity/<int:pk>", generate_identity, name="load_identity")

@@ -1,6 +1,6 @@
 from django.views.generic import ListView, DeleteView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-
+from django.urls import reverse_lazy
 from learning.forms import KnowledgeOrderForm
 from learning.models import KnowledgeOrder
 
@@ -18,7 +18,8 @@ class KnowledgeOrderCreateView(LoginRequiredMixin, PermissionRequiredMixin, Crea
 
     model = KnowledgeOrder
     form_class = KnowledgeOrderForm
-    success_url = "learning:knowledgeorder_list"
+    permission_required = 'learning.add_knowledgeorder'
+    success_url = reverse_lazy("learning:knowledgeorder_list")
 
 
 class KnowledgeOrderUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -26,11 +27,13 @@ class KnowledgeOrderUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Upda
 
     model = KnowledgeOrder
     form_class = KnowledgeOrderForm
-    success_url = "learning:knowledgeorder_list"
+    permission_required = 'learning.change_knowledgeorder'
+    success_url = reverse_lazy("learning:knowledgeorder_list")
 
 
 class KnowledgeOrderDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     """Создание распорядительного документа"""
 
     model = KnowledgeOrder
-    success_url = "learning:knowledgeorder_list"
+    permission_required = 'learning.delete_knowledgeorder'
+    success_url = reverse_lazy("learning:knowledgeorder_list")
