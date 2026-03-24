@@ -19,69 +19,71 @@
             Добавить</a>
         {% endif %}
 
+                <h5 class="text-center m-2">Организационно-распорядительные документы о создании комиссии по проверке знаний требований охраны труда</h5>
 
                 <table class="table table-sm table-hover text-center align-middle no-split-header">
                     <thead>
                     <tr>
-                        <th scope="col" rowspan="2" class="col-2">Подразделение</th>
-                        <th scope="col" rowspan="2">ФИО</th>
-                        <th scope="col" rowspan="2">Должность</th>
-                        <th scope="col" colspan="2" style="line-height:1.2; padding:0.25rem;">Предстоящая дата</th>
-                        <th scope="col" class="col-1" rowspan="2"></th>
-                        <th scope="col" class="col-1" rowspan="2"></th>
-                    </tr>
-                    <tr>
-                        <th scope="col" style="line-height:1.2; padding:0.25rem;">Обучения</th>
-                        <th scope="col" style="line-height:1.2; padding:0.25rem;">Инструктажа</th>
+                        <th scope="col">Тип документа</th>
+                        <th scope="col">Номер приказа</th>
+                        <th scope="col" style="line-height:1.2; padding:0.25rem;">Дата приказа</th>
+                        <th scope="col">Подразделение</th>
+                        <th scope="col">Наличие скан‑файла</th>
+                        <th scope="col"></th>
                     </tr>
                     </thead>
                     <tbody class="table-group-divider">
                     <form method="get">
                         <tr>
-                             <td>
+                            <td>
+                                <div>
+                                    <input name="type" class="form-control my-2 text-center" list="typeOptions"
+                                           id="typeDataList" value="{{search_params.type}}"
+                                           placeholder="Выберите направление обучения">
+                                    <datalist id="typeOptions">
+                                        {% for t in type %}
+                                        <option value="{{ t }}">
+                                            {% endfor %}
+                                    </datalist>
+                                </div>
+                            </td>
+                            <td><input name="doc_number" class="form-control my-2 text-center" type="search"
+                                       placeholder="Введите номер приказа"
+                                       aria-label="Search" value="{{search_params.doc_number}}"></td>
+                            <td>
+                                <input name="doc_date_from" class="form-control text-center mb-1" type="date"
+                                       placeholder="Дата с"
+                                       aria-label="Search" value="{{search_params.doc_date_from}}">
+                                <input name="doc_date_to" class="form-control text-center" type="date"
+                                       placeholder="Дата по"
+                                       aria-label="Search" value="{{search_params.doc_date_to}}">
+                            </td>
+                            <td>
                                  <input name="affiliation" class="form-control my-2 text-center" type="search"
                                        placeholder="Введите подразделение"
                                        aria-label="Search" value="{{search_params.affiliation}}">
-                             </td>
-                            <td><input name="surname" class="form-control my-2 text-center" type="search"
-                                       placeholder="Введите Фамилию"
-                                       aria-label="Search" value="{{search_params.surname}}"></td>
-                            <td><input name="position" class="form-control my-2 text-center" type="search"
-                                       placeholder="Введите должность"
-                                       aria-label="Search" value="{{search_params.position}}"></td>
-                            <td>
-                                <input name="date_learning_from" class="form-control text-center mb-1" type="date"
-                                       placeholder="Дата с"
-                                       aria-label="Search" value="{{search_params.date_learning_from}}">
-                                <input name="date_learning_to" class="form-control text-center" type="date"
-                                       placeholder="Дата по"
-                                       aria-label="Search" value="{{search_params.date_learning_to}}">
-                            </td>
-
-                            <td>
-                                <input name="date_briefing_from" class="form-control text-center mb-1" type="date"
-                                       placeholder="Дата с"
-                                       aria-label="Search" value="{{search_params.date_briefing_from}}">
-                                <input name="date_briefing_to" class="form-control text-center" type="date"
-                                       placeholder="Дата по"
-                                       aria-label="Search" value="{{search_params.date_briefing_to}}">
                             </td>
                             <td>
-                                <div>
-                                    <select name="dismissed" class="form-control text-center w-100" aria-label="Выбор статуса">
-                                        <option value="" {% if search_params.dismissed == "" %}selected{% endif %}>
-                                        ---------
-                                      </option>
-                                      <option value="1" {% if search_params.dismissed == "1" %}selected{% endif %}>
-                                        Уволенные
-                                      </option>
-                                    </select>
+                                <div class="d-flex justify-content-center align-items-center gap-2 my-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="1" id="hasFile"
+                                               name="has_file"
+                                               {% if search_params.has_file == '1' %}checked{% endif %}>
+                                        <label class="form-check-label" for="hasFile">Да</label>
+                                    </div>
+                                    <span class="text-muted">/</span>
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" type="checkbox" value="0" id="hasNotFile"
+                                               name="has_not_file"
+                                               {% if search_params.has_not_file == '0' %}checked{% endif %}>
+                                        <label class="form-check-label" for="hasNotFile">Нет</label>
+                                    </div>
                                 </div>
                             </td>
                             <td>
-                                <button type="submit" class="btn btn-outline-primary btn-sm">
+                                <div><button type="submit" class="btn btn-outline-primary btn-sm">
                                     Поиск
-                                </button>
+                                </button></div>
                                 <button type="button" class="btn btn-outline-secondary btn-sm mt-2"
                                         onclick="window.location.href='?';">
                                     Сбросить
@@ -89,35 +91,32 @@
                             </td>
                         </tr>
                     </form>
-                    {% for worker in worker_page.object_list %}
+                    {% for document in object_list %}
                     <tr>
-                        <td>{{ worker.return_str_affiliation }}</td>
-                        <td>{{ worker }}</td>
-                        <td>{{ worker|get_main_position }}</td>
-                        <td>{{ worker|get_nearest_knowledge_date }}</td>
-                        <td>{{ worker|get_nearest_briefing_date }}</td>
+                        <td>{{ document.get_type_display }}</td>
+                        <td>{{ document.doc_number }}</td>
+                        <td>{{ document.doc_date }}</td>
+                        <td>{{ document.return_str_affiliation }}</td>
+                        <td>{% if document.doc_scan %}
+                            <a class="btn btn-link-secondary btn-sm" href="{{document.doc_scan.url}}">Скан-файл</a>
+                            {% else %}
+                            <div class="text-danger">отсутствует</div>
+                            {% endif %}</td>
                         <td>
-                            <a class="btn btn-outline-primary btn-sm" type="button"
-                               href="#">
-                                Подробнее
-                            </a>
-                        </td>
-                        <td>
-                            {% if perms.organization.change_worker or perms.organization.delete_worker %}
+                            {% if perms.learning.change_knowledgeorder or perms.learning.delete_knowledgeorder %}
                             <div class="btn-group dropdown">
                                 <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
                                         data-bs-toggle="dropdown" aria-expanded="false">
-
                                 </button>
                                 <ul class="dropdown-menu">
-                                    {% if perms.organization.change_worker %}
+                                    {% if perms.learning.change_knowledgeorder %}
                                     <li><a class="dropdown-item"
-                                           href="#">Изменить
+                                           href="{% url 'learning:knowledge_order_update' document.pk %}">Изменить
                                     </a></li>
                                     {% endif %}
-                                    {% if perms.organization.delete_worker %}
+                                    {% if perms.learning.delete_knowledgeorder %}
                                     <li><a class="dropdown-item text-danger"
-                                           href="#">Удалить
+                                           href="{% url 'learning:knowledge_order_delete' document.pk %}">Удалить
                                     </a></li>
                                     {% endif %}
                                 </ul>
@@ -129,97 +128,79 @@
                     </tbody>
                 </table>
 
-                <!-- Навигация для работников -->
-                <nav aria-label="Пагинация списка работников">
-                    <ul class="pagination pagination-sm">
-                        <!-- Кнопка "Предыдущая" -->
-                        {% if worker_page.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="?worker_page={{ worker_page.previous_page_number }}
-                           {% for key, value in worker_page.params.items %}
-                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
-                           {% endfor %}">
-                                &laquo;
-                            </a>
-                        </li>
-                        {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">&laquo;</span>
-                        </li>
-                        {% endif %}
+                <div class="position-relative m-4">
+       <nav aria-label="Навигация по страницам" class="mt-3">
+          <ul class="pagination justify-content-center pagination-sm">
+            <!-- Кнопка «Предыдущая» -->
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="{% modify_page_url page_obj.previous_page_number %}"
+                   title="Перейти на страницу {{ page_obj.previous_page_number }}">
+                  &laquo;
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+              </li>
+            {% endif %}
 
-                        <!-- Первая страница + разделитель -->
-                        {% if worker_page.number > 3 %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="?worker_page=1
-                           {% for key, value in worker_page.params.items %}
-                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
-                           {% endfor %}">1</a>
-                        </li>
-                        <li class="page-item disabled"><span class="page-link">…</span></li>
-                        {% endif %}
+            <!-- Первая страница -->
+            {% if page_obj.number > 3 %}
+              <li class="page-item">
+                <a class="page-link" href="{% modify_page_url 1 %}" title="Первая страница">1</a>
+              </li>
+              {% if page_obj.number > 4 %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+              {% endif %}
+            {% endif %}
 
-                        <!-- Страницы до текущей (2–3 штуки) -->
-                        {% for page_num in worker_page.paginator.page_range %}
-                        {% if page_num >= worker_page.number|add:-2 and page_num < worker_page.number %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="?worker_page={{ page_num }}
-                             {% for key, value in worker_page.params.items %}
-                               {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
-                             {% endfor %}">{{ page_num }}</a>
-                        </li>
-                        {% endif %}
-                        {% endfor %}
+            <!-- Страницы вокруг текущей (±2) -->
+            {% for p in page_obj.paginator.page_range %}
+              {% if p >= page_obj.number|add:'-2' and p <= page_obj.number|add:'2' %}
+                {% if p == page_obj.number %}
+                  <li class="page-item active" aria-current="page">
+                    <span class="page-link">{{ p }}</span>
+                  </li>
+                {% else %}
+                  <li class="page-item">
+                    <a class="page-link" href="{% modify_page_url p %}" title="Страница {{ p }}">{{ p }}</a>
+                  </li>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
 
-                        <!-- Текущая страница -->
-                        <li class="page-item active" aria-current="page">
-                            <span class="page-link">{{ worker_page.number }}</span>
-                        </li>
+            <!-- Разделитель и последняя страница -->
+            {% with total_pages=page_obj.paginator.num_pages %}
+              {% if page_obj.number < total_pages|add:'-2' %}
+                <!-- Показываем разделитель, только если между текущей и последней страницей > 2 страниц -->
+                {% if page_obj.number <= total_pages|add:'-4' %}
+                  <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                <!-- Ссылка на последнюю страницу -->
+                <li class="page-item">
+                  <a class="page-link" href="{% modify_page_url total_pages %}" title="Последняя страница">{{ total_pages }}</a>
+                </li>
+              {% endif %}
+            {% endwith %}
 
-                        <!-- Страницы после текущей (2–3 штуки) -->
-                        {% for page_num in worker_page.paginator.page_range %}
-                        {% if page_num > worker_page.number and page_num <= worker_page.number|add:2 %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="?worker_page={{ page_num }}
-                             {% for key, value in worker_page.params.items %}
-                               {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
-                             {% endfor %}">{{ page_num }}</a>
-                        </li>
-                        {% endif %}
-                        {% endfor %}
+            <!-- Кнопка «Следующая» -->
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="{% modify_page_url page_obj.next_page_number %}"
+                   title="Перейти на страницу {{ page_obj.next_page_number }}">
+                  &raquo;
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
 
-                        <!-- Последняя страница + разделитель -->
-                        {% if worker_page.number < worker_page.paginator.num_pages|add:-2 %}
-                        <li class="page-item disabled"><span class="page-link">…</span></li>
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="?worker_page={{ worker_page.paginator.num_pages }}
-                           {% for key, value in worker_page.params.items %}
-                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
-                           {% endfor %}">{{ worker_page.paginator.num_pages }}</a>
-                        </li>
-                        {% endif %}
-
-                        <!-- Кнопка "Следующая" -->
-                        {% if worker_page.has_next %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               href="?worker_page={{ worker_page.next_page_number }}
-                           {% for key, value in worker_page.params.items %}
-                             {% if value %}&{{ key }}={{ value|urlencode }}{% endif %}
-                           {% endfor %}">&raquo;</a>
-                        </li>
-                        {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">&raquo;</span>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
+</div>
 
     </div>
 </div>

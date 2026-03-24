@@ -9,7 +9,7 @@
 <a class="btn btn-outline-primary my-4" href="{% url 'learning:protocol_create' %}">Создать протокол</a>
 {% endif %}
 {% if perms.learning.view_knowledgeorder %}
-<a class="btn btn-outline-primary my-4" href="{% url 'learning:knowledge_order_list' %}">Приказы/распоряжения</a>
+<a class="btn btn-outline-primary ms-2" href="{% url 'learning:knowledge_order_list' %}">Приказы/распоряжения</a>
 {% endif %}
 <div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
      aria-labelledby="staticBackdropLabel">

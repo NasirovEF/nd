@@ -164,12 +164,12 @@ class KnowledgeOrder(Affiliation):
         verbose_name_plural = "Документы о создании комиссии"
 
     def __str__(self):
-        return f"{self.get_last_filled} {self.type} от {self.doc_date} №{self.doc_number}"
+        return f"{self.get_last_filled} {self.get_type_display()} от {self.doc_date.strftime("%d.%m.%Y")} №{self.doc_number}"
 
     def prot_str(self):
         if self.type == 'order':
             return (f"В соответствии с приказом руководителя "
-                    f"{self.get_last_filled} от {self.doc_date} №{self.doc_number}")
+                    f"{self.get_last_filled} от {self.doc_date.strftime("%d.%m.%Y")} №{self.doc_number}")
         if self.type == 'instruction':
             return (f"В соответствии с распоряжением руководителя "
-                    f"{self.get_last_filled} от {self.doc_date} №{self.doc_number}")
+                    f"{self.get_last_filled} от {self.doc_date.strftime("%d.%m.%Y")} №{self.doc_number}")
