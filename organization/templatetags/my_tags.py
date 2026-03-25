@@ -210,8 +210,8 @@ def briefing_type_name(names):
 
 
 @register.filter()
-def get_direction_result(result, direction):
-    res = result.filter(direction=direction)
+def get_program_result(result, program):
+    res = result.filter(program=program)
     return res
 
 

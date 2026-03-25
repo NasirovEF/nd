@@ -30,6 +30,18 @@
                         </div>
                         {% endif %}
                     </div>
+                    <!-- Поле "order" -->
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.order.label }}</label>
+                        {{ form.order }}
+                        {% if form.order.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.order.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
                     <!-- Поле "prot_date" -->
                     <div class="mb-3">
                         <label class="form-label">{{ form.prot_date.label }}</label>

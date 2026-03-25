@@ -165,6 +165,18 @@ class Program(BaseProgram):
         verbose_name = "Программа обучения"
         verbose_name_plural = "Программы обучения"
 
+    def str_direction(self):
+        directions = self.direction.all()
+        if not directions:
+            return "Направления не указаны"
+        return ", ".join(str(direction) for direction in directions)
+
+    def str_subdirection(self):
+        subdirections = self.subdirection.all()
+        if not subdirections:
+            return ""
+        return ", ".join(str(subdirection) for subdirection in subdirections)
+
 
 class LearningDoc(models.Model):
     """Модель документов для обучения"""

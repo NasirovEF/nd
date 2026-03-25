@@ -13,14 +13,17 @@
             </div>
             <div class="card-body">
                 <div class="mb-1">
-                    <p class="mb-1"><em>Комиссией в составе:</em></p>
+                    <p class="mb-1 text-center">{{ object.issued_division }} {{ object.issued_division.branch }}
+                    {{ object.issued_division.branch.organization }}</p>
+                    <p class="mb-1"><em>{{ object.order.prot_str }}</em></p>
+                    <p class="mb-1"><em>Комиссия в составе:</em></p>
                     <p class="mb-1">Председателя: <strong>{{object.chairman}}</strong></p>
                     <p class="mb-1">Членов комиссии:</p>
                     {% for member in object.members.all %}
                     <p class="mb-1"><strong>{{member}}</strong></p>
                     {% endfor %}
-                    <p class="mb-1"><em>Проведена проверка знаний по программе</em>
-                        {%for program in object.program.all%}<strong>{{program}}</strong>{%endfor%}</p>
+                    <p class="mb-1"><em>Проведена проверка знаний по программе(ам):</em>
+                        {%for program in object.program.all%}<p class="mb-1"><strong>{{program}}</strong></p>{%endfor%}</p>
                 </div>
                 <h5>Результаты проверки знаний:</h5>
                 <table class="table table-sm table-hover text-center fixed-columns table align-middle">
@@ -35,15 +38,15 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for direction in directions %}
+                    {% for program in object.program.all %}
                         <tr>
                             <th>{{ forloop.counter }}</th>
                             <th colspan="5" class="text-start">
-                                {{ direction }}
-                                {% if direction.sub_direction.all %}({{ subdirections }}){% endif %}
+                                {{ program }}
+                                {% if program.subdirection.all %}({{ program.str_subdirection }}){% endif %}
                             </th>
                         </tr>
-                        {% for result in object.protocol_result.all|get_direction_result:direction %}
+                        {% for result in object.protocol_result.all|get_program_result:program %}
                         <tr>
                             <td>{{ forloop.parentloop.counter }}.{{ forloop.counter }}</td>
                             <td>{{ result.learner }}</td>

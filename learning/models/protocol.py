@@ -76,7 +76,8 @@ class KnowledgeDate(models.Model):
     def calculate_next_date(self):
         try:
             if self.protocol:
-                protocol_result = self.protocol.protocol_result.get(learner=self.learner, direction=self.direction)
+                protocol_result = self.protocol.protocol_result.get(learner=self.learner,
+                                                                    protocol__program__direction=self.direction)
                 if protocol_result.passed:
                     self.next_date = self.kn_date + timedelta(days=self.direction.periodicity)
                     self.is_passed = True
@@ -117,8 +118,8 @@ class ProtocolResult(models.Model):
                                  on_delete=models.CASCADE,
                                  related_name="protocol_result",
                                  **NULLABLE)
-    direction = models.ForeignKey("Direction",
-                                  verbose_name="Направление обучения",
+    program = models.ForeignKey("Program",
+                                  verbose_name="Программа обучения",
                                   related_name="protocol_result",
                                   on_delete=models.SET_NULL,
                                   **NULLABLE)
@@ -139,7 +140,7 @@ class ProtocolResult(models.Model):
                                   **NULLABLE)
 
     class Meta:
-        unique_together = ('protocol', 'direction', 'learner')
+        unique_together = ('protocol', 'program', 'learner')
         verbose_name = "Результат проверки знаний"
         verbose_name_plural = "Результаты проверки знаний"
 
