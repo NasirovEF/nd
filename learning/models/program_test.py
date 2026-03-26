@@ -242,4 +242,26 @@ class Exam(models.Model):
 
         return questions.order_by('?')[:self.total_questions]
 
+
+class VerbalExam(models.Model):
+    """Модель устного экзамена"""
+    learner = models.ForeignKey(
+        "Learner",
+        on_delete=models.CASCADE,
+        verbose_name="Работник",
+        related_name="verbal_exam"
+    )
+    direction = models.ForeignKey(
+        "Direction",
+        on_delete=models.CASCADE,
+        verbose_name="Направление обучения",
+        related_name="verbal_exam"
+    )
+    total_questions = models.PositiveIntegerField(
+        verbose_name="Количество вопросов в тесте",
+        default=20,
+        validators=[MinValueValidator(1)]
+    )
+
+
     

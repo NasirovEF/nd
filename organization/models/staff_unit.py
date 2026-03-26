@@ -164,9 +164,9 @@ class Worker(Affiliation):
 
     def __str__(self):
         if self.patronymic:
-            return f'{self.position.get(is_main=True)} {self.name[:1]}.{self.patronymic[:1]}. {self.surname}'
+            return f'{self.name[:1]}.{self.patronymic[:1]}. {self.surname}, {self.position.get(is_main=True)}'
         else:
-            return f'{self.position.get(is_main=True)} {self.name[:1]}. {self.surname}'
+            return f'{self.name[:1]}. {self.surname}, {self.position.get(is_main=True)}'
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

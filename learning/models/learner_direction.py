@@ -41,6 +41,7 @@ class Direction(models.Model):
     name = models.CharField(max_length=150, verbose_name="Направление обучения", unique=True)
     description = models.TextField(verbose_name="Описание", **NULLABLE)
     periodicity = models.PositiveIntegerField(verbose_name="Периодичность обучения в днях")
+    is_verbal = models.BooleanField(verbose_name="Устный экзамен", default=False)
     have_sub_direction = models.BooleanField(verbose_name="Имеет поднаправления", default=False, help_text="Только для 'В'")
 
     class Meta:

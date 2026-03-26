@@ -70,7 +70,12 @@ class ProgramCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
 
     def form_valid(self, form):
         program = form.save()
-        Exam.objects.create(program=program)
+        is_verbal = []
+        for dir in program.direction.all():
+            if dir.is_verbal:
+                is_verbal.append(dir)
+        if is_verbal:
+            Exam.objects.create(program=program)
         return super().form_valid(form)
 
     def get_success_url(self):
