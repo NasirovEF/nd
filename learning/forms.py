@@ -9,6 +9,7 @@ from datetime import timedelta
 from django.forms import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from learning.models.learner_direction import LearningDoc, LearningPoster
+from learning.models.program_test import VerbalExam
 from learning.models.protocol import KnowledgeOrder
 from organization.forms import StileFormMixin
 from organization.models import Worker, Organization
@@ -605,4 +606,11 @@ class KnowledgeOrderForm(StileFormMixin, forms.ModelForm):
     """Форма распорядительного документа о создании комиссии"""
     class Meta:
         model = KnowledgeOrder
+        fields = "__all__"
+
+
+class VerbalExamForm(StileFormMixin, forms.ModelForm):
+    """Форма распорядительного документа о создании комиссии"""
+    class Meta:
+        model = VerbalExam
         fields = "__all__"

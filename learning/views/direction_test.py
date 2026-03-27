@@ -49,16 +49,17 @@ class QuestionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Для GET-запроса: пустой формсет без instance
-        if not self.request.POST:
-            context['answer_formset'] = AnswerFormSets()
-        else:
-            # Для POST: создаём формсет с данными из запроса, но без instance (пока нет объекта)
-            context['answer_formset'] = AnswerFormSets(self.request.POST)
+        if not self.object.test.direction.is_verbal:
+            # Для GET-запроса: пустой формсет без instance
+            if not self.request.POST:
+                context['answer_formset'] = AnswerFormSets()
+            else:
+                # Для POST: создаём формсет с данными из запроса, но без instance (пока нет объекта)
+                context['answer_formset'] = AnswerFormSets(self.request.POST)
 
-        # Явно указываем, что это CreateView (важно для шаблона при ошибках)
-        context['is_create_view'] = True
-        context['test'] = get_object_or_404(Test, pk= self.kwargs['test_pk'])
+            # Явно указываем, что это CreateView (важно для шаблона при ошибках)
+            context['is_create_view'] = True
+            context['test'] = get_object_or_404(Test, pk= self.kwargs['test_pk'])
         return context
 
     @transaction.atomic
@@ -71,23 +72,24 @@ class QuestionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
         self.object = form.save(commit=False)
         self.object.test = test
 
-        # Создаём формсет ответов (без сохранения)
-        answer_formset = AnswerFormSets(
-            self.request.POST,
-            instance=self.object  # instance есть, но объект ещё не в БД!
-        )
+        if not self.object.test.direction.is_verbal:
+            # Создаём формсет ответов (без сохранения)
+            answer_formset = AnswerFormSets(
+                self.request.POST,
+                instance=self.object  # instance есть, но объект ещё не в БД!
+            )
 
-        # Валидируем ОБА компонента
-        if not (form.is_valid() and answer_formset.is_valid()):
-            # Если хоть что-то невалидно — показываем ошибки
-            context = self.get_context_data()
-            context['form'] = form
-            context['answer_formset'] = answer_formset
-            return self.render_to_response(context)
+            # Валидируем ОБА компонента
+            if not (form.is_valid() and answer_formset.is_valid()):
+                # Если хоть что-то невалидно — показываем ошибки
+                context = self.get_context_data()
+                context['form'] = form
+                context['answer_formset'] = answer_formset
+                return self.render_to_response(context)
 
-        # Теперь сохраняем ВСЁ разом (в транзакции)
-        self.object.save()  # Сохраняем вопрос
-        answer_formset.save()  # Сохраняем ответы
+            # Теперь сохраняем ВСЁ разом (в транзакции)
+            self.object.save()  # Сохраняем вопрос
+            answer_formset.save()  # Сохраняем ответы
 
         # Сохраняем действие для get_success_url
         self.submitted_action = self.request.POST.get('action')
@@ -123,34 +125,36 @@ class QuestionUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if 'answer_formset' not in context:
-            existing_answers = Answer.objects.filter(question=self.object).order_by('id')
-            context['answer_formset'] = AnswerFormSets(
-                instance=self.object,
-                prefix='answers',
-                queryset=existing_answers
-            )
+        if not self.object.test.direction.is_verbal:
+            if 'answer_formset' not in context:
+                existing_answers = Answer.objects.filter(question=self.object).order_by('id')
+                context['answer_formset'] = AnswerFormSets(
+                    instance=self.object,
+                    prefix='answers',
+                    queryset=existing_answers
+                )
         return context
 
     @transaction.atomic
     def form_valid(self, form):
         self.object = form.save()
-        existing_answers = Answer.objects.filter(question=self.object).order_by('id')
+        if not self.object.test.direction.is_verbal:
+            existing_answers = Answer.objects.filter(question=self.object).order_by('id')
 
-        answer_formset = AnswerFormSets(
-            self.request.POST,
-            instance=self.object,
-            prefix='answers',
-            queryset=existing_answers
-        )
+            answer_formset = AnswerFormSets(
+                self.request.POST,
+                instance=self.object,
+                prefix='answers',
+                queryset=existing_answers
+            )
 
-        if answer_formset.is_valid():
-            answer_formset.save()
-            return super().form_valid(form)
-        else:
-            context = self.get_context_data(form=form)
-            context['answer_formset'] = answer_formset
-            return self.render_to_response(context)
+            if answer_formset.is_valid():
+                answer_formset.save()
+                return super().form_valid(form)
+            else:
+                context = self.get_context_data(form=form)
+                context['answer_formset'] = answer_formset
+                return self.render_to_response(context)
 
     def get_success_url(self):
         return reverse("learning:question_list", args=[self.object.test.pk])

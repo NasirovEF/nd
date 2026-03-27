@@ -64,9 +64,19 @@ class Test(models.Model):
 
 class Question(models.Model):
     """Модель Вопроса к тесту"""
-    test = models.ForeignKey("Test", on_delete=models.CASCADE, verbose_name="Вопрос", related_name="question")
-    text = models.TextField(verbose_name="Текст вопроса")
-    weight = models.PositiveIntegerField(verbose_name="Вес вопроса (баллы)", default=1)
+    test = models.ForeignKey(
+        "Test",
+        on_delete=models.CASCADE,
+        verbose_name="Вопрос",
+        related_name="question"
+    )
+    text = models.TextField(
+        verbose_name="Текст вопроса"
+    )
+    weight = models.PositiveIntegerField(
+        verbose_name="Вес вопроса (баллы)",
+        default=1
+    )
 
     class Meta:
         verbose_name = "Вопрос"
@@ -80,9 +90,19 @@ class Question(models.Model):
 class Answer(models.Model):
     """Модель Ответа к Вопросу теста"""
 
-    question = models.ForeignKey("Question", on_delete=models.CASCADE, verbose_name="Вопрос", related_name="answer")
-    text = models.TextField(verbose_name="Текст ответа")
-    is_correct = models.BooleanField(verbose_name="Правильный ответ", default=False)
+    question = models.ForeignKey(
+        "Question",
+        on_delete=models.CASCADE,
+        verbose_name="Вопрос",
+        related_name="answer"
+    )
+    text = models.TextField(
+        verbose_name="Текст ответа"
+    )
+    is_correct = models.BooleanField(
+        verbose_name="Правильный ответ",
+        default=False
+    )
 
     class Meta:
         verbose_name = "Ответ"
@@ -104,18 +124,38 @@ class ExamResult(models.Model):
         "Exam",
         on_delete=models.CASCADE,
         verbose_name="Экзамен",
-        related_name="results"
+        related_name="results",
+        **NULLABLE
     )
-    test_date = models.DateField(verbose_name="Дата тестирования", auto_now_add=True)
-    is_passed = models.BooleanField(verbose_name="Сдан?", default=False)
+    verbal_exam = models.ForeignKey(
+        "VerbalExam",
+        verbose_name="Устный экзамен",
+        on_delete=models.CASCADE,
+        related_name="verbal_results",
+        **NULLABLE
+    )
+    test_date = models.DateField(
+        verbose_name="Дата тестирования",
+        auto_now_add=True
+    )
+    is_passed = models.BooleanField(
+        verbose_name="Сдан?",
+        default=False
+    )
     score = models.DecimalField(
         verbose_name="Набранный балл (%)",
         max_digits=5,
         decimal_places=2,
         default=0
     )
-    total_score = models.PositiveIntegerField(verbose_name="Максимально возможный балл", default=0)
-    attempt_number = models.PositiveIntegerField(verbose_name="Попытка №", default=1)
+    total_score = models.PositiveIntegerField(
+        verbose_name="Максимально возможный балл",
+        default=0
+    )
+    attempt_number = models.PositiveIntegerField(
+        verbose_name="Попытка №",
+        default=1
+    )
     answered_questions = models.JSONField(
         verbose_name="Ответы пользователя",
         null=True,
@@ -125,7 +165,6 @@ class ExamResult(models.Model):
     class Meta:
         verbose_name = "Результат экзамена"
         verbose_name_plural = "Результаты экзаменов"
-        unique_together = ('exam', 'learner', 'attempt_number')
         ordering = ['-test_date', '-id']
 
 
@@ -143,8 +182,15 @@ class ExamAssignment(models.Model):
         verbose_name="Экзамен",
         related_name="assignments"
     )
-    assigned_date = models.DateField(verbose_name="Дата назначения", auto_now_add=True)
-    deadline = models.DateField(verbose_name="Срок выполнения", null=True, blank=True)
+    assigned_date = models.DateField(
+        verbose_name="Дата назначения",
+        auto_now_add=True
+    )
+    deadline = models.DateField(
+        verbose_name="Срок выполнения",
+        null=True,
+        blank=True
+    )
     status = models.CharField(
         max_length=20,
         verbose_name="Статус",
@@ -156,8 +202,14 @@ class ExamAssignment(models.Model):
         ],
         default='assigned'
     )
-    total_attempts = models.PositiveIntegerField(verbose_name="Максимальное количество попыток", default=1)
-    attempts_left = models.PositiveIntegerField(verbose_name="Осталось попыток", default=1)
+    total_attempts = models.PositiveIntegerField(
+        verbose_name="Максимальное количество попыток",
+        default=1
+    )
+    attempts_left = models.PositiveIntegerField(
+        verbose_name="Осталось попыток",
+        default=1
+    )
 
     def clean(self):
         if self.attempts_left > self.total_attempts:
@@ -189,7 +241,10 @@ class Exam(models.Model):
         related_name="exams",
         **NULLABLE
     )
-    is_active = models.BooleanField(verbose_name="Активен", default=True)
+    is_active = models.BooleanField(
+        verbose_name="Активен",
+        default=True
+    )
     time_limit = models.PositiveIntegerField(
         verbose_name="Время на тест (мин)",
         default=20,
@@ -243,7 +298,7 @@ class Exam(models.Model):
         return questions.order_by('?')[:self.total_questions]
 
 
-class VerbalExam(models.Model):
+class VerbalExam(Exam):
     """Модель устного экзамена"""
     learner = models.ForeignKey(
         "Learner",
@@ -251,17 +306,25 @@ class VerbalExam(models.Model):
         verbose_name="Работник",
         related_name="verbal_exam"
     )
-    direction = models.ForeignKey(
-        "Direction",
-        on_delete=models.CASCADE,
-        verbose_name="Направление обучения",
-        related_name="verbal_exam"
+    questions = models.ManyToManyField(
+        "Question",
+        verbose_name="Вопросы экзамена"
     )
-    total_questions = models.PositiveIntegerField(
-        verbose_name="Количество вопросов в тесте",
-        default=20,
-        validators=[MinValueValidator(1)]
+    status = models.CharField(
+        max_length=20,
+        verbose_name="Статус",
+        choices=[
+            ('assigned', 'Назначен'),
+            ('in_progress', 'В процессе'),
+            ('completed', 'Завершён'),
+        ],
+        default='assigned'
     )
 
+    class Meta:
+        verbose_name = "Устный экзамен"
+        verbose_name_plural = "Устные экзамены"
 
-    
+    def __str__(self):
+        return f"Устный экзамен к {self.program}"
+

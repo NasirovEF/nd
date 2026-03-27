@@ -74,15 +74,17 @@ class ProgramCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
         for dir in program.direction.all():
             if dir.is_verbal:
                 is_verbal.append(dir)
-        if is_verbal:
+        if not is_verbal:
             Exam.objects.create(program=program)
         return super().form_valid(form)
 
     def get_success_url(self):
         model_name = self.kwargs['model_name']
         model_pk = self.kwargs['model_pk']
-        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name,
-                                                                       'model_pk': model_pk})
+        return reverse(
+            "organization:entity_learning_program",
+            kwargs={'model_name': model_name,
+                    'model_pk': model_pk})
 
 
 class ProgramUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
