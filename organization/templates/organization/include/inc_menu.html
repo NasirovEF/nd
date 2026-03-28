@@ -59,12 +59,17 @@
                         <button type="button" class="btn btn-outline-primary dropdown-toggle mt-2"
                                 data-bs-toggle="dropdown"
                                 aria-expanded="false">
-                            Тестирование
+                            Проверка знаний
                         </button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{% url 'learning:all_exam_assignment' %}">
                                 Управление тестами</a></li>
-                            <li><a class="dropdown-item" href="{% url 'learning:all_exam_results' %}">Результаты тестирований</a></li>
+                            <li><a class="dropdown-item" href="{% url 'learning:all_exam_results' %}">
+                                Результаты тестирований</a></li>
+                            {% if perms.learning.view_verbalexam %}
+                            <li><a class="dropdown-item"
+                                   href="{% url 'learning:verbalexam_list' %}">Устная аттестация</a></li>
+                            {% endif %}
                         </ul>
                             </div>
                         {% endif %}

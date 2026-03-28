@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import Learner, Protocol, ProtocolResult, Program, Direction, KnowledgeDate, Test, Question, Answer, \
-    ExamResult, StaffDirection, SubDirection, Exam, ExamAssignment, BriefingDay, Briefing, ProgramBriefing
+    ExamResult, StaffDirection, SubDirection, Exam, ExamAssignment, BriefingDay, Briefing, ProgramBriefing, VerbalExam
 
 admin.site.register(Direction)
 admin.site.register(SubDirection)
@@ -104,3 +104,9 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'test')
     inlines = [AnswerInline]
     search_fields = ('test__name',)
+
+
+@admin.register(VerbalExam)
+class VerbalExamAdmin(admin.ModelAdmin):
+    list_display = ('id', '__str__', 'learner', 'status')
+    search_fields = ('learner', 'status')

@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 
 from learning.models import Direction
+from learning.services import get_current_date
 from organization.services import NULLABLE
 
 
@@ -320,11 +321,15 @@ class VerbalExam(Exam):
         ],
         default='assigned'
     )
+    exam_date = models.DateField(
+        verbose_name="Дата проверки знаний",
+        default=get_current_date,
+    )
 
     class Meta:
         verbose_name = "Устный экзамен"
         verbose_name_plural = "Устные экзамены"
 
     def __str__(self):
-        return f"Устный экзамен к {self.program}"
+        return f"Аттестация от {self.exam_date.strftime("%d.%m.%Y")} {self.learner}"
 

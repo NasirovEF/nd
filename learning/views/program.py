@@ -84,7 +84,7 @@ class ProgramCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView)
         return reverse(
             "organization:entity_learning_program",
             kwargs={'model_name': model_name,
-                    'model_pk': model_pk})
+                    'pk': model_pk})
 
 
 class ProgramUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
@@ -113,7 +113,8 @@ class ProgramUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
     def get_success_url(self):
         model_name = self.kwargs['model_name']
         model_pk = self.kwargs['model_pk']
-        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name, 'model_pk': model_pk})
+        return reverse("organization:entity_learning_program",
+                       kwargs={'model_name': model_name, 'pk': model_pk})
 
 
 class ProgramDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -131,4 +132,5 @@ class ProgramDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView)
     def get_success_url(self):
         model_name = self.kwargs['model_name']
         model_pk = self.kwargs['model_pk']
-        return reverse("organization:entity_learning_program", kwargs={'model_name': model_name, 'model_pk': model_pk})
+        return reverse("organization:entity_learning_program",
+                       kwargs={'model_name': model_name, 'pk': model_pk})

@@ -1,0 +1,32 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<form method="post" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-2">
+        </div>
+        <div class="col-8">
+            <div class="card m-4">
+                <div class="card-header text-center">
+                    Редактирование {{object}}
+                </div>
+                <div class="card-body">
+                    {% csrf_token %}
+                    {{ form.media.js }}
+                    {{ form.as_p }}
+                </div>
+                <div class="card-footer">
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-outline-primary">
+                            Сохранить
+                        </button>
+                        <a class="btn btn-outline-secondary mx-4"
+                        href="{% url 'learning:verbalexam_list' %}">Отмена</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-2">
+        </div>
+        </div>
+    </form>
+{% endblock %}

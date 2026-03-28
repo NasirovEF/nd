@@ -45,7 +45,7 @@ class ProgramBriefingCreateView(LoginRequiredMixin, PermissionRequiredMixin, Cre
         model_name = self.kwargs['model_name']
         model_pk = self.kwargs['model_pk']
         return reverse("organization:entity_briefing_program", kwargs={'model_name': model_name,
-                                                                       'model_pk': model_pk})
+                                                                       'pk': model_pk})
 
 
 class ProgramBriefingDetailView(DetailView):
@@ -86,7 +86,7 @@ class ProgramBriefingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Upd
         model_name = self.kwargs['model_name']
         model_pk = self.kwargs['model_pk']
         return reverse("organization:entity_briefing_program", kwargs={'model_name': model_name,
-                                                                       'model_pk': model_pk})
+                                                                       'pk': model_pk})
 
 
 class ProgramBriefingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -105,7 +105,7 @@ class ProgramBriefingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, Del
         model_name = self.kwargs['model_name']
         model_pk = self.kwargs['model_pk']
         return reverse("organization:entity_briefing_program", kwargs={'model_name':model_name,
-                                                                       'model_pk': model_pk})
+                                                                       'pk': model_pk})
 
 
 class BriefingDayCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):

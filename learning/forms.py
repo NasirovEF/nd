@@ -609,8 +609,66 @@ class KnowledgeOrderForm(StileFormMixin, forms.ModelForm):
         fields = "__all__"
 
 
+class BulkVerbalExamForm(forms.Form):
+    """Форма массового назначения экзамена"""
+    program = forms.ModelChoiceField(
+        queryset=Program.objects.filter(direction__is_verbal=True),
+        label="Программа обучения",
+        widget=forms.Select(attrs={'class': 'form-control form-select selectpicker',
+                                   'data-live-search': 'true',
+                                   'title': 'Выберите программу обучения'})
+    )
+    learners = forms.ModelMultipleChoiceField(
+        queryset=Learner.objects.filter(is_active=True),
+        label="Работники",
+        widget=forms.SelectMultiple(attrs={'class': 'form-control form-select selectpicker',
+                                           'data-live-search': 'true',
+                                           'title': 'Выберите работников...',
+                                           'size':10})
+    )
+    exam_date = forms.DateField(
+        required=False,
+        label="Срок выполнения",
+        widget=forms.DateInput(attrs={'type': 'date',
+                                      'class': 'form-control'})
+    )
+    total_questions = forms.IntegerField(
+        min_value=1,
+        initial=1,
+        label="Количество вопросов",
+        widget=forms.NumberInput(attrs={'class': 'form-control'})
+    )
+
+    def save(self):
+        cleaned_data = self.cleaned_data
+        program = cleaned_data['program']
+        learners = cleaned_data['learners']
+        exam_date = cleaned_data.get('exam_date')
+        total_questions = cleaned_data['total_questions']
+
+        verbal_exams = []
+        for learner in learners:
+            verbal_exam = VerbalExam.objects.create(
+                learner=learner,
+                program=program,
+                exam_date=exam_date,
+                total_questions=total_questions,
+            )
+            random_questions = verbal_exam.get_random_questions()
+            verbal_exam.questions.set(random_questions)
+
+            verbal_exams.append(verbal_exam)
+        return verbal_exam
+
+
 class VerbalExamForm(StileFormMixin, forms.ModelForm):
-    """Форма распорядительного документа о создании комиссии"""
+    """Форма редактирования назначенного экзамена"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['program'].queryset = Program.objects.filter(is_active=True)
+        self.fields['learner'].queryset = Learner.objects.filter(is_active=True)
+        self.fields['questions'].queryset = Question.objects.filter(test__direction__is_verbal=True)
+
     class Meta:
         model = VerbalExam
-        fields = "__all__"
+        exclude = ["total_questions", "briefing_program", "is_active", "time_limit", "passing_score"]

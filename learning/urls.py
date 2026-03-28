@@ -19,6 +19,8 @@ from learning.views.program import ProgramCreateView, ProgramUpdateView, Program
 from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, ProtocolDeleteView, ProtocolListView, \
     ProtocolDetailView
 from learning.views.protocol_result import ProtocolResultsUpdateView
+from learning.views.verbal_exam import VerbalExamListView, create_bulk_verbalexam, VerbalExamUpdateView, \
+    VerbalExamDeleteView
 
 app_name = LearningConfig.name
 
@@ -71,6 +73,11 @@ urlpatterns = [
     path('create_bulk_exam_assignment/', create_bulk_exam_assignment, name='create_bulk_exam_assignment'),
     path('exam_assignment_update/<int:pk>', ExamAssignmentUpdateView.as_view(), name='exam_assignment_update'),
     path('exam_assignment_delete/<int:pk>', ExamAssignmentDeleteView.as_view(), name='exam_assignment_delete'),
+
+    path("verbalexam_list/", VerbalExamListView.as_view(), name="verbalexam_list"),
+    path("verbalexam_create/", create_bulk_verbalexam, name="verbalexam_create"),
+    path("verbalexam_update/<int:pk>", VerbalExamUpdateView.as_view(), name="verbalexam_update"),
+    path("verbalexam_dekete/<int:pk>", VerbalExamDeleteView.as_view(), name="verbalexam_delete"),
 
     path("briefing_program_create/<str:model_name>/<int:model_pk>/", ProgramBriefingCreateView.as_view(), name="briefing_program_create"),
     path("briefing_program_detail/<str:model_name>/<int:model_pk>/<int:pk>", ProgramBriefingDetailView.as_view(), name="briefing_program_detail"),

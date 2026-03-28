@@ -49,7 +49,9 @@ class QuestionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if not self.object.test.direction.is_verbal:
+        test_pk = self.kwargs['test_pk']
+        test = get_object_or_404(Test, pk=test_pk)
+        if not test.direction.is_verbal:
             # Для GET-запроса: пустой формсет без instance
             if not self.request.POST:
                 context['answer_formset'] = AnswerFormSets()
@@ -58,8 +60,8 @@ class QuestionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
                 context['answer_formset'] = AnswerFormSets(self.request.POST)
 
             # Явно указываем, что это CreateView (важно для шаблона при ошибках)
-            context['is_create_view'] = True
-            context['test'] = get_object_or_404(Test, pk= self.kwargs['test_pk'])
+        context['is_create_view'] = True
+        context['test'] = test
         return context
 
     @transaction.atomic
@@ -71,8 +73,7 @@ class QuestionCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
         # Создаём объект вопроса, но не сохраняем в БД
         self.object = form.save(commit=False)
         self.object.test = test
-
-        if not self.object.test.direction.is_verbal:
+        if not test.direction.is_verbal:
             # Создаём формсет ответов (без сохранения)
             answer_formset = AnswerFormSets(
                 self.request.POST,
@@ -155,6 +156,8 @@ class QuestionUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
                 context = self.get_context_data(form=form)
                 context['answer_formset'] = answer_formset
                 return self.render_to_response(context)
+        else:
+            return super().form_valid(form)
 
     def get_success_url(self):
         return reverse("learning:question_list", args=[self.object.test.pk])

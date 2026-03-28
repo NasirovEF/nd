@@ -156,6 +156,7 @@
                         <div class="answer-frame my-2 p-2 bg-light border rounded">
                         <p class="card-text fs-5">{{ question.text }}</p>
                         </div>
+                        {% if question.answer.all %}
                         <h6 class="text-primary">Варианты ответа:</h6>
                         {% for answer in question.answer.all %}
                         <div class="form-check mb-2 position-relative">
@@ -172,6 +173,7 @@
                         </div>
                         {% endfor %}
                         <div class="feedback alert mt-3" style="display: none;"></div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                     <!-- Кнопка сброса -->

@@ -80,26 +80,27 @@
                     <div class="question-frame my-2 p-2 bg-light border rounded">
                         <p role="question" class="card-text fs-5 mb-0 ps-2">{{ question.text }}</p>
                     </div>
+                    {% if question.answer.all %}
                     <h6 class="text-primary mb-2">Варианты ответа:</h6>
                     <div class="answers-list">
                         {% for answer in question.answer.all %}
-                        {% if answer.is_correct %}
-                        <div class="answer-frame my-2 p-2 bg-success bg-opacity-25 border rounded">
-                            {% else %}
-                            <div class="answer-frame my-2 p-2 bg-light border rounded">
-                                {% endif %}
-                                <div class="card-text fs-6 mb-0 ps-2">{{ answer.text }}</div>
-                            </div>
-
-                            {% endfor %}
+                        <div class="
+                            {% if answer.is_correct %}
+                                answer-frame my-2 p-2 bg-success bg-opacity-25 border rounded
+                    {% else %}
+                        answer-frame my-2 p-2 bg-light border rounded
+                    {% endif %}">
+                            <div class="card-text fs-6 mb-0 ps-2">{{ answer.text }}</div>
                         </div>
-                        <div id="feedback-{{ question.pk }}" class="alert alert-info mt-3 d-none"></div>
+                        {% endfor %}
                     </div>
+                    <div id="feedback-{{ question.pk }}" class="alert alert-info mt-3 d-none"></div>
+                    {% endif %}
                 </div>
-
-
-                {% endfor %}
+            </div>
+            {% endfor %}
         </fieldset>
+
 
         <div class="position-relative m-4">
       <nav aria-label="Навигация по страницам" class="mt-3">
