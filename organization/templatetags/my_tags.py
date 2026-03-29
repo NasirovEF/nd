@@ -1,7 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 from learning.models import Protocol, KnowledgeDate, Direction, Learner, ProtocolResult, ExamAssignment, BriefingDay, \
-    ExamResult
+    ExamResult, VerbalExam
 from datetime import date
 from django.utils import  timezone
 
@@ -129,6 +129,15 @@ def get_assignments(learner):
         status__in=['assigned',]
     ).select_related('exam')
     return assignments
+
+
+@register.filter()
+def get_verbalexam(learner):
+    verbalexam = VerbalExam.objects.filter(
+        learner=learner,
+        status__in=['assigned', 'in_progress']
+    )
+    return verbalexam
 
 
 @register.filter()

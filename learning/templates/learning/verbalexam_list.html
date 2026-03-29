@@ -18,198 +18,325 @@
             Назначить аттестацию</a>
         {% endif %}
 
-                <h5 class="text-center m-2">Список назначенных проверок знаний</h5>
+        <h5 class="text-center m-2">Список назначенных проверок знаний</h5>
 
-                <table class="table table-sm table-hover text-center align-middle no-split-header">
-                    <thead>
-                    <tr>
-                        <th scope="col" class="col-3">Подразделение</th>
-                        <th scope="col">ФИО</th>
-                        <th scope="col">Должность</th>
-                        <th scope="col" style="line-height:1.2; padding:0.25rem;">Дата проверки знаний</th>
-                        <th scope="col">Статус</th>
-                        <th scope="col"></th>
-                    </tr>
-                    </thead>
-                    <tbody class="table-group-divider">
-                    <form method="get">
-                        <tr>
-                            <td>
-                                 <input name="affiliation" class="form-control my-2 text-center" type="search"
-                                       placeholder="Введите подразделение"
-                                       aria-label="Search" value="{{search_params.affiliation}}">
-                            </td>
-                            <td>
-                                 <input name="learner" class="form-control my-2 text-center" type="search"
-                                       placeholder="Введите ФИО"
-                                       aria-label="Search" value="{{search_params.learner}}">
-                            </td>
-                            <td>
-                                 <input name="position" class="form-control my-2 text-center" type="search"
-                                       placeholder="Должность"
-                                       aria-label="Search" value="{{search_params.position}}">
-                            </td>
-                            <td>
-                                <input name="exam_date_from" class="form-control text-center mb-1" type="date"
-                                       placeholder="Дата с"
-                                       aria-label="Search" value="{{search_params.exam_date_from}}">
-                                <input name="exam_date_to" class="form-control text-center" type="date"
-                                       placeholder="Дата по"
-                                       aria-label="Search" value="{{search_params.exam_date_to}}">
-                            </td>
-                            <td>
-                                 <div class="mb-3 d-flex align-items-center">
-                                <select name="status" id="statusSelect" class="form-control text-center" style="flex: 1;">
-                                    <option value="" {% if search_params.status == "" %}selected{% endif %}>-----</option>
-                                    <option value="assigned" {% if search_params.status == "assigned" %}selected{% endif %}>Назначен</option>
-                                    <option value="in_progress" {% if search_params.status == "in_progress" %}selected{% endif %}>В процессе</option>
-                                    <option value="completed" {% if search_params.status == "completed" %}selected{% endif %}>Завершён</option>
-                                </select>
-                            </div>
-                            </td>
+        <table class="table table-sm table-hover text-center align-middle no-split-header">
+            <thead>
+            <tr>
+                <th scope="col" class="col-3">Подразделение</th>
+                <th scope="col">ФИО</th>
+                <th scope="col">Должность</th>
+                <th scope="col" style="line-height:1.2; padding:0.25rem;">Дата проверки знаний</th>
+                <th scope="col">Статус</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody class="table-group-divider">
+            <form method="get">
+                <tr>
+                    <td>
+                        <input name="affiliation" class="form-control my-2 text-center" type="search"
+                               placeholder="Введите подразделение"
+                               aria-label="Search" value="{{search_params.affiliation}}">
+                    </td>
+                    <td>
+                        <input name="learner" class="form-control my-2 text-center" type="search"
+                               placeholder="Введите ФИО"
+                               aria-label="Search" value="{{search_params.learner}}">
+                    </td>
+                    <td>
+                        <input name="position" class="form-control my-2 text-center" type="search"
+                               placeholder="Должность"
+                               aria-label="Search" value="{{search_params.position}}">
+                    </td>
+                    <td>
+                        <input name="exam_date_from" class="form-control text-center mb-1" type="date"
+                               placeholder="Дата с"
+                               aria-label="Search" value="{{search_params.exam_date_from}}">
+                        <input name="exam_date_to" class="form-control text-center" type="date"
+                               placeholder="Дата по"
+                               aria-label="Search" value="{{search_params.exam_date_to}}">
+                    </td>
+                   <td>
+                        <div class="mb-3 d-flex align-items-center">
+                            <select name="status" id="statusSelect" class="form-control text-center" style="flex: 1;">
+                                <option value="" {% if search_params.status == "" %}selected{% endif %}>-----</option>
+                                <option value="assigned" {% if search_params.status == "assigned" %}selected{% endif %}>Назначен</option>
+                                <option value="in_progress" {% if search_params.status == "in_progress" %}selected{% endif %}>В процессе</option>
+                                <option value="completed" {% if search_params.status == "completed" %}selected{% endif %}>Завершён</option>
+                            </select>
+                        </div>
+                    </td>
 
-                            <td>
-                                <div><button type="submit" class="btn btn-outline-primary btn-sm">
-                                    Поиск
-                                </button></div>
-                                <button type="button" class="btn btn-outline-secondary btn-sm mt-2"
-                                        onclick="window.location.href='?';">
-                                    Сбросить
-                                </button>
-                            </td>
-                        </tr>
-                    </form>
-                    {% for exam in object_list %}
-                    <tr>
-                        <td>{{ exam.learner.worker.return_str_affiliation }}</td>
-                        <td>{{ exam.learner.worker.return_full_fio }}</td>
-                        <td>{{ exam.learner.position }}</td>
-                        <td>{{ exam.exam_date }}</td>
-                        <td>
-                        <!-- Button trigger modal -->
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                              {{ exam.get_status_display }}
+
+                    <td>
+                        <div>
+                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                Поиск
                             </button>
+                        </div>
+                        <button type="button" class="btn btn-outline-secondary btn-sm mt-2"
+                                onclick="window.location.href='?';">
+                            Сбросить
+                        </button>
+                    </td>
+                </tr>
+            </form>
+            {% for exam in object_list %}
+            <tr>
+                <td>{{ exam.learner.worker.return_str_affiliation }}</td>
+                <td>{{ exam.learner.worker.return_full_fio }}</td>
+                <td>{{ exam.learner.position }}</td>
+                <td>{{ exam.exam_date }}</td>
+                <td>
+                    <!-- Кнопка открытия модального окна с уникальным ID -->
+                    <button type="button" class="btn btn-primary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modal-{{ exam.pk }}">
+                        {{ exam.get_status_display }}
+                    </button>
+                </td>
+                <td>
+                  <div class="d-flex justify-content-center align-items-center gap-1" style="width: 100%;">
+                    <!-- форма с кнопкой статуса -->
+                        <form method="post" action="{% url 'learning:toggle_exam_status' exam.pk %}">
+                            {% csrf_token %}
+                            <!-- Скрытые поля для сохранения фильтров -->
+                            <input type="hidden" name="status" value="{{ request.GET.status }}">
+                            <input type="hidden" name="learner" value="{{ request.GET.learner }}">
+                            <input type="hidden" name="position" value="{{ request.GET.position }}">
+                            <input type="hidden" name="exam_date_from" value="{{ request.GET.exam_date_from }}">
+                            <input type="hidden" name="exam_date_to" value="{{ request.GET.exam_date_to }}">
+                            <input type="hidden" name="affiliation" value="{{ request.GET.affiliation }}">
 
-                            <!-- Modal -->
-                            <div class="modal fade modal-xl" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                              <div class="modal-dialog">
-                                <div class="modal-content">
-                                  <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="staticBackdropLabel">{{ exam }}</h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                  </div>
-                                  <div class="modal-body">
-                                    <p class="text-start">Статус проверки знаний: {{exam.get_status_display}}</p>
-                                  </div>
-                                  <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                        </td>
-                        <td>
-                            {% if perms.learning.change_verbalexam or perms.learning.delete_verbalexam %}
-                            <div class="btn-group dropdown">
-                                <button type="button" class="btn btn-outline-primary btn-sm dropdown-toggle"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                </button>
-                                <ul class="dropdown-menu">
-                                    {% if perms.learning.change_verbalexam %}
-                                    <li><a class="dropdown-item"
-                                           href="{% url 'learning:verbalexam_update' exam.pk %}">Изменить
-                                    </a></li>
-                                    {% endif %}
-                                    {% if perms.learning.delete_verbalexam %}
-                                    <li><a class="dropdown-item text-danger"
-                                           href="{% url 'learning:verbalexam_delete' exam.pk %}">Удалить
-                                    </a></li>
-                                    {% endif %}
-                                </ul>
-                            </div>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                            <button type="submit"
+                                    class="btn btn-sm {% if exam.is_active %}btn-outline-success{% else %}btn-outline-danger{% endif %}"
+                                    title="{% if exam.is_active %}Деактивировать{% else %}Активировать{% endif %}">
+                                <i class="bi {% if exam.is_active %}bi-power{% else %}bi-power text-muted{% endif %}"></i>
+                            </button>
+                        </form>
 
-                <div class="position-relative m-4">
-       <nav aria-label="Навигация по страницам" class="mt-3">
-          <ul class="pagination justify-content-center pagination-sm">
-            <!-- Кнопка «Предыдущая» -->
-            {% if page_obj.has_previous %}
-              <li class="page-item">
-                <a class="page-link" href="{% modify_page_url page_obj.previous_page_number %}"
-                   title="Перейти на страницу {{ page_obj.previous_page_number }}">
-                  &laquo;
-                </a>
-              </li>
-            {% else %}
-              <li class="page-item disabled">
-                <span class="page-link">&laquo;</span>
-              </li>
-            {% endif %}
 
-            <!-- Первая страница -->
-            {% if page_obj.number > 3 %}
-              <li class="page-item">
-                <a class="page-link" href="{% modify_page_url 1 %}" title="Первая страница">1</a>
-              </li>
-              {% if page_obj.number > 4 %}
-                <li class="page-item disabled"><span class="page-link">...</span></li>
-              {% endif %}
-            {% endif %}
+                    <!-- меню действий -->
+                    <div class="btn-group">
+                      <button type="button"
+                              class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                              data-bs-toggle="dropdown">
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end">
+                        {% if perms.learning.change_verbalexam %}
+                        <li><a class="dropdown-item" href="{% url 'learning:verbalexam_update' exam.pk %}">
+                            <i class="bi bi-pencil me-2"></i>Изменить</a></li>
+                        {% endif %}
+                        {% if perms.learning.delete_verbalexam %}
+                        <li><a class="dropdown-item text-danger" href="{% url 'learning:verbalexam_delete' exam.pk %}">
+                          <i class="bi bi-trash me-2"></i>Удалить</a></li>
+                        {% endif %}
+                      </ul>
+                    </div>
+                  </div>
+                </td>
 
-            <!-- Страницы вокруг текущей (±2) -->
-            {% for p in page_obj.paginator.page_range %}
-              {% if p >= page_obj.number|add:'-2' and p <= page_obj.number|add:'2' %}
-                {% if p == page_obj.number %}
-                  <li class="page-item active" aria-current="page">
-                    <span class="page-link">{{ p }}</span>
-                  </li>
-                {% else %}
-                  <li class="page-item">
-                    <a class="page-link" href="{% modify_page_url p %}" title="Страница {{ p }}">{{ p }}</a>
-                  </li>
-                {% endif %}
-              {% endif %}
+            </tr>
             {% endfor %}
+            </tbody>
+        </table>
 
-            <!-- Разделитель и последняя страница -->
-            {% with total_pages=page_obj.paginator.num_pages %}
-              {% if page_obj.number < total_pages|add:'-2' %}
-                <!-- Показываем разделитель, только если между текущей и последней страницей > 2 страниц -->
-                {% if page_obj.number <= total_pages|add:'-4' %}
-                  <li class="page-item disabled"><span class="page-link">...</span></li>
-                {% endif %}
-                <!-- Ссылка на последнюю страницу -->
-                <li class="page-item">
-                  <a class="page-link" href="{% modify_page_url total_pages %}" title="Последняя страница">{{ total_pages }}</a>
-                </li>
-              {% endif %}
-            {% endwith %}
+        <div class="position-relative m-4">
+            <nav aria-label="Навигация по страницам" class="mt-3">
+                <ul class="pagination justify-content-center pagination-sm">
+                    <!-- Кнопка «Предыдущая» -->
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% modify_page_url page_obj.previous_page_number %}"
+                           title="Перейти на страницу {{ page_obj.previous_page_number }}">
+                            &laquo;
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                    {% endif %}
 
-            <!-- Кнопка «Следующая» -->
-            {% if page_obj.has_next %}
-              <li class="page-item">
-                <a class="page-link" href="{% modify_page_url page_obj.next_page_number %}"
-                   title="Перейти на страницу {{ page_obj.next_page_number }}">
-                  &raquo;
-                </a>
-              </li>
-            {% else %}
-              <li class="page-item disabled">
-                <span class="page-link">&raquo;</span>
-              </li>
-            {% endif %}
-          </ul>
-        </nav>
+                    <!-- Первая страница -->
+                    {% if page_obj.number > 3 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% modify_page_url 1 %}" title="Первая страница">1</a>
+                    </li>
+                    {% if page_obj.number > 4 %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endif %}
 
-</div>
+                    <!-- Страницы вокруг текущей (±2) -->
+                    {% for p in page_obj.paginator.page_range %}
+                    {% if p >= page_obj.number|add:'-2' and p <= page_obj.number|add:'2' %}
+                    {% if p == page_obj.number %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ p }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% modify_page_url p %}" title="Страница {{ p }}">{{ p }}</a>
+                    </li>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+
+                    <!-- Разделитель и последняя страница -->
+                    {% with total_pages=page_obj.paginator.num_pages %}
+                    {% if page_obj.number < total_pages|add:'-2' %}
+                    <!-- Показываем разделитель, только если между текущей и последней страницей > 2 страниц -->
+                    {% if page_obj.number <= total_pages|add:'-4' %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    <!-- Ссылка на последнюю страницу -->
+                    <li class="page-item">
+                        <a class="page-link" href="{% modify_page_url total_pages %}" title="Последняя страница">{{
+                            total_pages }}</a>
+                    </li>
+                    {% endif %}
+                    {% endwith %}
+
+                    <!-- Кнопка «Следующая» -->
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% modify_page_url page_obj.next_page_number %}"
+                           title="Перейти на страницу {{ page_obj.next_page_number }}">
+                            &raquo;
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+        </div>
 
     </div>
+    <!-- Модальные окна (выносим за пределы таблицы и цикла tbody) -->
+    {% for exam in object_list %}
+            <div class="modal fade modal-xl" id="modal-{{ exam.pk }}"
+             data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="modalLabel-{{ exam.pk }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="modalLabel-{{ exam.pk }}">
+                            {{ exam }}
+                        </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-start">Статус проверки знаний: <strong>{{ exam.get_status_display }}</strong></p>
+                        <div class="d-flex align-items-center gap-3">
+                            <p class="text-start mb-0">Результат проверки знаний:
+                        {% if exam.verbal_results %}
+                        {% if exam.verbal_results.is_passed %}
+                            <span class="badge bg-success fs-6">Удовлетворительно</span>
+                        {% else %}
+                    <span class="badge bg-danger fs-6">Неудовлетворительно</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">отсутствует</span>
+                {% endif %}</p>
+
+                {% if perms.learning.change_verbalexam %}
+                <!-- Кнопка для открытия второго модального окна -->
+                <button type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#result-details-{{ exam.pk }}">
+                    Изменить
+                </button>
+                {% endif %}
+            </div>
+
+
+            <fieldset class="my-2">
+                {% for question in exam.questions.all %}
+                <div class="card question-card mb-3 p-2 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="text-primary mb-1">Вопрос №<span
+                                class="fw-bold">{{ forloop.counter }}</span></h5>
+                </div>
+                <div class="question-frame my-2 p-2 bg-light border rounded">
+                    <p role="question" class="card-text fs-5 mb-0 ps-2">{{ question.text }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        </fieldset>
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+        </div>
+        </div>
+        </div>
+        </div>
+
+    <!-- Второе модальное окно: детализация результата -->
+        <div class="modal fade" id="result-details-{{ exam.pk }}"
+             data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+             aria-labelledby="resultLabel-{{ exam.pk }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <!-- Заголовок модального окна -->
+                    <div class="modal-header">
+                        <h6 class="modal-title w-100 text-center" id="resultLabel-{{ exam.pk }}">
+                            Изменение результата аттестации<br>
+                    {{ exam.learner }}
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+
+                    <!-- Тело модального окна -->
+                    <div class="modal-body text-center">
+                        <div class="d-flex flex-column gap-2 align-items-center">
+                            {% if exam.verbal_results %}
+                        {% if exam.verbal_results.is_passed %}
+                            <a href="{% url 'learning:create_verbalexam_result' pk=exam.pk score='0' %}" type="button"
+                    class="btn btn-outline-danger w-50">
+                        Неудовлетворительно
+                    </a>
+                        {% else %}
+                     <a href="{% url 'learning:create_verbalexam_result' pk=exam.pk score='1' %}" type="button"
+                            class="btn btn-outline-primary w-50">
+                        Удовлетворительно
+                    </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'learning:create_verbalexam_result' pk=exam.pk score='1' %}" type="button"
+                            class="btn btn-outline-primary w-50">
+                        Удовлетворительно
+                    </a>
+                    <a href="{% url 'learning:create_verbalexam_result' pk=exam.pk score='0' %}" type="button"
+                    class="btn btn-outline-danger w-50">
+                        Неудовлетворительно
+                    </a>
+                {% endif %}
+
+                </div>
+            </div>
+
+            <!-- Футер модального окна -->
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+        </div>
+        </div>
+
+
+
+    {% endfor %}
+
 </div>
 
 {% endblock %}

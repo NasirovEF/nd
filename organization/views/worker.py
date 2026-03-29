@@ -173,7 +173,6 @@ class WorkerCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         return self.render_to_response(context)
 
 
-
 class WorkerUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Worker
     form_class = WorkerUpdateForm

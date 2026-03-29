@@ -103,6 +103,7 @@ class ProtocolCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
     def form_valid(self, form):
         protocol = form.save()
         directions = set()
+        verbal_direction = set()
         start_date = protocol.prot_date - timedelta(days=60)
         date_filter = {
             'test_date__range': (start_date, protocol.prot_date)
@@ -113,26 +114,21 @@ class ProtocolCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
         for program in programs:
             for direction in program.direction.all():
                 directions.add(direction)
+                if direction.is_verbal:
+                    verbal_direction.add(direction)
         for learner in learners:
-            # 1. Проверяем: есть ли НЕСДАННЫЕ экзамены по программам протокола?
-            has_failed = learner.exam_results.filter(
-                exam__program__in=program_ids,
-                is_passed=False,
-                **date_filter
-            ).exists()
-
-            all_passed = not has_failed and (
-                learner.exam_results.filter(
-                    exam__program__in=program_ids,
-                    is_passed=True,
-                    **date_filter
-                ).values('exam__program_id').distinct().count() == len(program_ids)
-            )
-            for direction in directions:
-                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date,
-                                                              protocol=protocol,
-                                                              direction=direction,
-                                                              learner=learner)
+            if verbal_direction:
+                all_passed = learner.exam_results.filter(
+                            verbal_exam__program__in=program_ids,
+                            is_passed=True,
+                            **date_filter
+                        ).values('verbal_exam__program_id').distinct().count() == len(program_ids)
+            else:
+                all_passed = learner.exam_results.filter(
+                        exam__program__in=program_ids,
+                        is_passed=True,
+                        **date_filter
+                    ).values('exam__program_id').distinct().count() == len(program_ids)
             for program in programs:
                 ProtocolResult.objects.create(
                     protocol=protocol,
@@ -140,6 +136,11 @@ class ProtocolCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
                     learner=learner,
                     passed=all_passed
                 )
+            for direction in directions:
+                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date,
+                                                              protocol=protocol,
+                                                              direction=direction,
+                                                              learner=learner)
 
         return super().form_valid(form)
 
@@ -160,6 +161,7 @@ class ProtocolUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
         self.object.knowledge_date.all().delete()
 
         directions = set()
+        verbal_direction = set()
         start_date = protocol.prot_date - timedelta(days=60)
         date_filter = {
             'test_date__range': (start_date, protocol.prot_date)
@@ -170,26 +172,21 @@ class ProtocolUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
         for program in programs:
             for direction in program.direction.all():
                 directions.add(direction)
+                if direction.is_verbal:
+                    verbal_direction.add(direction)
         for learner in learners:
-            # 1. Проверяем: есть ли НЕСДАННЫЕ экзамены по программам протокола?
-            has_failed = learner.exam_results.filter(
-                exam__program__in=program_ids,
-                is_passed=False,
-                **date_filter
-            ).exists()
-
-            all_passed = not has_failed and (
-                    learner.exam_results.filter(
-                        exam__program__in=program_ids,
-                        is_passed=True,
-                        **date_filter
-                    ).values('exam__program_id').distinct().count() == len(program_ids)
-            )
-            for direction in directions:
-                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date,
-                                                              protocol=protocol,
-                                                              direction=direction,
-                                                              learner=learner)
+            if verbal_direction:
+                all_passed = learner.exam_results.filter(
+                    verbal_exam__program__in=program_ids,
+                    is_passed=True,
+                    **date_filter
+                ).values('verbal_exam__program_id').distinct().count() == len(program_ids)
+            else:
+                all_passed = learner.exam_results.filter(
+                    exam__program__in=program_ids,
+                    is_passed=True,
+                    **date_filter
+                ).values('exam__program_id').distinct().count() == len(program_ids)
             for program in programs:
                 ProtocolResult.objects.create(
                     protocol=protocol,
@@ -197,6 +194,12 @@ class ProtocolUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView
                     learner=learner,
                     passed=all_passed
                 )
+            for direction in directions:
+                knowledge_date = KnowledgeDate.objects.create(kn_date=protocol.prot_date,
+                                                              protocol=protocol,
+                                                              direction=direction,
+                                                              learner=learner)
+
         return super().form_valid(form)
 
 

@@ -20,7 +20,7 @@ from learning.views.protocol import ProtocolCreateView, ProtocolUpdateView, Prot
     ProtocolDetailView
 from learning.views.protocol_result import ProtocolResultsUpdateView
 from learning.views.verbal_exam import VerbalExamListView, create_bulk_verbalexam, VerbalExamUpdateView, \
-    VerbalExamDeleteView
+    VerbalExamDeleteView, toggle_exam_status, VerbalExamDetailView, complete_exam_status, create_verbalexam_result
 
 app_name = LearningConfig.name
 
@@ -77,7 +77,11 @@ urlpatterns = [
     path("verbalexam_list/", VerbalExamListView.as_view(), name="verbalexam_list"),
     path("verbalexam_create/", create_bulk_verbalexam, name="verbalexam_create"),
     path("verbalexam_update/<int:pk>", VerbalExamUpdateView.as_view(), name="verbalexam_update"),
-    path("verbalexam_dekete/<int:pk>", VerbalExamDeleteView.as_view(), name="verbalexam_delete"),
+    path("verbalexam_delete/<int:pk>", VerbalExamDeleteView.as_view(), name="verbalexam_delete"),
+    path("verbalexam_detail/<int:pk>", VerbalExamDetailView.as_view(), name="verbalexam_detail"),
+    path('exam/<int:pk>/toggle-status/', toggle_exam_status, name='toggle_exam_status'),
+    path('exam/<int:pk>/completed/', complete_exam_status, name='complete_exam_status'),
+    path('create_verbalexam_result/<int:pk>/<str:score>/', create_verbalexam_result, name='create_verbalexam_result'),
 
     path("briefing_program_create/<str:model_name>/<int:model_pk>/", ProgramBriefingCreateView.as_view(), name="briefing_program_create"),
     path("briefing_program_detail/<str:model_name>/<int:model_pk>/<int:pk>", ProgramBriefingDetailView.as_view(), name="briefing_program_detail"),

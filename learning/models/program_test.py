@@ -128,7 +128,7 @@ class ExamResult(models.Model):
         related_name="results",
         **NULLABLE
     )
-    verbal_exam = models.ForeignKey(
+    verbal_exam = models.OneToOneField(
         "VerbalExam",
         verbose_name="Устный экзамен",
         on_delete=models.CASCADE,
@@ -329,6 +329,7 @@ class VerbalExam(Exam):
     class Meta:
         verbose_name = "Устный экзамен"
         verbose_name_plural = "Устные экзамены"
+        ordering = ['-exam_date', '-id']
 
     def __str__(self):
         return f"Аттестация от {self.exam_date.strftime("%d.%m.%Y")} {self.learner}"

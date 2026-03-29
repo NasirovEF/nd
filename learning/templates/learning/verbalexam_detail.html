@@ -1,0 +1,31 @@
+{% extends 'organization/base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+        <h5 class="text-center m-2">Аттестация по программе: {{ object.program }}</h5>
+                <h5 class="text-center m-2">{{ object.learner.position }} {{ object.learner.worker.division }} {{ object.learner.worker.branch }}</h5>
+                    <h5 class="text-center m-2">{{ object.learner.worker.return_full_fio }}</h5>
+        <fieldset>
+            {% for question in object.questions.all %}
+            <div class="card question-card mb-3 p-2 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-2">
+                        <h5 class="text-primary mb-1">Вопрос №<span
+                                class="fw-bold">{{ forloop.counter }}</span></h5>
+                    </div>
+                    <div class="question-frame my-2 p-2 bg-light border rounded">
+                        <p role="question" class="card-text fs-5 mb-0 ps-2">{{ question.text }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </fieldset>
+        <div class="text-center">
+        <a href="{% url 'learning:complete_exam_status' object.pk %}"
+           class="btn btn-outline-secondary mt-2">Завершить</a>
+        </div>
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}
