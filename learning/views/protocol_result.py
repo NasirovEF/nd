@@ -16,7 +16,7 @@ class ProtocolResultsUpdateView(LoginRequiredMixin, PermissionRequiredMixin, Upd
         return modelformset_factory(
             ProtocolResult,
             form=ProtocolResultForm,
-            extra=0
+            extra=0,
         )
 
     def get_context_data(self, **kwargs):

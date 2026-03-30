@@ -90,7 +90,7 @@
                 <td>{{ exam.exam_date }}</td>
                 <td>
                     <!-- Кнопка открытия модального окна с уникальным ID -->
-                    <button type="button" class="btn btn-primary btn-sm"
+                    <button type="button" class="btn btn-outline-primary btn-sm"
                             data-bs-toggle="modal"
                             data-bs-target="#modal-{{ exam.pk }}">
                         {{ exam.get_status_display }}
@@ -110,7 +110,7 @@
                             <input type="hidden" name="affiliation" value="{{ request.GET.affiliation }}">
 
                             <button type="submit"
-                                    class="btn btn-sm {% if exam.is_active %}btn-outline-success{% else %}btn-outline-danger{% endif %}"
+                                    class="btn btn-sm {% if exam.is_active %}btn-success{% else %}btn-danger{% endif %}"
                                     title="{% if exam.is_active %}Деактивировать{% else %}Активировать{% endif %}">
                                 <i class="bi {% if exam.is_active %}bi-power{% else %}bi-power text-muted{% endif %}"></i>
                             </button>

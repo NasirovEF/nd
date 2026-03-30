@@ -141,15 +141,38 @@ class ProtocolResultForm(StileFormMixin, forms.ModelForm):
 
         program_ids = [p.id for p in programs]
         start_date = protocol.prot_date - timedelta(days=60)
+        verbal_directions = set()
+        for program in programs:
+            for direction in program.direction.all():
+                if direction.is_verbal:
+                    verbal_directions.add(direction)
 
-        # 1. Агрегируем результаты по программам
-        program_statuses = {}
-        for result in learner.exam_results.filter(
+        # Улучшенные запросы с проверкой на наличие экзамена
+        if verbal_directions:
+            results = learner.exam_results.filter(
+                verbal_exam__isnull=False,
+                verbal_exam__program__in=program_ids,
+                test_date__gte=start_date,
+                test_date__lte=protocol.prot_date
+            )
+        else:
+            results = learner.exam_results.filter(
+                exam__isnull=False,
                 exam__program__in=program_ids,
                 test_date__gte=start_date,
                 test_date__lte=protocol.prot_date
-        ):
-            program_id = result.exam.program.id
+            )
+
+        program_statuses = {}
+        for result in results:
+            # Дополнительная проверка на случай изменения логики
+            if hasattr(result, 'exam') and result.exam:
+                program_id = result.exam.program.id
+            elif hasattr(result, 'verbal_exam') and result.verbal_exam:
+                program_id = result.verbal_exam.program.id
+            else:
+                continue
+
             if program_id not in program_statuses:
                 program_statuses[program_id] = {'has_any_passed': False, 'has_any_failed': False}
             if result.is_passed:
@@ -639,6 +662,34 @@ class BulkVerbalExamForm(forms.Form):
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
 
+    def clean(self):
+        cleaned_data = super().clean()
+        program = cleaned_data.get('program')
+        learners = cleaned_data.get('learners')
+        exam_date = cleaned_data.get('exam_date')
+
+        if program and learners and exam_date:
+            # Собираем все learners для проверки
+            learner_ids = [learner.id for learner in learners]
+
+            # Ищем существующие экзамены для выбранных работников, программы и даты
+            existing_exams = VerbalExam.objects.filter(
+                learner__in=learner_ids,
+                program=program,
+                exam_date=exam_date
+            )
+
+            if existing_exams.exists():
+                # Получаем имена работников с дубликатами
+                existing_learner_names = [
+                    str(exam.learner)
+                    for exam in existing_exams
+                ]
+                raise forms.ValidationError(
+                    f"Экзамены уже существуют для следующих работников: {', '.join(existing_learner_names)}."
+                    f" Выберите других работников или измените дату.")
+            return cleaned_data
+
     def save(self):
         cleaned_data = self.cleaned_data
         program = cleaned_data['program']
@@ -646,19 +697,45 @@ class BulkVerbalExamForm(forms.Form):
         exam_date = cleaned_data.get('exam_date')
         total_questions = cleaned_data['total_questions']
 
-        verbal_exams = []
-        for learner in learners:
-            verbal_exam = VerbalExam.objects.create(
-                learner=learner,
-                program=program,
-                exam_date=exam_date,
-                total_questions=total_questions,
-            )
-            random_questions = verbal_exam.get_random_questions()
-            verbal_exam.questions.set(random_questions)
+        results = {
+            'created': [],
+            'skipped': [],  # дубликаты
+            'errors': []
+        }
 
-            verbal_exams.append(verbal_exam)
-        return verbal_exam
+        for learner in learners:
+            try:
+                # Проверяем, существует ли уже такой экзамен
+                if VerbalExam.objects.filter(
+                    learner=learner,
+                    program=program,
+                    exam_date=exam_date
+                ).exists():
+                    results['skipped'].append(learner)
+                    continue
+
+                # Создаём новый экзамен
+                verbal_exam = VerbalExam.objects.create(
+                    learner=learner,
+                    program=program,
+                    exam_date=exam_date,
+                    is_active=False,
+                    total_questions=total_questions,
+                )
+
+                # Добавляем случайные вопросы
+                random_questions = verbal_exam.get_random_questions()
+                verbal_exam.questions.set(random_questions)
+
+                results['created'].append(verbal_exam)
+
+            except Exception as e:
+                results['errors'].append({
+                            'learner': learner,
+                    'error': str(e)
+                })
+
+        return results
 
 
 class VerbalExamForm(StileFormMixin, forms.ModelForm):

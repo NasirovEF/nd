@@ -55,3 +55,63 @@ class Accident(models.Model):
 
     def __str__(self):
         return self.order
+
+
+class DangerCategory(models.Model):
+    """Категория опасности"""
+    name = models.CharField("Название категории", max_length=255)
+    order = models.PositiveIntegerField("Порядок сортировки", default=0)
+
+    class Meta:
+        verbose_name = "Категория опасности"
+        verbose_name_plural = "Категории опасностей"
+        ordering = ("order",)
+
+    def __str__(self):
+        return self.name
+
+
+class DangerType(models.Model):
+    """Тип опасности"""
+    category = models.ForeignKey(
+        DangerCategory,
+        verbose_name='Категория опасности',
+        on_delete=models.CASCADE,
+        related_name='types'
+    )
+    description = models.TextField("Описание типа опасности")
+    order = models.PositiveIntegerField("Порядок сортировки", default=0)
+
+    class Meta:
+        verbose_name = "Тип опасности"
+        verbose_name_plural = "Типы опасности"
+        ordering = ("order",)
+
+    def __str__(self):
+        return f"{self.category.name} - {self.description}"
+
+
+class DangerEvent(models.Model):
+    """Опасное событие"""
+    type = models.ForeignKey(
+        DangerType,
+        verbose_name='Тип опасности',
+        on_delete=models.CASCADE,
+        related_name='events'
+    )
+    order = models.PositiveIntegerField("Порядок сортировки", default=0)
+    code = models.CharField("Код события", max_length=10, unique=True, **NULLABLE)
+    event_description = models.TextField("Описание события")
+
+    class Meta:
+        verbose_name = "Опасное событие"
+        verbose_name_plural = "Опасные события"
+        ordering = ("code",)
+
+    def __str__(self):
+        return f"{self.code} - {self.event_description}"
+
+    def save(self, *args, **kwargs):
+        self.code = f'{self.type.category.order}.{self.type.order}.{self.order}'
+        self.clean()
+        super().save(*args, **kwargs)

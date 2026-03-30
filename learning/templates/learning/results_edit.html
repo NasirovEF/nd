@@ -25,41 +25,52 @@
 
             <!-- Работник -->
             <td>{{ form.instance.learner|default:"Не указан" }}</td>
+              <!-- 2. Скрытые поля -->
+                        {{ form.id }}
+            <input type="hidden" name="{{ form.learner.html_name }}" value="{{ form.instance.learner.id }}">
+            <input type="hidden" name="{{ form.protocol.html_name }}" value="{{ form.instance.protocol.id }}">
 
             <!-- Сдал? -->
             <td>
-                {{ form.passed }}
-                {% if form.passed.errors %}
-                    <div class="text-danger small">
-                {% for error in form.passed.errors %}{{ error }}{% endfor %}
-            </div>
-        {% endif %}
+                    {{ form.passed }}
+                    {% if form.passed.errors %}
+                        <div class="text-danger small">
+                            {% for error in form.passed.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                 </td>
 
-                <!-- Проверка знаний -->
                 <td>
                     {{ form.type }}
                     {% if form.type.errors %}
                         <div class="text-danger small">
-                    {% for error in form.type.errors %}{{ error }}{% endfor %}
-                </div>
-            {% endif %}
-            </td>
+                            {% for error in form.type.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </td>
 
-            <!-- Регистрационный номер -->
-            <td>
-                {{ form.reg_number }}
-                {% if form.reg_number.errors %}
-                    <div class="text-danger small">
-                {% for error in form.reg_number.errors %}{{ error }}{% endfor %}
-            </div>
-            {% endif %}
-            {% if form.non_field_errors %}
-            <div class="text-danger small">
-            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
-            </div>
-            {% endif %}
-            </td>
+                <td>
+                    {{ form.reg_number }}
+                    {% if form.reg_number.errors %}
+                        <div class="text-danger small">
+                            {% for error in form.reg_number.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if form.non_field_errors %}
+                        <div class="text-danger small">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </td>
+
             </tr>
             {% endfor %}
             </tbody>
