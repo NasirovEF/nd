@@ -1,0 +1,61 @@
+{% extends 'organization/base.html' %}
+{% load my_tags %}
+{% block content %}
+
+<div class="row">
+    <div class="col-1"></div>
+    <div class="col-10">
+
+        <table class="table table-sm text-center table align-middle table-bordered mt-2">
+            <thead>
+            <tr>
+                <th scope="col">№ п/п</th>
+                <th class="col-2" scope="col">Опасность</th>
+                <th class="col-1" scope="col">Код опасного события</th>
+                <th class="col-3" scope="col">Опасное событие</th>
+                <th>Вероятность возникновения</th>
+                <th>НС</th>
+            </tr>
+            </thead>
+            <tbody>
+              {% for danger in dangers %}
+                <tr>
+                  <th colspan="6" class="text-start">{{ danger.order }}. {{ danger.name }}</th>
+                </tr>
+
+                {% for type in danger.types.all %}
+                  {% with events=type.events.all %}
+                    {% if events %}
+                      {% for event in events %}
+                        <tr>
+                          {% if forloop.first %}
+                            <td rowspan="{{ events|length }}">{{ danger.order }}.{{ type.order }}</td>
+                            <td rowspan="{{ events|length }}">{{ type.description }}</td>
+                          {% endif %}
+                          <td>{{ event.code }}</td>
+                          <td>{{ event.event_description }}</td>
+                          <td></td>
+                          <td>
+                              {% for accident in event.accident_set.all %}
+                              <a href="{% url 'accident:accident_detail' accident.pk %}">{{ accident }}</a> ;
+                              {% endfor %}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    {% else %}
+                      <tr>
+                        <td>{{ danger.order }}.{{ type.order }}</td>
+                        <td>{{ type.description }}</td>
+                        <td colspan="4">Нет событий</td>
+                      </tr>
+                    {% endif %}
+                  {% endwith %}
+                {% endfor %}
+              {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+    <div class="col-1"></div>
+</div>
+{% endblock %}

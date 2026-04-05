@@ -11,6 +11,9 @@
 {% if perms.accident.view_accident %}
 <a class="btn btn-outline-primary mx-2" href="{% url 'accident:statistics' %}">Статистика</a>
 {% endif %}
+{% if perms.accident.view_dangerevent %}
+<a class="btn btn-outline-primary mx-2" href="{% url 'accident:dangers' %}">Опасности</a>
+{% endif %}
 <div class="offcanvas offcanvas-start" data-bs-backdrop="static" tabindex="-1" id="staticBackdrop"
      aria-labelledby="staticBackdropLabel">
     <div class="offcanvas-header">

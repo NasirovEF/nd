@@ -4,7 +4,7 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
 from accident.forms import AccidentForm
-from accident.models import Accident, AccidentСategory, Organization
+from accident.models import Accident, AccidentСategory, Organization, DangerCategory
 from accident.services import insert_line_breaks
 from config.settings import EMAIL_HOST_USER
 from datetime import date
@@ -154,13 +154,13 @@ class AccidentCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
         object = form.save()
         host = self.request.get_host()
         # заглушка кода на случай введения уведомления через почту
-        send_mail(
-            subject=f"Информация о новом несчастном случае",
-            message=f"Внимание в АСУ НС добавлена информация о новом несчастном случае. "
-            f"Для ознакомления перейдите по ссылке: http://{host}/accident_detail/{object.pk}",
-            from_email=EMAIL_HOST_USER,
-            recipient_list=["i@ef-nasirov.ru",],
-        )
+        # send_mail(
+        #     subject=f"Информация о новом несчастном случае",
+        #     message=f"Внимание в АСУ НС добавлена информация о новом несчастном случае. "
+        #     f"Для ознакомления перейдите по ссылке: http://{host}/accident_detail/{object.pk}",
+        #     from_email=EMAIL_HOST_USER,
+        #     recipient_list=["i@ef-nasirov.ru",],
+        # )
         return super().form_valid(form)
 
 
@@ -292,3 +292,13 @@ def accident_statistics(request):
         'death_rate': f"{(death_count / accidents.count() * 100):.1f}%" if accidents.count() > 0 else "0%"
     }
     return render(request, 'accident/statistics.html', context)
+
+
+@login_required
+@permission_required('accident.view_dangerevent', raise_exception=True)
+def danger_view(request):
+    dangers = DangerCategory.objects.all()
+    context = {
+        'dangers': dangers,
+    }
+    return render(request, 'accident/dangers.html', context)

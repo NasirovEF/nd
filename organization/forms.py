@@ -47,7 +47,8 @@ class StileFormMixin:
                     attrs.update({
                         'class': ' '.join(updated_classes),
                         'data-live-search': 'true',
-                        'title': 'Выберите вариант'
+                        'title': 'Выберите вариант',
+                        'style': 'max-width: 400px;',
                     })
                 field.widget.attrs.update(attrs)
 
@@ -62,7 +63,8 @@ class StileFormMixin:
                         'class': ' '.join(updated_classes),
                         'data-live-search': 'true',
                         'multiple': 'multiple',
-                        'title': 'Выберите варианты'
+                        'title': 'Выберите варианты',
+                        'style': 'max-width: 400px;',
                     })
                 field.widget.attrs.update(attrs)
             else:

@@ -6,7 +6,11 @@ from learning.services import get_current_date
 
 
 class AccidentСategory(models.Model):
-    name = models.CharField(max_length=150, verbose_name="Категория НС")
+    """Модель категории НС"""
+    name = models.CharField(
+        max_length=150,
+        verbose_name="Категория НС"
+    )
     
     class Meta:
         verbose_name = "Категория НС"
@@ -17,10 +21,25 @@ class AccidentСategory(models.Model):
 
 
 class Accident(models.Model):
-    order = models.CharField(max_length=350, verbose_name="№ и дата информационного письма")
-    title = models.CharField(max_length=350, verbose_name="Титул", **NULLABLE)
-    scene = models.CharField(max_length=350, verbose_name="Место происшествия", **NULLABLE)
-    date = models.DateField(verbose_name="Дата происшествия", default=get_current_date)
+    """Модель несчастного случая"""
+    order = models.CharField(
+        max_length=350,
+        verbose_name="№ и дата информационного письма"
+    )
+    title = models.CharField(
+        max_length=350,
+        verbose_name="Титул",
+        **NULLABLE
+    )
+    scene = models.CharField(
+        max_length=350,
+        verbose_name="Место происшествия",
+        **NULLABLE
+    )
+    date = models.DateField(
+        verbose_name="Дата происшествия",
+        default=get_current_date
+    )
     organization = models.ForeignKey(
         Organization,
         on_delete=models.SET_NULL,
@@ -29,24 +48,49 @@ class Accident(models.Model):
         **NULLABLE
     )
     contractor = models.CharField(
-        max_length=250, verbose_name="Подрядная организация", **NULLABLE
+        max_length=250,
+        verbose_name="Подрядная организация",
+        **NULLABLE
     )
     category = models.ForeignKey(
         AccidentСategory,
         on_delete=models.SET_NULL,
         verbose_name="Категория НС",
         related_name="accident",
+        null=True
+    )
+    victim = models.CharField(
+        max_length=350,
+        verbose_name="Пострадавший",
         **NULLABLE
     )
-    victim = models.CharField(max_length=350, verbose_name="Пострадавший", **NULLABLE)
-    victims_count = models.PositiveIntegerField(verbose_name="Количество пострадавших")
-    is_death = models.BooleanField(default=False, verbose_name="Смертельный")
-    description = models.TextField(verbose_name="Краткие обстоятельства")
-    image = models.ImageField(
-        upload_to="accident/photo", verbose_name="Фото", **NULLABLE
+    victims_count = models.PositiveIntegerField(
+        verbose_name="Количество пострадавших"
     )
-    cause = models.TextField(verbose_name="Причины несчастного случая", **NULLABLE)
-    safety_requirements = models.TextField(verbose_name="Требования безопасности", **NULLABLE)
+    is_death = models.BooleanField(
+        default=False,
+        verbose_name="Смертельный"
+    )
+    description = models.TextField(
+        verbose_name="Краткие обстоятельства"
+    )
+    image = models.ImageField(
+        upload_to="accident/photo",
+        verbose_name="Фото",
+        **NULLABLE
+    )
+    cause = models.TextField(
+        verbose_name="Причины несчастного случая",
+        **NULLABLE
+    )
+    danger = models.ManyToManyField(
+        'DangerEvent',
+        verbose_name="Опасное событие",
+    )
+    safety_requirements = models.TextField(
+        verbose_name="Требования безопасности",
+        **NULLABLE
+    )
 
     class Meta:
         verbose_name = "Несчастный случай"
@@ -59,8 +103,14 @@ class Accident(models.Model):
 
 class DangerCategory(models.Model):
     """Категория опасности"""
-    name = models.CharField("Название категории", max_length=255)
-    order = models.PositiveIntegerField("Порядок сортировки", default=0)
+    name = models.CharField(
+        "Название категории",
+        max_length=255
+    )
+    order = models.PositiveIntegerField(
+        "Порядок сортировки",
+        default=1
+    )
 
     class Meta:
         verbose_name = "Категория опасности"
@@ -68,7 +118,7 @@ class DangerCategory(models.Model):
         ordering = ("order",)
 
     def __str__(self):
-        return self.name
+        return f'{self.order}. {self.name}'
 
 
 class DangerType(models.Model):
@@ -79,8 +129,13 @@ class DangerType(models.Model):
         on_delete=models.CASCADE,
         related_name='types'
     )
-    description = models.TextField("Описание типа опасности")
-    order = models.PositiveIntegerField("Порядок сортировки", default=0)
+    description = models.TextField(
+        "Описание типа опасности"
+    )
+    order = models.PositiveIntegerField(
+        "Порядок сортировки",
+        default=1
+    )
 
     class Meta:
         verbose_name = "Тип опасности"
@@ -88,7 +143,7 @@ class DangerType(models.Model):
         ordering = ("order",)
 
     def __str__(self):
-        return f"{self.category.name} - {self.description}"
+        return f"{self.category}/\n{self.category.order}.{self.order}. {self.description}"
 
 
 class DangerEvent(models.Model):
@@ -99,9 +154,19 @@ class DangerEvent(models.Model):
         on_delete=models.CASCADE,
         related_name='events'
     )
-    order = models.PositiveIntegerField("Порядок сортировки", default=0)
-    code = models.CharField("Код события", max_length=10, unique=True, **NULLABLE)
-    event_description = models.TextField("Описание события")
+    order = models.PositiveIntegerField(
+        "Порядок сортировки",
+        default=1
+    )
+    code = models.CharField(
+        "Код события",
+        max_length=10,
+        unique=True,
+        **NULLABLE
+    )
+    event_description = models.TextField(
+        "Описание события"
+    )
 
     class Meta:
         verbose_name = "Опасное событие"
@@ -109,7 +174,7 @@ class DangerEvent(models.Model):
         ordering = ("code",)
 
     def __str__(self):
-        return f"{self.code} - {self.event_description}"
+        return f"{self.type}/\n{self.code}.{self.event_description}"
 
     def save(self, *args, **kwargs):
         self.code = f'{self.type.category.order}.{self.type.order}.{self.order}'

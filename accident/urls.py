@@ -3,7 +3,7 @@ from django.urls import path
 from accident.apps import AccidentConfig
 from accident.views import (AccidentCreateView, AccidentDeleteView,
                             AccidentDetailView, AccidentListView,
-                            AccidentUpdateView, accident_statistics)
+                            AccidentUpdateView, accident_statistics, danger_view)
 
 app_name = AccidentConfig.name
 
@@ -26,4 +26,5 @@ urlpatterns = [
     ),
     path("accident_list", AccidentListView.as_view(), name="accident_list"),
     path('statistics/', accident_statistics, name='statistics'),
+    path('dangers/', danger_view, name='dangers')
 ]
