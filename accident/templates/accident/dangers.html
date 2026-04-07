@@ -34,7 +34,9 @@
                           {% endif %}
                           <td>{{ event.code }}</td>
                           <td>{{ event.event_description }}</td>
-                          <td></td>
+                          <td>
+                              {{ probability|get_code_probability:event.code }}
+                          </td>
                           <td>
                               {% for accident in event.accident_set.all %}
                               <a href="{% url 'accident:accident_detail' accident.pk %}">{{ accident }}</a> ;

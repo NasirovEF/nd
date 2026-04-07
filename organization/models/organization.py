@@ -44,6 +44,7 @@ class Organization(BaseNamedEntity):
     """Класс ОСТ"""
 
     is_main = models.BooleanField(verbose_name="Признак основной ОСТ", default=False)
+    is_transit = models.BooleanField(verbose_name="Транспортная ОСТ", default=False)
 
     class Meta:
         verbose_name = "ОСТ"

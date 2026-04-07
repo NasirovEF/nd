@@ -230,3 +230,8 @@ def modify_page_url(context, page_number):
     get_params = request.GET.copy()
     get_params['page'] = page_number
     return f"?{get_params.urlencode()}"
+
+
+@register.filter()
+def get_code_probability(dictionary, key):
+    return dictionary.get(key)

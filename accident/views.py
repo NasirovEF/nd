@@ -4,8 +4,8 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
                                   UpdateView)
 from accident.forms import AccidentForm
-from accident.models import Accident, AccidentСategory, Organization, DangerCategory
-from accident.services import insert_line_breaks
+from accident.models import Accident, AccidentСategory, Organization, DangerCategory, DangerEvent
+from accident.services import insert_line_breaks, calculating_probability
 from config.settings import EMAIL_HOST_USER
 from datetime import date
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
@@ -298,7 +298,12 @@ def accident_statistics(request):
 @permission_required('accident.view_dangerevent', raise_exception=True)
 def danger_view(request):
     dangers = DangerCategory.objects.all()
+    probability = {}
+    events = DangerEvent.objects.all()
+    for event in events:
+        probability[str(event.code)] = calculating_probability(event)
     context = {
         'dangers': dangers,
+        'probability': probability
     }
     return render(request, 'accident/dangers.html', context)
